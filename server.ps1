@@ -73,6 +73,7 @@ function Read-ContentStore {
       theme = @{}
       graphics = @{}
       layout = @{}
+      positionOverrides = @{}
       devotionals = @()
     }
   }
@@ -113,6 +114,19 @@ function Read-ContentStore {
         $layout[$property.Name] = @($property.Value | ForEach-Object { [string]$_ })
       }
     }
+    $positionOverrides = @{}
+    if ($null -ne $document.positionOverrides) {
+      foreach ($property in $document.positionOverrides.PSObject.Properties) {
+        $value = $property.Value
+        if ($null -eq $value) { continue }
+        $positionOverrides[$property.Name] = [pscustomobject]@{
+          x = [double]$value.x
+          y = [double]$value.y
+          width = [double]$value.width
+          height = [double]$value.height
+        }
+      }
+    }
   $devotionals = @()
   foreach ($item in @($document.devotionals)) {
     if ($null -ne $item) {
@@ -142,6 +156,7 @@ function Read-ContentStore {
     theme = $theme
     graphics = $graphics
     layout = $layout
+    positionOverrides = $positionOverrides
     devotionals = $devotionals
   }
 }

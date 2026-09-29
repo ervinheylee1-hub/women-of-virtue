@@ -76,7 +76,11 @@ input:focus, textarea:focus, select:focus, button:focus-visible { outline: 2px s
 .preview-toolbar { display: flex; min-height: 46px; align-items: center; gap: 12px; padding: 5px 14px; border-bottom: 1px solid var(--line); background: var(--white); }
 .preview-toolbar label { font-size: 12px; }
 .preview-toolbar select { width: 180px; min-height: 32px; }
+.preview-toolbar .quiet-button { min-height: 32px; padding: 0 10px; }
 #site-preview { width: 100%; min-height: 650px; flex: 1; border: 0; background: white; }
+.admin-layout-editable { position: relative; cursor: move; outline: 2px dashed rgba(212, 150, 125, .72); outline-offset: 2px; }
+.admin-layout-editable.admin-being-edited { box-shadow: 0 0 0 2px rgba(212, 150, 125, .3); }
+.admin-layout-handle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border: 1px solid rgba(48, 54, 54, .7); background: #fff; box-shadow: 0 0 0 2px rgba(212, 150, 125, .3); cursor: nwse-resize; }
 .devotional-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .devotional-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border: 1px solid var(--line); font-size: 12px; }
 .devotional-list button { min-height: 30px; padding: 0 8px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 11px; }

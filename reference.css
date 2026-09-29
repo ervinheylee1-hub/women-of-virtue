@@ -6,8 +6,8 @@
   --display: "Shrikhand", Georgia, serif;
 }
 
-html { scroll-behavior: auto; }
-body { width: 100%; margin: 0; background: var(--warm); color: var(--ink); font: 16px/24px var(--serif); }
+html { scroll-behavior: auto; overflow-x: hidden; }
+body { width: 100%; max-width: 100%; margin: 0; overflow-x: hidden; background: var(--warm); color: var(--ink); font: 16px/24px var(--serif); }
 main { min-height: 0; }
 h1, h2, h3, h4 { margin: 0; color: inherit; font-family: var(--display); font-weight: 400; letter-spacing: 0; line-height: 1.05; }
 p { margin: 0 0 24px; font: 400 16px/24px var(--serif); }
@@ -197,8 +197,8 @@ main .lesson-page h4 { color: var(--cms-heading-pink, #ffc0cb); }
   .menu-toggle { position: relative; display: flex; width: 44px; height: 44px; flex-direction: column; justify-content: center; gap: 6px; align-items: center; margin-left: auto; padding: 0; border: 0; background: transparent; color: inherit; }
   .menu-toggle span { display: block; width: 18px; height: 1px; background: currentColor; }
   .social-links:not(.footer-social) { display: none; }
-  .site-nav.is-open { position: fixed; z-index: 12; top: 39%; right: 0; left: 0; display: flex; align-items: center; flex-direction: column; gap: 23px; margin: 0; padding: 0; background: transparent; color: var(--ink); }
-  .site-nav.is-open a { color: inherit; font: 400 20px/34px var(--serif); }
+  .site-nav.is-open { position: fixed; z-index: 12; top: 39%; right: 0; left: 0; display: flex; align-items: center; flex-direction: column; gap: 23px; margin: 0; padding: 0; background: #26352f; color: #fffefa; }
+  .site-nav.is-open a { color: #fffefa; font: 400 20px/34px var(--serif); border-bottom: 1px solid rgba(255,255,255,.16); }
   body[data-route="home"] .site-nav.is-open, body[data-route="devotionals"] .site-nav.is-open { color: var(--warm); }
   .hero { height: auto; aspect-ratio: .58; }
   .hero { height: auto; aspect-ratio: .5806; }

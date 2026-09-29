@@ -25,13 +25,30 @@ let selectedElement = null;
 let activeRichEditor = copyField;
 let draggedLayoutElement = null;
 let storageMode = "server";
-let content = { copyOverrides: {}, richTextOverrides: {}, textStyles: {}, theme: {}, graphics: {}, layout: {}, devotionals: [] };
+let adminDragState = null;
+let content = { copyOverrides: {}, richTextOverrides: {}, textStyles: {}, theme: {}, graphics: {}, layout: {}, positionOverrides: {}, devotionals: [] };
 
 function normalizeGodCapitalization(value) {
   return String(value || "")
     .replace(/\bgod['’]s\b/gi, match => match.endsWith("’s") ? "God’s" : "God's")
     .replace(/\bgods\b/gi, "Gods")
     .replace(/\bgod\b/gi, "God");
+}
+
+function normalizePositionOverrides(data = {}) {
+  const raw = data && typeof data === "object" ? data : {};
+  return Object.fromEntries(Object.entries(raw).filter(([key, value]) => typeof key === "string" && value && typeof value === "object").map(([key, value]) => {
+    const x = Number(value.x);
+    const y = Number(value.y);
+    const width = Number(value.width);
+    const height = Number(value.height);
+    return [key, {
+      x: Number.isFinite(x) ? x : 0,
+      y: Number.isFinite(y) ? y : 0,
+      width: Number.isFinite(width) ? Math.max(80, width) : null,
+      height: Number.isFinite(height) ? Math.max(40, height) : null
+    }];
+  }));
 }
 
 function normalizeContent(data = {}) {
@@ -45,6 +62,7 @@ function normalizeContent(data = {}) {
     theme: data.theme || {},
     graphics: data.graphics && typeof data.graphics === "object" ? data.graphics : {},
     layout: Object.fromEntries(Object.entries(data.layout || {}).filter(([group, keys]) => layoutGroups.has(group) && Array.isArray(keys)).map(([group, keys]) => [group, [...new Set(keys.filter(key => typeof key === "string" && /^[a-z0-9:-]{1,120}$/.test(key)))].slice(0, 50)])),
+    positionOverrides: normalizePositionOverrides(data.positionOverrides),
     devotionals: Array.isArray(data.devotionals) ? data.devotionals.map(item => ({
       ...item,
       title: normalizeGodCapitalization(item.title),
@@ -105,6 +123,76 @@ function sanitizeRichHtml(value) {
   const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) walker.currentNode.nodeValue = normalizeGodCapitalization(walker.currentNode.nodeValue);
   return template.innerHTML;
+}
+
+function getAdminElementId(element) {
+  if (!element) return "";
+  return element.dataset.cmsLayoutKey || element.dataset.cmsKey || "";
+}
+
+function getPositionOverride(id) {
+  const override = content.positionOverrides[id];
+  if (!override || typeof override !== "object") return { x: 0, y: 0, width: null, height: null };
+  return {
+    x: Number.isFinite(Number(override.x)) ? Number(override.x) : 0,
+    y: Number.isFinite(Number(override.y)) ? Number(override.y) : 0,
+    width: Number.isFinite(Number(override.width)) ? Math.max(80, Number(override.width)) : null,
+    height: Number.isFinite(Number(override.height)) ? Math.max(40, Number(override.height)) : null
+  };
+}
+
+function syncPositionOverride(element, override) {
+  if (!element) return;
+  if (override.x || override.y) element.style.transform = `translate(${override.x}px, ${override.y}px)`;
+  else element.style.transform = "";
+  if (override.width !== null) element.style.width = `${override.width}px`;
+  else element.style.width = "";
+  if (override.height !== null) element.style.height = `${override.height}px`;
+  else element.style.height = "";
+  element.style.position = "relative";
+  element.style.maxWidth = "none";
+}
+
+function applyPreviewLayoutAdjustments(documentInFrame) {
+  if (!documentInFrame) return;
+  documentInFrame.querySelectorAll("[data-cms-layout-group][data-cms-layout-key], [data-cms-key]").forEach(element => {
+    const id = getAdminElementId(element);
+    if (!id) return;
+    const override = getPositionOverride(id);
+    syncPositionOverride(element, override);
+    element.classList.add("admin-layout-editable");
+    if (!element.querySelector(".admin-layout-handle")) {
+      const handle = documentInFrame.createElement("span");
+      handle.className = "admin-layout-handle";
+      handle.setAttribute("aria-label", "Resize layout element");
+      handle.title = "Resize element";
+      element.append(handle);
+    }
+  });
+}
+
+async function runLayoutSelfCheck() {
+  const documentInFrame = preview.contentDocument;
+  const candidate = documentInFrame?.querySelector("[data-cms-layout-group][data-cms-layout-key], [data-cms-key]");
+  if (!candidate) {
+    statusLabel.textContent = "Layout self-check skipped: no preview elements are available.";
+    return;
+  }
+  const id = getAdminElementId(candidate);
+  const original = getPositionOverride(id);
+  const width = Math.max(180, candidate.getBoundingClientRect().width || 180) + 26;
+  const height = Math.max(80, candidate.getBoundingClientRect().height || 80) + 20;
+  const next = { x: (original.x || 0) + 18, y: (original.y || 0) + 12, width, height };
+  content.positionOverrides[id] = next;
+  syncPositionOverride(candidate, next);
+  try {
+    await saveContent();
+    statusLabel.textContent = "Layout self-check passed: drag and resize state persisted.";
+  } catch (error) {
+    content.positionOverrides[id] = original;
+    syncPositionOverride(candidate, original);
+    statusLabel.textContent = `Layout self-check failed: ${error.message}`;
+  }
 }
 
 function previewUrl(route = "#/") {
@@ -285,9 +373,67 @@ function bindPreview() {
   documentInFrame.querySelectorAll("[data-cms-layout-group][data-cms-layout-key]").forEach(element => {
     element.draggable = true;
     element.setAttribute("aria-grabbed", "false");
-    element.title = "Drag to rearrange";
+    element.title = "Drag to rearrange or resize";
   });
+  applyPreviewLayoutAdjustments(documentInFrame);
   let currentDropTarget = null;
+  documentInFrame.addEventListener("pointerdown", event => {
+    const handle = event.target.closest(".admin-layout-handle");
+    const editable = event.target.closest("[data-cms-layout-group][data-cms-layout-key], [data-cms-key]");
+    if (!editable || event.target.closest("a,button,summary,label,input,textarea,select")) return;
+    const id = getAdminElementId(editable);
+    if (!id) return;
+    event.preventDefault();
+    if (handle) {
+      adminDragState = {
+        mode: "resize",
+        id,
+        element: editable,
+        startX: event.clientX,
+        startY: event.clientY,
+        initial: getPositionOverride(id)
+      };
+      return;
+    }
+    adminDragState = {
+      mode: "move",
+      id,
+      element: editable,
+      startX: event.clientX,
+      startY: event.clientY,
+      initial: getPositionOverride(id)
+    };
+    editable.classList.add("admin-being-edited");
+  }, true);
+  documentInFrame.addEventListener("pointermove", event => {
+    if (!adminDragState) return;
+    const { mode, id, element, startX, startY, initial } = adminDragState;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    const next = {
+      x: mode === "move" ? (initial.x || 0) + deltaX : initial.x || 0,
+      y: mode === "move" ? (initial.y || 0) + deltaY : initial.y || 0,
+      width: mode === "resize" ? Math.max(80, (initial.width ?? element.getBoundingClientRect().width) + deltaX) : initial.width,
+      height: mode === "resize" ? Math.max(40, (initial.height ?? element.getBoundingClientRect().height) + deltaY) : initial.height
+    };
+    content.positionOverrides[id] = next;
+    syncPositionOverride(element, next);
+  }, true);
+  documentInFrame.addEventListener("pointerup", async () => {
+    if (!adminDragState) return;
+    const { id, element } = adminDragState;
+    element?.classList.remove("admin-being-edited");
+    try {
+      await saveContent();
+      statusLabel.textContent = "Layout adjustments saved";
+    } catch (error) {
+      statusLabel.textContent = `Layout adjustments not saved: ${error.message}`;
+    }
+    adminDragState = null;
+  }, true);
+  documentInFrame.addEventListener("pointercancel", () => {
+    adminDragState = null;
+  }, true);
   documentInFrame.addEventListener("dragstart", dragEvent => {
     draggedLayoutElement = dragEvent.target.closest("[data-cms-layout-group][data-cms-layout-key]");
     if (!draggedLayoutElement) return;
@@ -408,6 +554,7 @@ copySave.addEventListener("click", async () => {
 document.querySelector("#preview-route").addEventListener("change", event => {
   if (preview.contentWindow) preview.contentWindow.location.hash = event.target.value;
 });
+document.querySelector("#layout-self-check").addEventListener("click", runLayoutSelfCheck);
 preview.addEventListener("load", bindPreview);
 
 document.addEventListener("focusin", event => {
