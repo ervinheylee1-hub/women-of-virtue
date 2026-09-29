@@ -173,7 +173,7 @@ async function loadCmsContent() {
   const localServer = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
   if (localServer) {
     try {
-      const response = await fetch("/api/public-content", { cache: "no-store" });
+      const response = await fetch("./api/public-content", { cache: "no-store" });
       if (response.ok) data = await response.json();
     } catch {}
   }
@@ -191,7 +191,7 @@ async function loadCmsContent() {
   }
   if (!data) {
     try {
-      const response = await fetch(new URL("content.json", window.location.href), { cache: "no-store" });
+      const response = await fetch("./content.json", { cache: "no-store" });
       if (response.ok) data = await response.json();
     } catch {}
   }

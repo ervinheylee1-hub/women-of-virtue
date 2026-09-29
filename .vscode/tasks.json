@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Women of Virtue: start local server",
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "$port = 5173; try { $response = Invoke-WebRequest -Uri \"http://127.0.0.1:$port/api/public-content\" -TimeoutSec 2; if ($response.StatusCode -eq 200) { Write-Output 'Women of Virtue CMS: existing server'; Write-Output 'Admin panel:'; exit 0 } } catch {}; & '${workspaceFolder}/server.ps1' -Port $port"
+      ],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Women of Virtue CMS:",
+          "endsPattern": "Admin panel:"
+        }
+      }
+    }
+  ]
+}

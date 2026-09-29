@@ -136,7 +136,7 @@ function escapeHtml(value) {
 
 async function loadContent() {
   if (storageMode === "server") {
-    content = normalizeContent(await api("/api/admin/content"));
+    content = normalizeContent(await api("./api/admin/content"));
   } else {
     let loaded = null;
     try {
@@ -145,7 +145,7 @@ async function loadContent() {
     } catch {}
     if (!loaded && window.location.protocol !== "file:") {
       try {
-        const response = await fetch(new URL("./content.json", window.location.href), { cache: "no-store" });
+        const response = await fetch("./content.json", { cache: "no-store" });
         if (response.ok) loaded = await response.json();
       } catch {}
     }
@@ -157,7 +157,7 @@ async function loadContent() {
 
 async function saveContent() {
   if (storageMode === "server") {
-    await api("/api/admin/content", { method: "PUT", body: content });
+    await api("./api/admin/content", { method: "PUT", body: content });
   } else {
     localStorage.setItem(browserContentKey, JSON.stringify(content));
   }
@@ -248,7 +248,7 @@ document.querySelector("#setup-form").addEventListener("submit", async event => 
     return;
   }
   try {
-    const result = await api("/api/admin/setup", { method: "POST", body: { password } });
+    const result = await api("./api/admin/setup", { method: "POST", body: { password } });
     csrfToken = result.csrf;
     await enterDashboard();
   } catch (error) {
@@ -259,7 +259,7 @@ document.querySelector("#setup-form").addEventListener("submit", async event => 
 document.querySelector("#login-form").addEventListener("submit", async event => {
   event.preventDefault();
   try {
-    const result = await api("/api/admin/login", {
+    const result = await api("./api/admin/login", {
       method: "POST",
       body: { password: document.querySelector("#login-password").value }
     });
@@ -427,7 +427,7 @@ document.querySelector("#logout-button").addEventListener("click", async () => {
     window.location.href = "./index.html";
     return;
   }
-  try { await api("/api/admin/logout", { method: "POST", body: {} }); } catch {}
+  try { await api("./api/admin/logout", { method: "POST", body: {} }); } catch {}
   csrfToken = "";
   showAccess("login");
   statusLabel.textContent = "Signed out";
@@ -450,7 +450,7 @@ async function initialize() {
   }
   try {
     storageMode = "server";
-    const status = await api("/api/admin/status");
+    const status = await api("./api/admin/status");
     if (status.authenticated) {
       csrfToken = status.csrf;
       await enterDashboard();

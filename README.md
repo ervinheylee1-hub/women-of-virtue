@@ -10,6 +10,8 @@ Open PowerShell in this folder and run:
 
 Then visit `http://127.0.0.1:5173/`. The admin panel is at `http://127.0.0.1:5173/admin`.
 
+In VS Code, open **Run and Debug** and start **Women of Virtue (local)** to start the local server and open the site in Microsoft Edge. The site is served from the repository root, matching the relative paths used on GitHub Pages.
+
 If PowerShell blocks the local script, inspect `server.ps1` and use the normal user-scoped policy for local scripts:
 
 ```powershell
@@ -28,7 +30,11 @@ With the local PowerShell server running, content persists in `cms-data/content.
 
 ## GitHub Pages mode
 
-Deploy the files in this folder, including `content.json`, to GitHub Pages. Open `admin.html` on the deployed site to use browser mode. Edits persist in that browser's `localStorage`; use **Download content.json** and commit the downloaded file to publish changes for all visitors. Use **Import content.json** to load a committed copy into the current browser.
+The `main` branch is deployed to GitHub Pages by the GitHub Actions workflow. In the repository's **Settings > Pages**, set **Build and deployment > Source** to **GitHub Actions**. The site files, including `content.json`, use relative paths and work from both the local server root and the repository's `/women-of-virtue/` Pages path.
+
+Open `https://ervinheylee1-hub.github.io/women-of-virtue/admin/` (or `/admin`) to use browser mode. Edits persist in that browser's `localStorage`; use **Download content.json** and import/replace the repository's `content.json` with that download to publish changes for all visitors. Use **Import content.json** to load a committed copy into the current browser.
+
+To publish from VS Code, open **Source Control**, review the changed files, stage the files to publish (including `content.json` for content edits), enter a commit message, select **Commit**, then select **Sync Changes** or **Push**. Each push to `main` starts a fresh Pages deployment; check the **Actions** tab for its status. From a terminal, the equivalent is `git add .`, `git commit -m "Describe the change"`, and `git push origin main`.
 
 GitHub Pages is static hosting: browser-mode editing has no server-side authentication, and localStorage is per browser/device. Do not store secrets or rely on it for private admin access. Use the localhost PowerShell mode when authenticated server-side editing is required.
 
