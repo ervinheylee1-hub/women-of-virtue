@@ -23,8 +23,9 @@ let csrfToken = "";
 let selectedKey = "";
 let selectedElement = null;
 let activeRichEditor = copyField;
+let draggedLayoutElement = null;
 let storageMode = "server";
-let content = { copyOverrides: {}, richTextOverrides: {}, textStyles: {}, theme: {}, devotionals: [] };
+let content = { copyOverrides: {}, richTextOverrides: {}, textStyles: {}, theme: {}, graphics: {}, layout: {}, devotionals: [] };
 
 function normalizeGodCapitalization(value) {
   return String(value || "")
@@ -36,12 +37,14 @@ function normalizeGodCapitalization(value) {
 function normalizeContent(data = {}) {
   const copyOverrides = Object.fromEntries(Object.entries(data.copyOverrides || {}).map(([key, value]) => [key, normalizeGodCapitalization(value)]));
   const richTextOverrides = Object.fromEntries(Object.entries(data.richTextOverrides || {}).map(([key, value]) => [key, sanitizeRichHtml(value)]));
+  const layoutGroups = new Set(["home-sections", "home-gallery", "about-columns", "contact-columns", "course-sections", "course-lessons", "lesson-page", "lesson-columns", "site-header", "site-navigation"]);
   return {
     copyOverrides,
     richTextOverrides,
     textStyles: data.textStyles || {},
     theme: data.theme || {},
     graphics: data.graphics && typeof data.graphics === "object" ? data.graphics : {},
+    layout: Object.fromEntries(Object.entries(data.layout || {}).filter(([group, keys]) => layoutGroups.has(group) && Array.isArray(keys)).map(([group, keys]) => [group, [...new Set(keys.filter(key => typeof key === "string" && /^[a-z0-9:-]{1,120}$/.test(key)))].slice(0, 50)])),
     devotionals: Array.isArray(data.devotionals) ? data.devotionals.map(item => ({
       ...item,
       title: normalizeGodCapitalization(item.title),
@@ -234,6 +237,31 @@ function updateDevotionalSectionLabels() {
   });
 }
 
+function persistPreviewLayout(source, target, dropEvent) {
+  const group = source.dataset.cmsLayoutGroup;
+  const parent = source.parentElement;
+  if (target === source || target.parentElement !== parent || target.dataset.cmsLayoutGroup !== group) return;
+  const previousOrder = Array.isArray(content.layout[group]) ? [...content.layout[group]] : null;
+  const sourceRect = source.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const sameRow = sourceRect.top < targetRect.bottom && sourceRect.bottom > targetRect.top;
+  const insertBefore = sameRow
+    ? dropEvent.clientX < targetRect.left + targetRect.width / 2
+    : dropEvent.clientY < targetRect.top + targetRect.height / 2;
+  parent.insertBefore(source, insertBefore ? target : target.nextSibling);
+  content.layout[group] = [...parent.children]
+    .filter(element => element.dataset.cmsLayoutGroup === group)
+    .map(element => element.dataset.cmsLayoutKey);
+  saveContent().then(() => {
+    statusLabel.textContent = "Layout saved";
+  }).catch(error => {
+    if (previousOrder) content.layout[group] = previousOrder;
+    else delete content.layout[group];
+    applyCmsLayout();
+    statusLabel.textContent = `Layout was not saved: ${error.message}`;
+  });
+}
+
 document.querySelector("#add-devotional-section").addEventListener("click", () => {
   devotionalSections.append(devotionalSectionTemplate.content.cloneNode(true));
   updateDevotionalSectionLabels();
@@ -252,8 +280,46 @@ function bindPreview() {
   documentInFrame.querySelector("#cms-admin-preview-style")?.remove();
   const style = documentInFrame.createElement("style");
   style.id = "cms-admin-preview-style";
-  style.textContent = "[data-cms-key]{cursor:crosshair!important}[data-cms-key]:hover{outline:2px dashed #d4967d!important;outline-offset:2px!important}";
+  style.textContent = "[data-cms-key]{cursor:crosshair!important}[data-cms-key]:hover{outline:2px dashed #d4967d!important;outline-offset:2px!important}[data-cms-layout-group][draggable=true]{cursor:grab!important}[data-cms-layout-group][draggable=true]:active{cursor:grabbing!important}[data-cms-layout-drop-target]{outline:3px solid #698777!important;outline-offset:2px!important}";
   documentInFrame.head.append(style);
+  documentInFrame.querySelectorAll("[data-cms-layout-group][data-cms-layout-key]").forEach(element => {
+    element.draggable = true;
+    element.setAttribute("aria-grabbed", "false");
+    element.title = "Drag to rearrange";
+  });
+  let currentDropTarget = null;
+  documentInFrame.addEventListener("dragstart", dragEvent => {
+    draggedLayoutElement = dragEvent.target.closest("[data-cms-layout-group][data-cms-layout-key]");
+    if (!draggedLayoutElement) return;
+    draggedLayoutElement.setAttribute("aria-grabbed", "true");
+    dragEvent.dataTransfer.effectAllowed = "move";
+    dragEvent.dataTransfer.setData("text/plain", `${draggedLayoutElement.dataset.cmsLayoutGroup}:${draggedLayoutElement.dataset.cmsLayoutKey}`);
+  }, true);
+  documentInFrame.addEventListener("dragover", dragEvent => {
+    const target = dragEvent.target.closest("[data-cms-layout-group][data-cms-layout-key]");
+    if (!draggedLayoutElement || !target || target === draggedLayoutElement || target.parentElement !== draggedLayoutElement.parentElement || target.dataset.cmsLayoutGroup !== draggedLayoutElement.dataset.cmsLayoutGroup) return;
+    dragEvent.preventDefault();
+    dragEvent.dataTransfer.dropEffect = "move";
+    if (currentDropTarget && currentDropTarget !== target) delete currentDropTarget.dataset.cmsLayoutDropTarget;
+    currentDropTarget = target;
+    target.dataset.cmsLayoutDropTarget = "true";
+  }, true);
+  documentInFrame.addEventListener("drop", dragEvent => {
+    const target = dragEvent.target.closest("[data-cms-layout-group][data-cms-layout-key]");
+    if (!draggedLayoutElement || !target || target.parentElement !== draggedLayoutElement.parentElement || target.dataset.cmsLayoutGroup !== draggedLayoutElement.dataset.cmsLayoutGroup) return;
+    dragEvent.preventDefault();
+    persistPreviewLayout(draggedLayoutElement, target, dragEvent);
+    draggedLayoutElement.setAttribute("aria-grabbed", "false");
+    delete target.dataset.cmsLayoutDropTarget;
+    draggedLayoutElement = null;
+    currentDropTarget = null;
+  }, true);
+  documentInFrame.addEventListener("dragend", () => {
+    draggedLayoutElement?.setAttribute("aria-grabbed", "false");
+    if (currentDropTarget) delete currentDropTarget.dataset.cmsLayoutDropTarget;
+    draggedLayoutElement = null;
+    currentDropTarget = null;
+  }, true);
   documentInFrame.addEventListener("click", event => {
     const target = event.target.closest("[data-cms-key]");
     if (!target) return;

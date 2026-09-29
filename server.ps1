@@ -72,6 +72,7 @@ function Read-ContentStore {
       textStyles = @{}
       theme = @{}
       graphics = @{}
+      layout = @{}
       devotionals = @()
     }
   }
@@ -106,6 +107,12 @@ function Read-ContentStore {
         $graphics[$property.Name] = [string]$property.Value
       }
     }
+    $layout = @{}
+    if ($null -ne $document.layout) {
+      foreach ($property in $document.layout.PSObject.Properties) {
+        $layout[$property.Name] = @($property.Value | ForEach-Object { [string]$_ })
+      }
+    }
   $devotionals = @()
   foreach ($item in @($document.devotionals)) {
     if ($null -ne $item) {
@@ -134,6 +141,7 @@ function Read-ContentStore {
     textStyles = $textStyles
     theme = $theme
     graphics = $graphics
+    layout = $layout
     devotionals = $devotionals
   }
 }
@@ -394,6 +402,19 @@ function Save-ContentRequest {
       $graphics[$property.Name] = $imageUri.AbsoluteUri
     }
   }
+  $layout = @{}
+  $allowedLayoutGroups = @("home-sections", "home-gallery", "about-columns", "contact-columns", "course-sections", "course-lessons", "lesson-page", "lesson-columns", "site-header", "site-navigation")
+  if ($null -ne $Body.layout) {
+    foreach ($property in $Body.layout.PSObject.Properties) {
+      if ($property.Name -notin $allowedLayoutGroups) { throw "The layout group '$($property.Name)' is not supported." }
+      $keys = @($property.Value | ForEach-Object { [string]$_ })
+      if ($keys.Count -gt 50 -or @($keys | Where-Object { $_ -notmatch "^[a-z0-9:-]{1,120}$" }).Count -gt 0) {
+        throw "The layout group '$($property.Name)' contains invalid items."
+      }
+      if (@($keys | Select-Object -Unique).Count -ne $keys.Count) { throw "The layout group '$($property.Name)' contains duplicate items." }
+      $layout[$property.Name] = $keys
+    }
+  }
   $items = @()
   $slugs = @("defining-femininity", "prayer-life-and-church-community")
   foreach ($item in @($Body.devotionals)) {
@@ -407,6 +428,7 @@ function Save-ContentRequest {
     textStyles = $textStyles
     theme = $theme
     graphics = $graphics
+    layout = $layout
     devotionals = $items
   }
 }

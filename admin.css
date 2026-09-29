@@ -85,4 +85,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible { outline: 2px s
   .editor-panel { max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
   .preview-panel { min-height: 80vh; }
   #site-preview { min-height: 80vh; }
+  .dashboard input:not([type="color"]), .dashboard textarea, .dashboard select, .dashboard .primary-button, .dashboard .quiet-button { min-height: 44px; }
+  .dashboard .theme-controls input[type="color"], .dashboard .color-control input[type="color"] { min-height: 44px; }
+  .dashboard .format-toolbar button, .dashboard .format-toolbar select { min-width: 44px; min-height: 44px; }
 }

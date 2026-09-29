@@ -306,3 +306,23 @@ body[data-route] .site-header { background: var(--peach); color: var(--ink); }
   .disclosure summary { min-height: 94px; }
   .disclosure:nth-of-type(2) summary { min-height: 62px; }
 }
+
+@media (max-width: 760px) {
+  .hero-copy { left: 50%; width: 87.52%; transform: translateX(-50%); }
+  .hero-copy h1, .hero-copy h1 + h1 { width: 100%; font-size: 38px; line-height: 1.08; white-space: normal; overflow-wrap: anywhere; }
+  .hero-copy > p:not(.eyebrow) { margin: 20px 0 24px; }
+  .project { height: auto; min-height: 799.2px; grid-template-rows: auto auto 1fr; overflow: visible; }
+  .project > h1 { width: 100%; max-width: 100%; font-size: 40px; line-height: 1.08; white-space: normal; overflow-wrap: anywhere; }
+  .project-copy, .project-copy > p:not(.eyebrow) { width: 100%; max-width: 100%; }
+  .project-copy > p:not(.eyebrow) { font-size: 18px; line-height: 27px; }
+  .site-nav.is-open a { min-height: 44px; padding: 5px 12px; }
+  .menu-toggle { width: 44px; height: 44px; }
+  .footer-social a { width: 44px; height: 44px; }
+  .lesson-grid[data-lesson="defining-femininity"] .lesson-photo { margin-top: 40px; }
+}
+
+@media (max-width: 360px) {
+  .hero-copy h1, .hero-copy h1 + h1 { font-size: 36px; }
+  .project > h1 { font-size: 36px; }
+  .course-intro h1 { height: auto; }
+}
