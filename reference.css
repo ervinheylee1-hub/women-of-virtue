@@ -31,7 +31,7 @@ body[data-route="devotionals"] .site-header { color: var(--warm); }
 body[data-route="about"] .site-header,
 body[data-route="contact"] .site-header { color: var(--ink); }
 .hero { position: relative; display: block; width: 100%; height: auto; aspect-ratio: 1.8; min-height: 0; overflow: hidden; isolation: auto; background-color: #303636; color: #fff; }
-.hero::before { inset: 0; z-index: 0; background: url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790629802685-Z59JDUC9LV7BDA5CMUSW/unsplash-image-WpFZu1CGBNc.jpg?format=1500w") center center / cover no-repeat; animation: none; }
+.hero::before { inset: 0; z-index: 0; background: var(--cms-hero-image, url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790629802685-Z59JDUC9LV7BDA5CMUSW/unsplash-image-WpFZu1CGBNc.jpg?format=1500w")) center center / cover no-repeat; animation: none; }
 .hero::after { display: none; }
 .hero-copy { position: absolute; top: 34.8%; left: 50%; width: 323px; margin: 0; padding: 0; transform: translateX(-50%); text-align: center; animation: none; }
 .hero-copy h1 { width: 100%; max-width: none; margin: 0; color: #fff; font: 400 45.3px/45.3px var(--display); white-space: nowrap; }
@@ -112,7 +112,7 @@ body[data-route="contact"] .site-header { color: var(--ink); }
 .contact-layout .form .button:hover { background: var(--peach); color: #fff; }
 .contact-layout .form-status { color: var(--ink); }
 .contact-photo { display: block; width: 356.5px; height: 674.4px; margin: 0; object-fit: cover; }
-.course-banner { position: relative; width: 100%; height: 277.8px; background: #303636 url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790620338988-PR9FRMO87HJ2YZFTA46A/unsplash-image-XqXJJhK-c08.jpg?format=1500w") center 47% / cover no-repeat; }
+.course-banner { position: relative; width: 100%; height: 277.8px; background: #303636 var(--cms-course-image, url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790620338988-PR9FRMO87HJ2YZFTA46A/unsplash-image-XqXJJhK-c08.jpg?format=1500w")) center 47% / cover no-repeat; }
 .course-list-region { min-height: 606.2px; background: var(--warm); }
 .course-page { width: 91.88%; max-width: 1280px; margin: 0 auto; padding: 43.8px 0 0; }
 .course-intro h1 { margin: 0 0 23px; color: var(--ink); font: 400 47.5px/57px var(--display); }
@@ -135,6 +135,8 @@ body[data-route="contact"] .site-header { color: var(--ink); }
 .lesson-list { margin: 0; padding: 0 20px 18px; list-style: none; }
 .lesson-row { display: flex; min-height: 68px; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 0; border-top: 1px solid rgba(48,54,54,.12); }
 .lesson-row a { color: var(--ink); font: 400 17.3px/26px var(--serif); }
+.lesson-row-copy { display: grid; gap: 3px; }
+.lesson-date { color: rgba(48,54,54,.68); font: 400 12px/18px var(--serif); }
 .lesson-row a:hover { text-decoration: underline; }
 .lesson-check { display: flex; align-items: center; gap: 8px; color: var(--ink); font: 400 12px/20px var(--serif); cursor: pointer; }
 .lesson-check input { width: 16px; height: 16px; accent-color: var(--ink); }
@@ -160,6 +162,10 @@ body[data-route="contact"] .site-header { color: var(--ink); }
 .lesson-section { border-top: 1px solid rgba(48,54,54,.2); }
 .lesson-section summary { padding: 16px 0; color: var(--ink); font: 400 22.3px/26.1px var(--display); }
 .lesson-section p { margin: 0 0 19px; color: var(--ink); font: 400 16px/24px var(--serif); }
+.lesson-section blockquote { width: 256.2px; max-width: calc(100% - 33.4px); margin: 0 0 19px 33.4px; padding-left: 13px; border-left: 2px solid rgba(212,150,125,.75); color: var(--ink); font: 400 16px/24px var(--serif); }
+.lesson-section blockquote p { width: auto; max-width: none; margin: 0 0 12px; }
+.lesson-section .cms-rich-copy > div { margin: 0 0 19px; font: 400 16px/24px var(--serif); }
+.lesson-section .cms-rich-copy > :last-child { margin-bottom: 0; }
 .lesson-end { display: flex; justify-content: space-between; gap: 20px; align-items: center; margin-top: 25px; }
 .lesson-end label { display: flex; align-items: center; gap: 9px; color: var(--ink); font: 400 14px/24px var(--serif); }
 .lesson-end input { width: 17px; height: 17px; accent-color: var(--ink); }
@@ -186,7 +192,7 @@ main .lesson-page h4 { color: var(--cms-heading-pink, #ffc0cb); }
 @media (max-width: 760px) {
   .site-header { height: 83.8px; padding: 0 6.24%; }
   .wordmark { font-size: 18px; line-height: 24px; }
-    .wordmark { font-size: 16px; line-height: 24px; letter-spacing: -.02em; }
+    .wordmark { font-size: 16px; line-height: 24px; letter-spacing: 0; }
   .site-nav { display: none; }
   .menu-toggle { position: relative; display: flex; width: 44px; height: 44px; flex-direction: column; justify-content: center; gap: 6px; align-items: center; margin-left: auto; padding: 0; border: 0; background: transparent; color: inherit; }
   .menu-toggle span { display: block; width: 18px; height: 1px; background: currentColor; }
@@ -276,7 +282,7 @@ body[data-route] .site-header { background: var(--peach); color: var(--ink); }
   .about-quote { margin-top: 47px !important; }
 }
 @media (max-width: 760px) {
-  .wordmark { font-size: 16px; letter-spacing: -.02em; }
+  .wordmark { font-size: 16px; letter-spacing: 0; }
   .hero { aspect-ratio: .5806; }
   .hero-copy { left: calc(50% - 2.6px); }
   .about-side > img { height: 215.4px; margin-top: 43.1px; }
@@ -294,7 +300,7 @@ body[data-route] .site-header { background: var(--peach); color: var(--ink); }
   .course-intro p { font-size: 20.2px; line-height: 30.1px; }
   .course-head { min-height: 112.2px; }
   .course-unit > summary { min-height: 95.6px; }
-  .course-faq-region { height: 812px; min-height: 812px; overflow: hidden; }
+  .course-faq-region { min-height: 812px; height: auto; overflow: visible; }
   .faq { gap: 0; }
   .faq h1 { margin-bottom: 46.1px; }
   .disclosure summary { min-height: 94px; }

@@ -49,6 +49,15 @@ input:focus, textarea:focus, select:focus, button:focus-visible { outline: 2px s
 .editor-section .primary-button { display: block; }
 .theme-controls { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 9px 12px; }
 .theme-controls label { font-size: 12px; }
+.copy-controls, .graphic-controls { display: grid; gap: 8px; }
+.copy-controls label, .graphic-controls label { margin-top: 4px; font-size: 12px; }
+.section-fields-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 12px; font-weight: 600; }
+.devotional-sections { display: grid; gap: 10px; }
+.devotional-section-field { display: grid; min-width: 0; gap: 8px; margin: 0; padding: 12px; border: 1px solid var(--line); }
+.devotional-section-field legend { padding: 0 5px; color: var(--muted); font-size: 11px; }
+.devotional-section-field label { display: grid; gap: 5px; font-size: 12px; }
+.devotional-section-field .rich-editor { min-height: 100px; }
+.devotional-section-field button { justify-self: start; }
 .theme-controls input[type="color"], .color-control input[type="color"] { width: 42px; min-width: 42px; height: 32px; min-height: 32px; padding: 3px; cursor: pointer; }
 .format-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 8px 0; }
 .format-toolbar button, .format-toolbar select { width: auto; min-width: 34px; min-height: 32px; padding: 3px 7px; border: 1px solid var(--line); background: white; color: var(--ink); cursor: pointer; font-size: 11px; }

@@ -7,6 +7,7 @@ let cmsContent = {
   richTextOverrides: {},
   textStyles: {},
   theme: {},
+  graphics: {},
   devotionals: []
 };
 
@@ -25,18 +26,33 @@ function allLessons() {
     slug: item.slug,
     title: escapeCmsText(item.title),
     titleHtml: sanitizeCmsHtml(item.titleHtml || ""),
+    publishedAt: item.publishedAt || "",
     next: "",
-    introTitle: escapeCmsText(item.title),
+    introTitle: escapeCmsText(item.introTitle || item.title),
     intro: "",
     introHtml: sanitizeCmsHtml(item.intro),
-    sections: [["Devotional", [{ html: sanitizeCmsHtml(item.body) }]]],
-    resourceTitle: "Additional Resources",
+    sections: Array.isArray(item.sections) && item.sections.some(Boolean)
+      ? item.sections.filter(Boolean).map(section => {
+        const [title, paragraphs] = Array.isArray(section) ? section : [section.title, section.paragraphs];
+        return [escapeCmsText(title), Array.isArray(paragraphs) ? paragraphs.map(paragraph => (
+          paragraph && typeof paragraph === "object" && Object.hasOwn(paragraph, "html")
+            ? { html: sanitizeCmsHtml(paragraph.html) }
+            : paragraph
+        )) : []];
+      })
+      : [["Devotional", item.body ? [{ html: sanitizeCmsHtml(item.body) }] : []]],
+    resourceTitle: escapeCmsText(item.resourceTitle || "Additional Resources"),
     resource: item.resource ? [{ html: sanitizeCmsHtml(item.resource) }] : [],
-    image: item.image || images.bible,
+    image: cmsImage(`devotional:${item.slug}`, item.image || images.bible),
+    imageAlt: escapeCmsText(item.imageAlt || ""),
     imageHeight: 450,
     imageOffset: 0
   }));
-  return [...lessons, ...added];
+  const existing = lessons.map(lesson => ({
+    ...lesson,
+    image: cmsImage(`lesson:${lesson.slug}`, lesson.image)
+  }));
+  return [...existing, ...added];
 }
 
 function sanitizeCmsHtml(value) {
@@ -107,6 +123,10 @@ function applyCmsTheme() {
   document.documentElement.style.setProperty("--cms-header-pink", colors.headerPink);
   document.documentElement.style.setProperty("--cms-heading-pink", colors.headingPink);
   document.documentElement.style.setProperty("--cms-body-text-color", colors.bodyTextColor);
+  for (const name of ["hero", "course"]) {
+    const imageUrl = cmsImage(name).replace(/["\\]/g, "\\$&");
+    document.documentElement.style.setProperty(`--cms-${name}-image`, `url("${imageUrl}")`);
+  }
   let bodyColorRule = document.querySelector("#cms-body-color-rule");
   if (theme.bodyTextColor) {
     if (!bodyColorRule) {
@@ -201,6 +221,7 @@ async function loadCmsContent() {
     richTextOverrides: data.richTextOverrides || {},
     textStyles: data.textStyles || {},
     theme: data.theme || {},
+    graphics: data.graphics || {},
     devotionals: Array.isArray(data.devotionals) ? data.devotionals : []
   };
 }
@@ -215,6 +236,20 @@ const images = {
   course: "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790620338988-PR9FRMO87HJ2YZFTA46A/unsplash-image-XqXJJhK-c08.jpg?format=1500w",
   contact: "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790619981837-7AS9A066HHXXG5JZJWRV/unsplash-image-lUjOwG-o2XM.jpg?format=1500w"
 };
+
+function validImageUrl(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function cmsImage(name, fallback = images[name]) {
+  return validImageUrl(cmsContent.graphics[name]) || validImageUrl(fallback);
+}
 
 const lessons = [
   {
@@ -312,16 +347,16 @@ const faqs = [
 function homePage() {
   return `<div class="page-fade home-page">
     <section class="hero page-section" aria-label="Welcome">
-      <div class="hero-copy"><h1>Reject Culture</h1><h1>Follow Christ</h1><p>Join the movement to bring back traditional Femininity.</p><a class="button" href="#/about">Learn More</a></div>
+      <div class="hero-copy"><h1 data-cms-key="home:hero-title-one">Reject Culture</h1><h1 data-cms-key="home:hero-title-two">Follow Christ</h1><p data-cms-key="home:hero-description">Join the movement to bring back traditional Femininity.</p><a class="button" data-cms-key="home:hero-button-text" href="#/about">Learn More</a></div>
     </section>
     <section class="journey page-section">
       <h1 class="journey-marquee" aria-label="Follow the Journey"><span>Follow the Journey ⦁ Follow the Journey</span><span aria-hidden="true">Follow the Journey ⦁ Follow the Journey</span></h1>
       <a class="button" href="#/contact">Connect</a>
       <div class="gallery" aria-label="Follow the Journey">
-        <img src="${images.brunch}" alt="Dessert with ice cream and toppings on a blue plate, drinks on pink table, blurred restaurant background." />
-        <img src="${images.prayer}" alt="Close-up of a person wearing a floral-patterned outfit with their hands clasped together in prayer" />
-        <img src="${images.bible}" alt="a woman at a bible study" />
-        <img src="${images.letter}" alt="A framed letter board with the message, 'JESUS IS WORTH EVERYTHING YOU ARE AFRAID OF LOSING' written on it, placed on a windowsill near a window." />
+        <img src="${escapeCmsText(cmsImage("brunch"))}" alt="Dessert with ice cream and toppings on a blue plate, drinks on pink table, blurred restaurant background." />
+        <img src="${escapeCmsText(cmsImage("prayer"))}" alt="Close-up of a person wearing a floral-patterned outfit with their hands clasped together in prayer" />
+        <img src="${escapeCmsText(cmsImage("bible"))}" alt="a woman at a bible study" />
+        <img src="${escapeCmsText(cmsImage("letter"))}" alt="A framed letter board with the message, 'JESUS IS WORTH EVERYTHING YOU ARE AFRAID OF LOSING' written on it, placed on a windowsill near a window." />
       </div>
     </section>
     <section class="project page-section" id="project">
@@ -346,7 +381,7 @@ function aboutPage() {
   return `<div class="page-fade"><section class="about-page page-section">
     <div class="about-story">
         <div class="about-copy"><h1>For decades, women across the globe have been fed a lie.</h1><h3>The lie that the biblical woman is an oppressed woman.</h3><p>This lie is as old as time; there is nothing new under the sun. The first feminists fought to be equal under the law, not to erase roles altogether. However, over the years, this has changed. The enemy has convinced young women that they must abandon their God-given calling within the home and flip their priorities backwards to appease the feminist hustler culture we see today.</p><p>God created man and woman equal, but <strong><em>different</em></strong>.</p><h3>What can we do?</h3><p>The Women of Virtue Movement is devoted to reassuring women around the globe that they do not need to suppress their feminine nature. By enlisting God’s word on their minds and fostering a community to grow in Christ without fear of condemnation from the modern culture. Together we can bring back the traditional femininity.</p><p class="about-empty"></p><p class="about-quote"><strong>Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen world’s definition of womanhood, and cling tightly to God’s truth.</strong></p></div>
-      <div class="about-side"><img src="${images.about}" alt="a woman wearing a veil in church" />
+      <div class="about-side"><img src="${escapeCmsText(cmsImage("about"))}" alt="a woman wearing a veil in church" />
         <div class="virtues" aria-label="The Way, The Truth, The Life"><details class="virtue"><summary>THE WAY</summary><p>Daily calls to prayer and weekly devotionals.</p><p>The foundation of Women of Virtue</p></details><details class="virtue"><summary>THE TRUTH</summary><p>Breaking down years of unbiblical propaganda that’s been fed to young women.</p><p>Rebuilding women’s true, biblical mindset.</p></details><details class="virtue"><summary>THE LIFE</summary><p>Guidance on living out the Virtues in daily life.</p><p>Both for married and unmarried woman's.</p></details></div>
       </div>
     </section>
@@ -363,7 +398,7 @@ function contactPage() {
         <div class="field full"><label for="contact-message">Message <span>(required)</span></label><textarea id="contact-message" name="message" rows="4" required></textarea></div>
         <button class="button" type="submit">SEND</button><p class="form-status" aria-live="polite"></p>
       </form>
-    </div><img class="contact-photo" src="${images.contact}" alt="A woman wearing a white hoodie and gold jewelry" />
+    </div><img class="contact-photo" src="${escapeCmsText(cmsImage("contact"))}" alt="A woman wearing a white hoodie and gold jewelry" />
   </section></div>`;
 }
 
@@ -381,7 +416,7 @@ function coursePage() {
     <section class="course-list-region page-section"><div class="course-page">
       <div class="course-intro"><h1>Devotional Courses</h1><p>Weekly Devotionals for Women of Virtue</p><p>Work through these continual courses on the various aspects of the Virtus woman.</p></div>
       <div class="course-head"><div class="progress-wrap"><div class="progress-track" role="progressbar" aria-label="Course Progress" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><span class="progress-count">${percent}%</span><span class="progress-label">Progress</span></div></div>
-      <details class="course-unit" open><summary><strong>Firm Foundations</strong><span>${availableLessons.length} Lessons</span></summary><ul class="lesson-list">${availableLessons.map(lesson => `<li class="lesson-row"><a href="#/devotionals/${lesson.slug}">${lesson.titleHtml || lesson.title}</a><label class="lesson-check"><input type="checkbox" data-lesson="${lesson.slug}" ${completed[lesson.slug] ? "checked" : ""} /></label></li>`).join("")}</ul></details>
+      <details class="course-unit" open><summary><strong>Firm Foundations</strong><span>${availableLessons.length} Lessons</span></summary><ul class="lesson-list">${availableLessons.map(lesson => `<li class="lesson-row"><div class="lesson-row-copy"><a href="#/devotionals/${lesson.slug}">${lesson.titleHtml || lesson.title}</a>${lesson.publishedAt ? `<span class="lesson-date">${formatPublishedDate(lesson.publishedAt)}</span>` : ""}</div><label class="lesson-check"><input type="checkbox" data-lesson="${lesson.slug}" ${completed[lesson.slug] ? "checked" : ""} /></label></li>`).join("")}</ul></details>
     </div></section>
     <section class="course-faq-region page-section"><div class="faq"><h1>Questions? We've got answers.</h1>${faqs.map(([question, answer], index) => `<details class="disclosure" ${index === 0 ? "open" : ""}><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div></section>
   </div>`;
@@ -392,11 +427,11 @@ function lessonPage(lesson) {
   const nextLink = lesson.next ? `#/devotionals/${lesson.next}` : "#/devotionals";
   return `<div class="page-fade"><article class="lesson-page">
     <nav class="lesson-crumb" aria-label="Course navigation"><a href="#/devotionals">Devotional Courses</a><a href="${nextLink}">Complete &amp; Continue</a></nav>
-    <header class="lesson-title"><p class="eyebrow">Firm Foundations · ${allLessons().length} Lessons</p><h1>${lesson.titleHtml || lesson.title}</h1></header>
+    <header class="lesson-title"><p class="eyebrow">Firm Foundations · ${allLessons().length} Lessons${lesson.publishedAt ? ` · ${formatPublishedDate(lesson.publishedAt)}` : ""}</p><h1>${lesson.titleHtml || lesson.title}</h1></header>
     <div class="lesson-grid" data-lesson="${lesson.slug}" style="--lesson-image-offset: ${lesson.imageOffset || 0}px"><div class="lesson-copy">
-      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${lesson.intro}</p>` : ""}${lesson.sections.map(([title, paragraphs]) => `<details class="lesson-section"><summary>${title}</summary>${paragraphs.map(renderLessonParagraph).join("")}</details>`).join("")}</section>
+      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${escapeCmsText(lesson.intro)}</p>` : ""}${lesson.sections.map(([title, paragraphs]) => `<details class="lesson-section"><summary>${title}</summary>${paragraphs.map(renderLessonParagraph).join("")}</details>`).join("")}</section>
       <section class="lesson-content"><a class="download-link" href="">Download PDF</a><details class="lesson-section"><summary>${lesson.resourceTitle}</summary>${lesson.resource.map(renderLessonParagraph).join("")}</details></section>
-    </div><img class="lesson-photo" src="${lesson.image}" alt="" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
+    </div><img class="lesson-photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
     <div class="lesson-end"><label><input type="checkbox" data-lesson="${lesson.slug}" ${isComplete ? "checked" : ""} /> Mark lesson complete</label><a class="button" href="${nextLink}">Complete &amp; Continue</a></div>
   </article></div>`;
 }
@@ -405,7 +440,13 @@ function renderLessonParagraph(paragraph) {
   if (paragraph && typeof paragraph === "object" && Object.hasOwn(paragraph, "html")) {
     return `<div class="cms-rich-copy">${sanitizeCmsHtml(paragraph.html)}</div>`;
   }
-  return `<p>${String(paragraph)}</p>`;
+  return `<p>${escapeCmsText(paragraph)}</p>`;
+}
+
+function formatPublishedDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return "";
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(date);
 }
 
 function render() {

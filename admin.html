@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
     <title>Women of Virtue · Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="admin.css" />
     <script src="admin.js" defer></script>
   </head>
@@ -58,6 +61,35 @@
             <button class="primary-button" id="save-theme" type="button">Save colors</button>
             <p class="form-message" id="theme-message" aria-live="polite"></p>
           </section>
+          <section class="editor-section" aria-labelledby="hero-copy-title">
+            <h2 id="hero-copy-title">Homepage hero copy</h2>
+            <div class="copy-controls">
+              <label for="hero-title-one">First headline</label><input id="hero-title-one" type="text" />
+              <label for="hero-title-two">Second headline</label><input id="hero-title-two" type="text" />
+              <label for="hero-description">Supporting copy</label><textarea id="hero-description" rows="3"></textarea>
+              <label for="hero-button-text">Button text</label><input id="hero-button-text" type="text" />
+            </div>
+            <button class="primary-button" id="save-hero-copy" type="button">Save homepage copy</button>
+            <p class="form-message" id="hero-copy-message" aria-live="polite"></p>
+          </section>
+          <section class="editor-section" aria-labelledby="graphics-title">
+            <h2 id="graphics-title">Site images</h2>
+            <p>Use a public HTTPS image URL. Updated URLs are included in the content export.</p>
+            <div class="graphic-controls">
+              <label for="graphic-hero">Homepage hero</label><input id="graphic-hero" type="url" data-graphic="hero" placeholder="https://" />
+              <label for="graphic-course">Devotional banner</label><input id="graphic-course" type="url" data-graphic="course" placeholder="https://" />
+              <label for="graphic-brunch">Homepage gallery: image 1</label><input id="graphic-brunch" type="url" data-graphic="brunch" placeholder="https://" />
+              <label for="graphic-prayer">Homepage gallery: image 2</label><input id="graphic-prayer" type="url" data-graphic="prayer" placeholder="https://" />
+              <label for="graphic-bible">Homepage gallery: image 3</label><input id="graphic-bible" type="url" data-graphic="bible" placeholder="https://" />
+              <label for="graphic-letter">Homepage gallery: image 4</label><input id="graphic-letter" type="url" data-graphic="letter" placeholder="https://" />
+              <label for="graphic-about">About page image</label><input id="graphic-about" type="url" data-graphic="about" placeholder="https://" />
+              <label for="graphic-contact">Contact page image</label><input id="graphic-contact" type="url" data-graphic="contact" placeholder="https://" />
+              <label for="graphic-defining">Defining Femininity lesson</label><input id="graphic-defining" type="url" data-graphic="lesson:defining-femininity" placeholder="https://" />
+              <label for="graphic-prayer-life">Prayer Life lesson</label><input id="graphic-prayer-life" type="url" data-graphic="lesson:prayer-life-and-church-community" placeholder="https://" />
+            </div>
+            <button class="primary-button" id="save-graphics" type="button">Save site images</button>
+            <p class="form-message" id="graphics-message" aria-live="polite"></p>
+          </section>
           <section class="editor-section" aria-labelledby="text-editor-title">
             <h2 id="text-editor-title">Page text</h2>
             <p class="selected-location" id="selected-location">Click text to edit. Alt-click links and disclosures to select their labels.</p>
@@ -69,7 +101,7 @@
               <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
               <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
               <button type="button" data-command="underline" aria-label="Underline"><u>U</u></button>
-              <select data-format-block aria-label="Block style"><option value="P">Paragraph</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="H4">Heading 4</option></select>
+              <select data-format-block aria-label="Block style"><option value="P">Paragraph</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="H4">Heading 4</option><option value="BLOCKQUOTE">Blockquote</option></select>
               <button type="button" data-command="justifyLeft" aria-label="Align left">Left</button>
               <button type="button" data-command="justifyCenter" aria-label="Align center">Center</button>
               <button type="button" data-command="justifyRight" aria-label="Align right">Right</button>
@@ -84,14 +116,37 @@
               <label for="devotional-name">Title</label>
               <div id="devotional-name" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="title"></div>
               <input id="devotional-title-value" name="title" type="hidden" required />
+              <label for="devotional-date">Publication date</label>
+              <input id="devotional-date" name="publishedAt" type="date" required />
+              <label for="devotional-intro-title">Introduction subheading</label>
+              <input id="devotional-intro-title" name="introTitle" type="text" />
               <label for="devotional-intro">Introduction</label>
               <div id="devotional-intro" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="intro"></div>
-              <label for="devotional-body">Devotional text</label>
-              <div id="devotional-body" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" required></div>
+              <div class="section-fields-heading"><span>Devotional sections</span><button class="quiet-button" id="add-devotional-section" type="button">Add section</button></div>
+              <div class="devotional-sections" id="devotional-sections">
+                <fieldset class="devotional-section-field">
+                  <legend>Section 1</legend>
+                  <label>Section heading<input data-section-title value="Devotional" required /></label>
+                  <label>Section text<div id="devotional-body" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-section-body></div></label>
+                  <button class="quiet-button" type="button" data-remove-section disabled>Remove section</button>
+                </fieldset>
+              </div>
+              <template id="devotional-section-template">
+                <fieldset class="devotional-section-field">
+                  <legend>Section</legend>
+                  <label>Section heading<input data-section-title required /></label>
+                  <label>Section text<div class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-section-body></div></label>
+                  <button class="quiet-button" type="button" data-remove-section>Remove section</button>
+                </fieldset>
+              </template>
+              <label for="devotional-resource-title">Resources subheading</label>
+              <input id="devotional-resource-title" name="resourceTitle" type="text" value="Additional Resources" />
               <label for="devotional-resource">Additional resources</label>
               <div id="devotional-resource" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="resource"></div>
               <label for="devotional-image">Photograph URL (HTTPS)</label>
               <input id="devotional-image" name="image" type="url" placeholder="https://" />
+              <label for="devotional-image-alt">Photograph description</label>
+              <input id="devotional-image-alt" name="imageAlt" type="text" />
               <button class="primary-button" type="submit">Add devotional</button>
               <p class="form-message" id="devotional-message" aria-live="polite"></p>
             </form>

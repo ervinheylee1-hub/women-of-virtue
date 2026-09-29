@@ -24,7 +24,9 @@ Restart PowerShell and start the server. The application does not change or bypa
 
 On first visit, create an administrator password of at least 12 characters. Passwords are stored as salted PBKDF2-SHA256 hashes. The server binds only to `127.0.0.1`, uses HttpOnly/SameSite session cookies and CSRF tokens, and rate-limits failed sign-ins.
 
-Select page text in the preview to edit it. The formatting toolbar supports serif, sans-serif, and script fonts; font size and color; bold, italic, underline; heading levels; and text alignment. Theme controls update the header pink, devotional-heading pink, and body text color. Added devotionals appear in the course list and have their own lesson page.
+Select page text in the preview to edit it. The formatting toolbar supports serif, sans-serif, and script fonts; font size and color; bold, italic, underline; paragraph and heading styles; blockquotes; and text alignment. Theme controls update the header pink, devotional-heading pink, and body text color. Homepage hero headlines, supporting copy, and button text have direct dashboard fields. Site image fields accept public HTTPS URLs for the hero, course banner, galleries, page photography, and built-in lesson images; these overrides are included in downloaded `content.json` files.
+
+New devotionals support a publication date, title and introduction subheading, multiple named rich-text sections, resources, and HTTPS image URLs with alt text. Section text keeps paragraphs, emphasis, headings, lists, and blockquotes and uses the site lesson typography. You can also edit page subheadings and button labels by selecting them in the preview.
 
 With the local PowerShell server running, content persists in `cms-data/content.json`; the password hash is kept separately in `cms-data/admin.json`. Both files are ignored by Git. The CMS APIs are available only through this localhost server.
 

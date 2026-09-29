@@ -12,6 +12,12 @@ const devotionalList = document.querySelector("#devotional-list");
 const storageModeLabel = document.querySelector("#storage-mode");
 const richEditors = [...document.querySelectorAll(".rich-editor")];
 const browserContentKey = "women-of-virtue-content-v1";
+const heroCopyFields = [
+  ["hero-title-one", "home:hero-title-one", "Reject Culture"],
+  ["hero-title-two", "home:hero-title-two", "Follow Christ"],
+  ["hero-description", "home:hero-description", "Join the movement to bring back traditional Femininity."],
+  ["hero-button-text", "home:hero-button-text", "Learn More"]
+];
 
 let csrfToken = "";
 let selectedKey = "";
@@ -35,12 +41,26 @@ function normalizeContent(data = {}) {
     richTextOverrides,
     textStyles: data.textStyles || {},
     theme: data.theme || {},
+    graphics: data.graphics && typeof data.graphics === "object" ? data.graphics : {},
     devotionals: Array.isArray(data.devotionals) ? data.devotionals.map(item => ({
       ...item,
       title: normalizeGodCapitalization(item.title),
+      titleHtml: sanitizeRichHtml(item.titleHtml),
+      publishedAt: /^\d{4}-\d{2}-\d{2}$/.test(item.publishedAt || "") ? item.publishedAt : "",
+      introTitle: normalizeGodCapitalization(item.introTitle || item.title),
       intro: sanitizeRichHtml(item.intro),
       body: sanitizeRichHtml(item.body),
-      resource: sanitizeRichHtml(item.resource)
+      sections: Array.isArray(item.sections) ? item.sections.filter(Boolean).map(section => {
+        const [title, paragraphs] = Array.isArray(section) ? section : [section.title, section.paragraphs];
+        return [normalizeGodCapitalization(title), Array.isArray(paragraphs) ? paragraphs.map(paragraph => (
+          paragraph && typeof paragraph === "object" && Object.hasOwn(paragraph, "html")
+            ? { ...paragraph, html: sanitizeRichHtml(paragraph.html) }
+            : normalizeGodCapitalization(paragraph)
+        )) : []];
+      }) : [],
+      resourceTitle: normalizeGodCapitalization(item.resourceTitle || "Additional Resources"),
+      resource: sanitizeRichHtml(item.resource),
+      imageAlt: normalizeGodCapitalization(item.imageAlt || "")
     })) : []
   };
 }
@@ -95,6 +115,12 @@ function setPreviewThemeInputs() {
   document.querySelector("#header-color").value = content.theme.headerPink || "#d4967d";
   document.querySelector("#heading-color").value = content.theme.headingPink || "#ffc0cb";
   document.querySelector("#body-color").value = content.theme.bodyTextColor || "#303636";
+  heroCopyFields.forEach(([id, key, fallback]) => {
+    document.querySelector(`#${id}`).value = Object.hasOwn(content.copyOverrides, key) ? content.copyOverrides[key] : fallback;
+  });
+  document.querySelectorAll("[data-graphic]").forEach(input => {
+    input.value = content.graphics[input.dataset.graphic] || "";
+  });
 }
 
 async function api(path, options = {}) {
@@ -187,8 +213,38 @@ function renderDevotionals() {
     devotionalList.innerHTML = "<li class=\"empty-list\">No added devotionals</li>";
     return;
   }
-  devotionalList.innerHTML = content.devotionals.map((item, index) => `<li><span>${escapeHtml(item.title)}</span><button type="button" data-remove="${index}" aria-label="Remove ${escapeHtml(item.title)}">Remove</button></li>`).join("");
+  devotionalList.innerHTML = content.devotionals.map((item, index) => `<li><span>${escapeHtml(item.title)}${item.publishedAt ? `<small>${escapeHtml(item.publishedAt)}</small>` : ""}</span><button type="button" data-remove="${index}" aria-label="Remove ${escapeHtml(item.title)}">Remove</button></li>`).join("");
 }
+
+function todayDate() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+document.querySelector("#devotional-date").value = todayDate();
+
+const devotionalSections = document.querySelector("#devotional-sections");
+const devotionalSectionTemplate = document.querySelector("#devotional-section-template");
+
+function updateDevotionalSectionLabels() {
+  const fields = [...devotionalSections.querySelectorAll(".devotional-section-field")];
+  fields.forEach((field, index) => {
+    field.querySelector("legend").textContent = `Section ${index + 1}`;
+    field.querySelector("[data-remove-section]").disabled = fields.length === 1;
+  });
+}
+
+document.querySelector("#add-devotional-section").addEventListener("click", () => {
+  devotionalSections.append(devotionalSectionTemplate.content.cloneNode(true));
+  updateDevotionalSectionLabels();
+});
+
+devotionalSections.addEventListener("click", event => {
+  const removeButton = event.target.closest("[data-remove-section]");
+  if (!removeButton || devotionalSections.querySelectorAll(".devotional-section-field").length === 1) return;
+  removeButton.closest(".devotional-section-field").remove();
+  updateDevotionalSectionLabels();
+});
 
 function bindPreview() {
   const documentInFrame = preview.contentDocument;
@@ -357,6 +413,48 @@ document.querySelector("#save-theme").addEventListener("click", async () => {
   }
 });
 
+document.querySelector("#save-hero-copy").addEventListener("click", async () => {
+  heroCopyFields.forEach(([id, key]) => {
+    content.copyOverrides[key] = normalizeGodCapitalization(document.querySelector(`#${id}`).value.trim());
+    delete content.richTextOverrides[key];
+  });
+  try {
+    await saveContent();
+    preview.contentWindow.location.reload();
+    showMessage(document.querySelector("#hero-copy-message"), "Homepage copy saved", false);
+  } catch (error) {
+    showMessage(document.querySelector("#hero-copy-message"), error.message);
+  }
+});
+
+document.querySelector("#save-graphics").addEventListener("click", async () => {
+  const graphics = { ...content.graphics };
+  for (const input of document.querySelectorAll("[data-graphic]")) {
+    const value = input.value.trim();
+    if (!value) {
+      delete graphics[input.dataset.graphic];
+      continue;
+    }
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:") throw new Error("Use an HTTPS image URL.");
+      graphics[input.dataset.graphic] = url.href;
+    } catch {
+      showMessage(document.querySelector("#graphics-message"), `Enter a valid HTTPS URL for ${input.labels[0].textContent}.`);
+      input.focus();
+      return;
+    }
+  }
+  content.graphics = graphics;
+  try {
+    await saveContent();
+    preview.contentWindow.location.reload();
+    showMessage(document.querySelector("#graphics-message"), "Site images saved", false);
+  } catch (error) {
+    showMessage(document.querySelector("#graphics-message"), error.message);
+  }
+});
+
 document.querySelector("#export-content").addEventListener("click", downloadContent);
 document.querySelector("#import-content").addEventListener("click", () => document.querySelector("#import-file").click());
 document.querySelector("#import-file").addEventListener("change", async event => {
@@ -384,19 +482,45 @@ devotionalForm.addEventListener("submit", async event => {
   document.querySelector("#devotional-title-value").value = title;
   const titleHtml = sanitizeRichHtml(titleEditor.innerHTML);
   const form = new FormData(devotionalForm);
+  const sections = [...devotionalSections.querySelectorAll(".devotional-section-field")].map(field => {
+    const sectionTitle = normalizeGodCapitalization(field.querySelector("[data-section-title]").value.trim());
+    const html = sanitizeRichHtml(field.querySelector("[data-section-body]").innerHTML);
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    return [sectionTitle, template.content.textContent.trim() ? [{ html }] : []];
+  });
+  if (sections.some(([sectionTitle]) => !sectionTitle) || !sections.some(([, paragraphs]) => paragraphs.length)) {
+    showMessage(devotionalMessage, "Add a heading and text to at least one devotional section.");
+    devotionalSections.querySelector("[data-section-title]").focus();
+    return;
+  }
+  const slugBase = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "devotional";
+  const usedSlugs = new Set(["defining-femininity", "prayer-life-and-church-community", ...content.devotionals.map(item => item.slug)]);
+  let slug = slugBase;
+  let suffix = 2;
+  while (usedSlugs.has(slug)) slug = `${slugBase}-${suffix++}`;
   content.devotionals.push({
+    slug,
     title,
     titleHtml,
+    publishedAt: form.get("publishedAt"),
+    introTitle: normalizeGodCapitalization(form.get("introTitle").trim()) || title,
     intro: sanitizeRichHtml(document.querySelector("#devotional-intro").innerHTML),
-    body: sanitizeRichHtml(document.querySelector("#devotional-body").innerHTML),
+    sections,
+    resourceTitle: normalizeGodCapitalization(form.get("resourceTitle").trim()) || "Additional Resources",
     resource: sanitizeRichHtml(document.querySelector("#devotional-resource").innerHTML),
-    image: form.get("image").trim()
+    image: form.get("image").trim(),
+    imageAlt: normalizeGodCapitalization(form.get("imageAlt").trim())
   });
   try {
     await saveContent();
     renderDevotionals();
     devotionalForm.reset();
     devotionalForm.querySelectorAll(".devotional-rich").forEach(editor => { editor.innerHTML = ""; });
+    devotionalSections.querySelectorAll(".devotional-section-field:not(:first-child)").forEach(field => field.remove());
+    devotionalSections.querySelector("[data-section-title]").value = "Devotional";
+    document.querySelector("#devotional-date").value = todayDate();
+    updateDevotionalSectionLabels();
     showMessage(devotionalMessage, "Devotional added", false);
     preview.contentWindow.location.hash = "#/devotionals";
     preview.contentWindow.location.reload();

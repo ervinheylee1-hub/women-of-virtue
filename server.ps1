@@ -71,6 +71,7 @@ function Read-ContentStore {
       richTextOverrides = @{}
       textStyles = @{}
       theme = @{}
+      graphics = @{}
       devotionals = @()
     }
   }
@@ -99,18 +100,31 @@ function Read-ContentStore {
         $theme[$property.Name] = [string]$property.Value
       }
     }
+    $graphics = @{}
+    if ($null -ne $document.graphics) {
+      foreach ($property in $document.graphics.PSObject.Properties) {
+        $graphics[$property.Name] = [string]$property.Value
+      }
+    }
   $devotionals = @()
   foreach ($item in @($document.devotionals)) {
     if ($null -ne $item) {
+      $sections = @()
+      if ($null -ne $item.sections) { $sections = @($item.sections) }
       $devotionals += [pscustomobject]@{
         id = [string]$item.id
         slug = [string]$item.slug
         title = [string]$item.title
         titleHtml = [string]$item.titleHtml
+        publishedAt = [string]$item.publishedAt
+        introTitle = [string]$item.introTitle
         intro = [string]$item.intro
         body = [string]$item.body
+        sections = $sections
+        resourceTitle = [string]$item.resourceTitle
         resource = [string]$item.resource
         image = [string]$item.image
+        imageAlt = [string]$item.imageAlt
       }
     }
   }
@@ -119,6 +133,7 @@ function Read-ContentStore {
     richTextOverrides = $richText
     textStyles = $textStyles
     theme = $theme
+    graphics = $graphics
     devotionals = $devotionals
   }
 }
@@ -232,39 +247,87 @@ function Normalize-Devotional {
   if ($title.Length -lt 1 -or $title.Length -gt 140) {
     throw "Devotional titles must be between 1 and 140 characters."
   }
-  $slug = $title.ToLowerInvariant() -replace "[^a-z0-9]+", "-"
-  $slug = $slug.Trim("-")
+  $slug = [string]$Item.slug
+  if ([string]::IsNullOrWhiteSpace($slug)) {
+    $slug = $title.ToLowerInvariant() -replace "[^a-z0-9]+", "-"
+    $slug = $slug.Trim("-")
+  }
+  $slug = $slug.ToLowerInvariant()
   if ([string]::IsNullOrWhiteSpace($slug)) {
     throw "The title must include letters or numbers."
+  }
+  if ($slug -notmatch "^[a-z0-9]+(?:-[a-z0-9]+)*$") {
+    throw "Devotional slugs may contain lowercase letters, numbers, and hyphens."
   }
   if ($ExistingSlugs -contains $slug) {
     throw "A devotional with this title already exists."
   }
+  $publishedAt = [string]$Item.publishedAt
+  if (-not [string]::IsNullOrWhiteSpace($publishedAt)) {
+    try { [void][DateTime]::ParseExact($publishedAt, "yyyy-MM-dd", [Globalization.CultureInfo]::InvariantCulture) }
+    catch { throw "Publication dates must use YYYY-MM-DD." }
+  }
+  $introTitle = (Normalize-GodCapitalization ([string]$Item.introTitle)).Trim()
   $intro = (Normalize-GodCapitalization ([string]$Item.intro)).Trim()
   $body = (Normalize-GodCapitalization ([string]$Item.body)).Trim()
   $resource = (Normalize-GodCapitalization ([string]$Item.resource)).Trim()
+  $resourceTitle = (Normalize-GodCapitalization ([string]$Item.resourceTitle)).Trim()
   $image = ([string]$Item.image).Trim()
-  if ($titleHtml.Length -gt 5000 -or $intro.Length -gt 5000 -or $body.Length -gt 20000 -or $resource.Length -gt 20000) {
+  $imageAlt = (Normalize-GodCapitalization ([string]$Item.imageAlt)).Trim()
+  $sections = @()
+  foreach ($section in @($Item.sections)) {
+    if ($null -eq $section) { continue }
+    if ($section -is [array]) {
+      $sectionTitle = (Normalize-GodCapitalization ([string]$section[0])).Trim()
+      $paragraphSource = @($section[1])
+    } else {
+      $sectionTitle = (Normalize-GodCapitalization ([string]$section.title)).Trim()
+      $paragraphSource = @($section.paragraphs)
+    }
+    if ($sectionTitle.Length -lt 1 -or $sectionTitle.Length -gt 140) {
+      throw "Devotional section headings must be between 1 and 140 characters."
+    }
+    $paragraphs = @()
+    foreach ($paragraph in $paragraphSource) {
+      if ($null -eq $paragraph) { continue }
+      if ($paragraph -is [string]) {
+        $paragraphs += Normalize-GodCapitalization $paragraph
+      } else {
+        $paragraphs += [pscustomobject]@{ html = Normalize-GodCapitalization ([string]$paragraph.html) }
+      }
+    }
+    $sections += [pscustomobject]@{ title = $sectionTitle; paragraphs = $paragraphs }
+  }
+  if ($sections.Count -gt 30) { throw "Devotionals may contain no more than 30 sections." }
+  if ($titleHtml.Length -gt 5000 -or $introTitle.Length -gt 500 -or $intro.Length -gt 5000 -or $body.Length -gt 20000 -or $resourceTitle.Length -gt 140 -or $resource.Length -gt 20000 -or $imageAlt.Length -gt 500) {
     throw "Devotional content exceeds the allowed length."
+  }
+  if ((ConvertTo-Json -InputObject $sections -Depth 30 -Compress).Length -gt 20000) {
+    throw "Devotional sections exceed the 20,000 character limit."
   }
   if ($image.Length -gt 2048) {
     throw "The image URL is too long."
   }
   if (-not [string]::IsNullOrWhiteSpace($image)) {
-      $imageUri = $null
+    $imageUri = $null
     if (-not [Uri]::TryCreate($image, [UriKind]::Absolute, [ref]$imageUri) -or $imageUri.Scheme -ne "https") {
       throw "Image URLs must use HTTPS."
     }
   }
   return [pscustomobject]@{
-    id = [guid]::NewGuid().ToString("N")
+    id = if ([string]::IsNullOrWhiteSpace([string]$Item.id)) { [guid]::NewGuid().ToString("N") } else { [string]$Item.id }
     slug = $slug
     title = $title
     titleHtml = $titleHtml
+    publishedAt = $publishedAt
+    introTitle = if ($introTitle) { $introTitle } else { $title }
     intro = $intro
     body = $body
+    sections = $sections
+    resourceTitle = if ($resourceTitle) { $resourceTitle } else { "Additional Resources" }
     resource = $resource
     image = $image
+    imageAlt = $imageAlt
   }
 }
 
@@ -316,6 +379,21 @@ function Save-ContentRequest {
     $value = [string]$Body.theme.$name
     if ($value -match "^#[0-9a-fA-F]{6}$") { $theme[$name] = $value }
   }
+  $graphics = @{}
+  $allowedGraphics = @("hero", "course", "brunch", "prayer", "bible", "letter", "about", "contact", "lesson:defining-femininity", "lesson:prayer-life-and-church-community")
+  if ($null -ne $Body.graphics) {
+    foreach ($property in $Body.graphics.PSObject.Properties) {
+      if ($property.Name -notin $allowedGraphics) { throw "The image key '$($property.Name)' is not supported." }
+      $value = ([string]$property.Value).Trim()
+      if ([string]::IsNullOrWhiteSpace($value)) { continue }
+      if ($value.Length -gt 2048) { throw "Image URLs must be 2,048 characters or fewer." }
+      $imageUri = $null
+      if (-not [Uri]::TryCreate($value, [UriKind]::Absolute, [ref]$imageUri) -or $imageUri.Scheme -ne "https") {
+        throw "Image URLs must use HTTPS."
+      }
+      $graphics[$property.Name] = $imageUri.AbsoluteUri
+    }
+  }
   $items = @()
   $slugs = @("defining-femininity", "prayer-life-and-church-community")
   foreach ($item in @($Body.devotionals)) {
@@ -328,6 +406,7 @@ function Save-ContentRequest {
     richTextOverrides = $richText
     textStyles = $textStyles
     theme = $theme
+    graphics = $graphics
     devotionals = $items
   }
 }

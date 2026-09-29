@@ -43,7 +43,7 @@ h3 { font-size: clamp(23px, 2vw, 30px); }
 .button:hover { border-color: var(--accent); background: var(--accent); color: var(--white); }
 .button svg { width: 14px; height: 14px; }
 .hero { position: relative; display: flex; min-height: min(740px, calc(100svh - 82px)); align-items: center; overflow: hidden; color: var(--white); background: var(--forest-deep); isolation: isolate; }
-.hero::before { position: absolute; z-index: -2; inset: 0; background: url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790629802685-Z59JDUC9LV7BDA5CMUSW/unsplash-image-WpFZu1CGBNc.jpg?format=1500w") center 48% / cover; content: ""; animation: image-arrive .9s ease-out both; }
+.hero::before { position: absolute; z-index: -2; inset: 0; background: var(--cms-hero-image, url("https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790629802685-Z59JDUC9LV7BDA5CMUSW/unsplash-image-WpFZu1CGBNc.jpg?format=1500w")) center 48% / cover; content: ""; animation: image-arrive .9s ease-out both; }
 .hero::after { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(20, 27, 24, .83), rgba(20, 27, 24, .48) 47%, rgba(20, 27, 24, .1)), linear-gradient(0deg, rgba(20, 27, 24, .27), transparent 50%); content: ""; }
 .hero-copy { width: min(1050px, 88%); margin: 0 auto; padding: 90px 0 108px; animation: rise-in .7s .08s both; }
 .hero .eyebrow { color: #e7b19b; }
