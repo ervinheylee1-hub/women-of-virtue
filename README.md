@@ -32,4 +32,4 @@ Deploy the files in this folder, including `content.json`, to GitHub Pages. Open
 
 GitHub Pages is static hosting: browser-mode editing has no server-side authentication, and localStorage is per browser/device. Do not store secrets or rely on it for private admin access. Use the localhost PowerShell mode when authenticated server-side editing is required.
 
-Opening `index.html` directly keeps the built-in site content. Browsers generally restrict local-file fetches, so use GitHub Pages or the local server for JSON persistence and the preview-based editor.
+Opening `index.html` directly keeps the built-in site content. Browsers generally restrict local-file fetches, so use GitHub Pages or the local server for JSON persistence and the preview-based editor.git --version
