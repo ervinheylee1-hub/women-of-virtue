@@ -26,6 +26,7 @@ let activeRichEditor = copyField;
 let draggedLayoutElement = null;
 let storageMode = "server";
 let adminDragState = null;
+let livePositionState = {};
 let content = { copyOverrides: {}, richTextOverrides: {}, textStyles: {}, theme: {}, graphics: {}, layout: {}, positionOverrides: {}, devotionals: [] };
 
 function normalizeGodCapitalization(value) {
@@ -131,7 +132,7 @@ function getAdminElementId(element) {
 }
 
 function getPositionOverride(id) {
-  const override = content.positionOverrides[id];
+  const override = livePositionState[id] ?? content.positionOverrides[id];
   if (!override || typeof override !== "object") return { x: 0, y: 0, width: null, height: null };
   return {
     x: Number.isFinite(Number(override.x)) ? Number(override.x) : 0,
@@ -141,16 +142,19 @@ function getPositionOverride(id) {
   };
 }
 
-function syncPositionOverride(element, override) {
+function syncPositionOverride(element, override, options = {}) {
   if (!element) return;
-  if (override.x || override.y) element.style.transform = `translate(${override.x}px, ${override.y}px)`;
-  else element.style.transform = "";
-  if (override.width !== null) element.style.width = `${override.width}px`;
-  else element.style.width = "";
-  if (override.height !== null) element.style.height = `${override.height}px`;
-  else element.style.height = "";
-  element.style.position = "relative";
-  element.style.maxWidth = "none";
+  const { updateSize = false } = options;
+  const translation = (Number.isFinite(override.x) || Number.isFinite(override.y)) && (override.x || override.y)
+    ? `translate(${Number(override.x || 0)}px, ${Number(override.y || 0)}px)`
+    : "";
+  element.style.transform = translation;
+  if (updateSize) {
+    if (override.width !== null) element.style.width = `${override.width}px`;
+    else element.style.width = "";
+    if (override.height !== null) element.style.height = `${override.height}px`;
+    else element.style.height = "";
+  }
 }
 
 function applyPreviewLayoutAdjustments(documentInFrame) {
@@ -159,7 +163,7 @@ function applyPreviewLayoutAdjustments(documentInFrame) {
     const id = getAdminElementId(element);
     if (!id) return;
     const override = getPositionOverride(id);
-    syncPositionOverride(element, override);
+    syncPositionOverride(element, override, { updateSize: false });
     element.classList.add("admin-layout-editable");
     if (!element.querySelector(".admin-layout-handle")) {
       const handle = documentInFrame.createElement("span");
@@ -183,8 +187,9 @@ async function runLayoutSelfCheck() {
   const width = Math.max(180, candidate.getBoundingClientRect().width || 180) + 26;
   const height = Math.max(80, candidate.getBoundingClientRect().height || 80) + 20;
   const next = { x: (original.x || 0) + 18, y: (original.y || 0) + 12, width, height };
+  livePositionState[id] = next;
   content.positionOverrides[id] = next;
-  syncPositionOverride(candidate, next);
+  syncPositionOverride(candidate, next, { updateSize: true });
   try {
     await saveContent();
     statusLabel.textContent = "Layout self-check passed: drag and resize state persisted.";
@@ -416,8 +421,9 @@ function bindPreview() {
       width: mode === "resize" ? Math.max(80, (initial.width ?? element.getBoundingClientRect().width) + deltaX) : initial.width,
       height: mode === "resize" ? Math.max(40, (initial.height ?? element.getBoundingClientRect().height) + deltaY) : initial.height
     };
+    livePositionState[id] = next;
     content.positionOverrides[id] = next;
-    syncPositionOverride(element, next);
+    syncPositionOverride(element, next, { updateSize: mode === "resize" });
   }, true);
   documentInFrame.addEventListener("pointerup", async () => {
     if (!adminDragState) return;
