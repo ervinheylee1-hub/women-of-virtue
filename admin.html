@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Women of Virtue · Admin</title>
+    <link rel="stylesheet" href="admin.css" />
+    <script src="admin.js" defer></script>
+  </head>
+  <body>
+    <header class="admin-header">
+      <a href="./index.html" class="admin-brand">Women of Virtue <span>Admin</span></a>
+      <span class="connection-status" id="connection-status">Checking access…</span>
+    </header>
+    <main>
+      <section class="access-panel" id="setup-panel" hidden>
+        <p class="eyebrow">First-time setup</p>
+        <h1>Create administrator password</h1>
+        <form id="setup-form" class="access-form">
+          <label for="setup-password">Password</label>
+          <input id="setup-password" name="password" type="password" minlength="12" autocomplete="new-password" required />
+          <label for="setup-confirm">Confirm password</label>
+          <input id="setup-confirm" name="confirm" type="password" minlength="12" autocomplete="new-password" required />
+          <button class="primary-button" type="submit">Create admin account</button>
+          <p class="form-message" id="setup-message" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="access-panel" id="login-panel" hidden>
+        <p class="eyebrow">Administrator access</p>
+        <h1>Sign in</h1>
+        <form id="login-form" class="access-form">
+          <label for="login-password">Password</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required />
+          <button class="primary-button" type="submit">Sign in</button>
+          <p class="form-message" id="login-message" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="dashboard" id="dashboard" hidden>
+        <aside class="editor-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">Site content</p><h1>Content editor</h1></div>
+            <button class="quiet-button" id="logout-button" type="button">Sign out</button>
+          </div>
+          <div class="storage-tools">
+            <p id="storage-mode">Changes save to browser storage.</p>
+            <button class="quiet-button" id="export-content" type="button">Download content.json</button>
+            <button class="quiet-button" id="import-content" type="button">Import content.json</button>
+            <input id="import-file" type="file" accept="application/json,.json" hidden />
+          </div>
+          <section class="editor-section" aria-labelledby="theme-title">
+            <h2 id="theme-title">Site colors</h2>
+            <div class="theme-controls">
+              <label for="header-color">Header pink</label><input id="header-color" type="color" value="#d4967d" />
+              <label for="heading-color">Devotional headings</label><input id="heading-color" type="color" value="#ffc0cb" />
+              <label for="body-color">Body text</label><input id="body-color" type="color" value="#303636" />
+            </div>
+            <button class="primary-button" id="save-theme" type="button">Save colors</button>
+            <p class="form-message" id="theme-message" aria-live="polite"></p>
+          </section>
+          <section class="editor-section" aria-labelledby="text-editor-title">
+            <h2 id="text-editor-title">Page text</h2>
+            <p class="selected-location" id="selected-location">Click text to edit. Alt-click links and disclosures to select their labels.</p>
+            <label for="selected-copy">Selected text</label>
+            <div class="format-toolbar" role="toolbar" aria-label="Text formatting">
+              <select data-format-font aria-label="Font family"><option value="Georgia, serif">Serif</option><option value="Arial, sans-serif">Sans-serif</option><option value="cursive">Script</option></select>
+              <select data-format-size aria-label="Font size"><option value="">Size</option><option value="12px">12</option><option value="14px">14</option><option value="16px">16</option><option value="20px">20</option><option value="24px">24</option><option value="32px">32</option><option value="48px">48</option></select>
+              <label class="color-control" title="Text color">A<input data-format-color type="color" value="#303636" aria-label="Text color" /></label>
+              <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
+              <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
+              <button type="button" data-command="underline" aria-label="Underline"><u>U</u></button>
+              <select data-format-block aria-label="Block style"><option value="P">Paragraph</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="H4">Heading 4</option></select>
+              <button type="button" data-command="justifyLeft" aria-label="Align left">Left</button>
+              <button type="button" data-command="justifyCenter" aria-label="Align center">Center</button>
+              <button type="button" data-command="justifyRight" aria-label="Align right">Right</button>
+            </div>
+            <div id="selected-copy" class="rich-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-label="Selected text"></div>
+            <button class="primary-button" id="save-copy" type="button" disabled>Save text</button>
+            <p class="form-message" id="copy-message" aria-live="polite"></p>
+          </section>
+          <section class="editor-section" aria-labelledby="devotional-title">
+            <h2 id="devotional-title">Add a devotional</h2>
+            <form id="devotional-form" class="access-form">
+              <label for="devotional-name">Title</label>
+              <div id="devotional-name" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="title"></div>
+              <input id="devotional-title-value" name="title" type="hidden" required />
+              <label for="devotional-intro">Introduction</label>
+              <div id="devotional-intro" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="intro"></div>
+              <label for="devotional-body">Devotional text</label>
+              <div id="devotional-body" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="body" required></div>
+              <label for="devotional-resource">Additional resources</label>
+              <div id="devotional-resource" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="resource"></div>
+              <label for="devotional-image">Photograph URL (HTTPS)</label>
+              <input id="devotional-image" name="image" type="url" placeholder="https://" />
+              <button class="primary-button" type="submit">Add devotional</button>
+              <p class="form-message" id="devotional-message" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="editor-section" aria-labelledby="added-title">
+            <h2 id="added-title">Added devotionals</h2>
+            <ul class="devotional-list" id="devotional-list"></ul>
+          </section>
+        </aside>
+        <section class="preview-panel" aria-label="Site preview">
+          <div class="preview-toolbar">
+            <label for="preview-route">Preview</label>
+            <select id="preview-route">
+              <option value="#/">Home</option>
+              <option value="#/about">About</option>
+              <option value="#/contact">Contact</option>
+              <option value="#/devotionals">Devotionals</option>
+            </select>
+          </div>
+          <iframe id="site-preview" title="Women of Virtue site preview" src="./index.html?cmsPreview=1#/"></iframe>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
