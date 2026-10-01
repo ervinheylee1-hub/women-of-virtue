@@ -302,9 +302,9 @@
       "height": 95
     },
     "block:block_hero_1:description": {
-      "x": -2,
-      "y": 12,
-      "width": 447,
+      "x": 216,
+      "y": -10,
+      "width": 795,
       "height": 35
     },
     "block:block_hero_1:button": {
@@ -330,6 +330,12 @@
     "block:block_hero_1:eyebrow": {
       "x": -35,
       "y": -35
+    },
+    "block:block_gallery_1:img:0": {
+      "x": 0,
+      "y": 0,
+      "width": 564,
+      "height": 239
     }
   },
   "devotionals": [
