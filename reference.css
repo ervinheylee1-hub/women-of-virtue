@@ -1213,6 +1213,9 @@ main .lesson-page h4 {
     border-radius: 2px;
     transition: transform 0.25s ease, opacity 0.25s ease;
   }
+  .menu-toggle[aria-expanded="true"] {
+    color: #ffffff !important;
+  }
   .menu-toggle[aria-expanded="true"] span:first-child {
     transform: translateY(4px) rotate(45deg);
   }
