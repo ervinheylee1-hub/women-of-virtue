@@ -84,7 +84,7 @@
           "submitText": "Send Message"
         },
         "style": {
-          "backgroundColor": "#26352f",
+          "backgroundColor": "#d4967d",
           "textColor": "#ffffff",
           "paddingTop": "80px",
           "paddingBottom": "90px"
@@ -201,8 +201,8 @@
   "linkOverrides": {},
   "textStyles": {
     "devotionals:h1:devotional-courses:0": {
-      "color": "#c9755b",
-      "textColor": "#c9755b"
+      "color": "#d4967d",
+      "textColor": "#d4967d"
     },
     "block:block_hero_1:title2": {
       "fontSize": "115px"
@@ -214,8 +214,8 @@
       "fontFamily": "'Shrikhand', cursive",
       "fontSize": "32px",
       "textAlign": "center",
-      "color": "#c9755b",
-      "textColor": "#c9755b"
+      "color": "#d4967d",
+      "textColor": "#d4967d"
     },
     "block:block_hero_1:eyebrow": {
       "color": "#d4967d",

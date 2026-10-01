@@ -822,8 +822,10 @@ function renderBlock(block) {
     }
     case "marquee": {
       const text = escapeCmsText(content.text || "Follow the Journey ⦁ Follow the Journey");
-      return `<div class="wov-block journey-marquee" data-wov-block-id="${id}" data-wov-block-type="marquee" ${styleAttr}>
-        <span data-cms-key="block:${id}:text1">${text}</span><span aria-hidden="true" data-cms-key="block:${id}:text2">${text}</span>
+      return `<div class="wov-block wov-block-marquee-wrap" data-wov-block-id="${id}" data-wov-block-type="marquee" ${styleAttr}>
+        <div class="journey-marquee">
+          <span data-cms-key="block:${id}:text1">${text}</span><span aria-hidden="true" data-cms-key="block:${id}:text2">${text}</span>
+        </div>
       </div>`;
     }
     case "video": {
