@@ -930,7 +930,8 @@ function renderBlocksPage(blocks) {
 }
 
 function render() {
-  const path = window.location.hash.replace(/^#\/?/, "").replace(/\/$/, "");
+  const rawPath = window.location.hash.replace(/^#\/?/, "").replace(/\/$/, "");
+  const path = rawPath.split("?")[0].replace(/\/$/, "");
   const routeKey = path || "home";
   const lesson = path.startsWith("devotionals/") ? allLessons().find(item => item.slug === path.slice("devotionals/".length)) : null;
   document.body.dataset.route = lesson ? "devotionals" : path || "home";
