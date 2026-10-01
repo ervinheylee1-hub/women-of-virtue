@@ -4,172 +4,712 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
-    <title>Women of Virtue · Admin</title>
+    <title>Women of Virtue · Visual Editor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bitter:ital,wght@0,400;0,500;0,600;1,400&family=Shrikhand&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="admin.css" />
     <script src="admin.js" defer></script>
   </head>
   <body>
+    <!-- Top Global Header -->
     <header class="admin-header">
-      <a href="./index.html" class="admin-brand">Women of Virtue <span>Admin</span></a>
-      <span class="connection-status" id="connection-status">Checking access…</span>
+      <div class="header-left">
+        <a href="./index.html" class="admin-brand">Women of Virtue <span class="badge-builder">Builder</span></a>
+        <div class="page-selector-wrap" id="header-page-control" hidden>
+          <label for="page-selector">Page:</label>
+          <select id="page-selector" aria-label="Select page to edit">
+            <option value="home">Home Page (#/)</option>
+            <option value="about">About Us (#/about)</option>
+            <option value="contact">Contact (#/contact)</option>
+            <option value="devotionals">Devotional Courses (#/devotionals)</option>
+            <optgroup label="Devotional Lessons" id="page-selector-lessons-group"></optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Center Controls: Device Switcher & History -->
+      <div class="header-center" id="header-canvas-controls" hidden>
+        <div class="device-switcher" role="radiogroup" aria-label="Preview Device">
+          <button type="button" class="device-btn is-active" data-device="desktop" title="Desktop view (100%)" aria-label="Desktop view">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </button>
+          <button type="button" class="device-btn" data-device="tablet" title="Tablet view (768px)" aria-label="Tablet view">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </button>
+          <button type="button" class="device-btn" data-device="mobile" title="Mobile view (375px)" aria-label="Mobile view">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="history-controls">
+          <button type="button" class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          </button>
+          <button type="button" class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+          </button>
+          <button type="button" class="tool-btn" id="btn-toggle-navigator" title="Structure Tree / Navigator">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </button>
+          <button type="button" class="tool-btn" id="btn-preview-mode" title="Toggle Clean Preview Mode">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="header-right">
+        <div class="save-status-indicator" id="save-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Checking…</span>
+        </div>
+        <button class="primary-save-btn" id="btn-save-publish" type="button" hidden>Save Changes</button>
+        <button class="quiet-btn" id="logout-button" type="button" hidden>Sign out</button>
+      </div>
     </header>
-    <main>
-      <section class="access-panel" id="setup-panel" hidden>
-        <p class="eyebrow">First-time setup</p>
-        <h1>Create administrator password</h1>
-        <form id="setup-form" class="access-form">
+
+    <main class="admin-main">
+      <!-- 1. First-time Setup Panel -->
+      <section class="auth-card" id="setup-panel" hidden>
+        <p class="auth-eyebrow">First-Time Setup</p>
+        <h1>Create Administrator Account</h1>
+        <p class="auth-desc">Create your secure administrator username and password. Credentials are encrypted and hashed on the private server.</p>
+        <form id="setup-form" class="auth-form">
+          <label for="setup-username">Administrator Username</label>
+          <input id="setup-username" name="username" type="text" minlength="3" maxlength="32" pattern="^[a-zA-Z0-9_\-\.]+$" placeholder="e.g. admin" autocomplete="username" required />
+          <p class="field-hint">Letters, numbers, dashes, and underscores (3-32 characters).</p>
+
           <label for="setup-password">Password</label>
-          <input id="setup-password" name="password" type="password" minlength="12" autocomplete="new-password" required />
-          <label for="setup-confirm">Confirm password</label>
-          <input id="setup-confirm" name="confirm" type="password" minlength="12" autocomplete="new-password" required />
-          <button class="primary-button" type="submit">Create admin account</button>
-          <p class="form-message" id="setup-message" aria-live="polite"></p>
+          <input id="setup-password" name="password" type="password" minlength="12" maxlength="256" placeholder="At least 12 characters" autocomplete="new-password" required />
+
+          <label for="setup-confirm">Confirm Password</label>
+          <input id="setup-confirm" name="confirm" type="password" minlength="12" maxlength="256" placeholder="Repeat your password" autocomplete="new-password" required />
+
+          <button class="auth-submit-btn" type="submit">Create Admin Account</button>
+          <p class="auth-message" id="setup-message" aria-live="polite"></p>
         </form>
       </section>
-      <section class="access-panel" id="login-panel" hidden>
-        <p class="eyebrow">Administrator access</p>
-        <h1>Sign in</h1>
-        <form id="login-form" class="access-form">
+
+      <!-- 2. Secure Login Panel -->
+      <section class="auth-card" id="login-panel" hidden>
+        <p class="auth-eyebrow">Secure Administrator Access</p>
+        <h1>Sign In to Visual Editor</h1>
+        <p class="auth-desc">Enter your administrator credentials to access the backend editor.</p>
+        <form id="login-form" class="auth-form">
+          <label for="login-username">Username</label>
+          <input id="login-username" name="username" type="text" autocomplete="username" placeholder="Username" required />
+
           <label for="login-password">Password</label>
-          <input id="login-password" name="password" type="password" autocomplete="current-password" required />
-          <button class="primary-button" type="submit">Sign in</button>
-          <p class="form-message" id="login-message" aria-live="polite"></p>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Password" required />
+
+          <button class="auth-submit-btn" type="submit">Sign In</button>
+          <p class="auth-message" id="login-message" aria-live="polite"></p>
         </form>
       </section>
-      <section class="dashboard" id="dashboard" hidden>
-        <aside class="editor-panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">Site content</p><h1>Content editor</h1></div>
-            <button class="quiet-button" id="logout-button" type="button">Sign out</button>
+
+      <!-- 3. Restricted Public Static Notice -->
+      <section class="auth-card restricted-card" id="restricted-panel" hidden>
+        <div class="restricted-icon">🔒</div>
+        <p class="auth-eyebrow">Access Restricted</p>
+        <h1>Administrator Backend Required</h1>
+        <p class="auth-desc">This admin panel is protected. To make updates to the live site, start the authenticated local CMS server (or connect to your private backend endpoint) and sign in.</p>
+        <div class="instructions-box">
+          <code>powershell -ExecutionPolicy Bypass .\server.ps1 -Port 5173</code>
+          <p>or</p>
+          <code>node server.js</code>
+        </div>
+        <a href="./index.html" class="auth-submit-btn link-btn">Return to Public Site</a>
+      </section>
+
+      <!-- 4. Elementor Visual Workspace -->
+      <section class="editor-workspace" id="dashboard" hidden>
+        <!-- Left Sidebar: Elementor Panel -->
+        <aside class="elementor-sidebar" id="elementor-sidebar">
+          <!-- Sidebar Nav Tabs -->
+          <div class="sidebar-top-tabs">
+            <button type="button" class="tab-btn is-active" data-sidebar-tab="widgets" id="tab-btn-widgets">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Widgets
+            </button>
+            <button type="button" class="tab-btn" data-sidebar-tab="site-settings" id="tab-btn-settings">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Site Settings
+            </button>
+            <button type="button" class="tab-btn" data-sidebar-tab="devotionals" id="tab-btn-devotionals">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Devotionals
+            </button>
           </div>
-          <div class="storage-tools">
-            <p id="storage-mode">Changes save to browser storage.</p>
-            <button class="quiet-button" id="export-content" type="button">Download content.json</button>
-            <button class="quiet-button" id="import-content" type="button">Import content.json</button>
-            <input id="import-file" type="file" accept="application/json,.json" hidden />
-          </div>
-          <section class="editor-section" aria-labelledby="theme-title">
-            <h2 id="theme-title">Site colors</h2>
-            <div class="theme-controls">
-              <label for="header-color">Header pink</label><input id="header-color" type="color" value="#d4967d" />
-              <label for="heading-color">Devotional headings</label><input id="heading-color" type="color" value="#ffc0cb" />
-              <label for="body-color">Body text</label><input id="body-color" type="color" value="#303636" />
+
+          <!-- A. Widget Palette Drawer -->
+          <div class="sidebar-view" id="view-widgets">
+            <div class="widget-search">
+              <input type="search" id="widget-search-input" placeholder="Search widgets…" autocomplete="off" />
             </div>
-            <button class="primary-button" id="save-theme" type="button">Save colors</button>
-            <p class="form-message" id="theme-message" aria-live="polite"></p>
-          </section>
-          <section class="editor-section" aria-labelledby="hero-copy-title">
-            <h2 id="hero-copy-title">Homepage hero copy</h2>
-            <div class="copy-controls">
-              <label for="hero-title-one">First headline</label><input id="hero-title-one" type="text" />
-              <label for="hero-title-two">Second headline</label><input id="hero-title-two" type="text" />
-              <label for="hero-description">Supporting copy</label><textarea id="hero-description" rows="3"></textarea>
-              <label for="hero-button-text">Button text</label><input id="hero-button-text" type="text" />
+
+            <div class="drag-hint-banner">
+              <span>💡 Drag widgets onto the page or click to add</span>
             </div>
-            <button class="primary-button" id="save-hero-copy" type="button">Save homepage copy</button>
-            <p class="form-message" id="hero-copy-message" aria-live="polite"></p>
-          </section>
-          <section class="editor-section" aria-labelledby="graphics-title">
-            <h2 id="graphics-title">Site images</h2>
-            <p>Use a public HTTPS image URL. Updated URLs are included in the content export.</p>
-            <div class="graphic-controls">
-              <label for="graphic-hero">Homepage hero</label><input id="graphic-hero" type="url" data-graphic="hero" placeholder="https://" />
-              <label for="graphic-course">Devotional banner</label><input id="graphic-course" type="url" data-graphic="course" placeholder="https://" />
-              <label for="graphic-brunch">Homepage gallery: image 1</label><input id="graphic-brunch" type="url" data-graphic="brunch" placeholder="https://" />
-              <label for="graphic-prayer">Homepage gallery: image 2</label><input id="graphic-prayer" type="url" data-graphic="prayer" placeholder="https://" />
-              <label for="graphic-bible">Homepage gallery: image 3</label><input id="graphic-bible" type="url" data-graphic="bible" placeholder="https://" />
-              <label for="graphic-letter">Homepage gallery: image 4</label><input id="graphic-letter" type="url" data-graphic="letter" placeholder="https://" />
-              <label for="graphic-about">About page image</label><input id="graphic-about" type="url" data-graphic="about" placeholder="https://" />
-              <label for="graphic-contact">Contact page image</label><input id="graphic-contact" type="url" data-graphic="contact" placeholder="https://" />
-              <label for="graphic-defining">Defining Femininity lesson</label><input id="graphic-defining" type="url" data-graphic="lesson:defining-femininity" placeholder="https://" />
-              <label for="graphic-prayer-life">Prayer Life lesson</label><input id="graphic-prayer-life" type="url" data-graphic="lesson:prayer-life-and-church-community" placeholder="https://" />
-            </div>
-            <button class="primary-button" id="save-graphics" type="button">Save site images</button>
-            <p class="form-message" id="graphics-message" aria-live="polite"></p>
-          </section>
-          <section class="editor-section" aria-labelledby="text-editor-title">
-            <h2 id="text-editor-title">Page text</h2>
-            <p class="selected-location" id="selected-location">Click text to edit, Alt-click controls to edit labels, or drag outlined blocks to reorder them.</p>
-            <label for="selected-copy">Selected text</label>
-            <div class="format-toolbar" role="toolbar" aria-label="Text formatting">
-              <select data-format-font aria-label="Font family"><option value="Georgia, serif">Serif</option><option value="Arial, sans-serif">Sans-serif</option><option value="cursive">Script</option></select>
-              <select data-format-size aria-label="Font size"><option value="">Size</option><option value="12px">12</option><option value="14px">14</option><option value="16px">16</option><option value="20px">20</option><option value="24px">24</option><option value="32px">32</option><option value="48px">48</option></select>
-              <label class="color-control" title="Text color">A<input data-format-color type="color" value="#303636" aria-label="Text color" /></label>
-              <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
-              <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
-              <button type="button" data-command="underline" aria-label="Underline"><u>U</u></button>
-              <select data-format-block aria-label="Block style"><option value="P">Paragraph</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="H4">Heading 4</option><option value="BLOCKQUOTE">Blockquote</option></select>
-              <button type="button" data-command="justifyLeft" aria-label="Align left">Left</button>
-              <button type="button" data-command="justifyCenter" aria-label="Align center">Center</button>
-              <button type="button" data-command="justifyRight" aria-label="Align right">Right</button>
-            </div>
-            <div id="selected-copy" class="rich-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-label="Selected text"></div>
-            <button class="primary-button" id="save-copy" type="button" disabled>Save text</button>
-            <p class="form-message" id="copy-message" aria-live="polite"></p>
-          </section>
-          <section class="editor-section" aria-labelledby="devotional-title">
-            <h2 id="devotional-title">Add a devotional</h2>
-            <form id="devotional-form" class="access-form">
-              <label for="devotional-name">Title</label>
-              <div id="devotional-name" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="title"></div>
-              <input id="devotional-title-value" name="title" type="hidden" required />
-              <label for="devotional-date">Publication date</label>
-              <input id="devotional-date" name="publishedAt" type="date" required />
-              <label for="devotional-intro-title">Introduction subheading</label>
-              <input id="devotional-intro-title" name="introTitle" type="text" />
-              <label for="devotional-intro">Introduction</label>
-              <div id="devotional-intro" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="intro"></div>
-              <div class="section-fields-heading"><span>Devotional sections</span><button class="quiet-button" id="add-devotional-section" type="button">Add section</button></div>
-              <div class="devotional-sections" id="devotional-sections">
-                <fieldset class="devotional-section-field">
-                  <legend>Section 1</legend>
-                  <label>Section heading<input data-section-title value="Devotional" required /></label>
-                  <label>Section text<div id="devotional-body" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-section-body></div></label>
-                  <button class="quiet-button" type="button" data-remove-section disabled>Remove section</button>
-                </fieldset>
+
+            <div class="widget-section">
+              <h3 class="widget-section-title">Basic Widgets</h3>
+              <div class="widget-grid">
+                <div class="widget-card" data-widget-type="heading" draggable="true" title="Drag or click to add Heading">
+                  <div class="widget-icon">H</div>
+                  <span>Heading</span>
+                </div>
+                <div class="widget-card" data-widget-type="text" draggable="true" title="Drag or click to add Text Editor">
+                  <div class="widget-icon">¶</div>
+                  <span>Text Editor</span>
+                </div>
+                <div class="widget-card" data-widget-type="button" draggable="true" title="Drag or click to add Button">
+                  <div class="widget-icon">▢</div>
+                  <span>Button</span>
+                </div>
+                <div class="widget-card" data-widget-type="image" draggable="true" title="Drag or click to add Image">
+                  <div class="widget-icon">🖼</div>
+                  <span>Image</span>
+                </div>
+                <div class="widget-card" data-widget-type="quote" draggable="true" title="Drag or click to add Scripture Quote">
+                  <div class="widget-icon">“ ”</div>
+                  <span>Scripture Quote</span>
+                </div>
+                <div class="widget-card" data-widget-type="spacer" draggable="true" title="Drag or click to add Spacer / Divider">
+                  <div class="widget-icon">—</div>
+                  <span>Spacer &amp; Line</span>
+                </div>
               </div>
-              <template id="devotional-section-template">
-                <fieldset class="devotional-section-field">
-                  <legend>Section</legend>
-                  <label>Section heading<input data-section-title required /></label>
-                  <label>Section text<div class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-section-body></div></label>
-                  <button class="quiet-button" type="button" data-remove-section>Remove section</button>
-                </fieldset>
-              </template>
-              <label for="devotional-resource-title">Resources subheading</label>
-              <input id="devotional-resource-title" name="resourceTitle" type="text" value="Additional Resources" />
-              <label for="devotional-resource">Additional resources</label>
-              <div id="devotional-resource" class="rich-editor devotional-rich" contenteditable="true" role="textbox" aria-multiline="true" data-field="resource"></div>
-              <label for="devotional-image">Photograph URL (HTTPS)</label>
-              <input id="devotional-image" name="image" type="url" placeholder="https://" />
-              <label for="devotional-image-alt">Photograph description</label>
-              <input id="devotional-image-alt" name="imageAlt" type="text" />
-              <button class="primary-button" type="submit">Add devotional</button>
-              <p class="form-message" id="devotional-message" aria-live="polite"></p>
-            </form>
-          </section>
-          <section class="editor-section" aria-labelledby="added-title">
-            <h2 id="added-title">Added devotionals</h2>
-            <ul class="devotional-list" id="devotional-list"></ul>
-          </section>
-        </aside>
-        <section class="preview-panel" aria-label="Site preview">
-          <div class="preview-toolbar">
-            <label for="preview-route">Preview</label>
-            <select id="preview-route">
-              <option value="#/">Home</option>
-              <option value="#/about">About</option>
-              <option value="#/contact">Contact</option>
-              <option value="#/devotionals">Devotionals</option>
-            </select>
-            <button class="quiet-button" id="layout-self-check" type="button">Run self-check</button>
+            </div>
+
+            <div class="widget-section">
+              <h3 class="widget-section-title">Layout &amp; Structure</h3>
+              <div class="widget-grid">
+                <div class="widget-card" data-widget-type="columns" data-layout="50-50" draggable="true" title="2 Columns">
+                  <div class="widget-icon">⚏</div>
+                  <span>2 Columns (50/50)</span>
+                </div>
+                <div class="widget-card" data-widget-type="columns" data-layout="33-33-33" draggable="true" title="3 Columns">
+                  <div class="widget-icon">☰</div>
+                  <span>3 Columns</span>
+                </div>
+                <div class="widget-card" data-widget-type="columns" data-layout="67-33" draggable="true" title="2 Columns (Wide/Narrow)">
+                  <div class="widget-icon">⚍</div>
+                  <span>Columns (67/33)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="widget-section">
+              <h3 class="widget-section-title">Specialty &amp; Content</h3>
+              <div class="widget-grid">
+                <div class="widget-card" data-widget-type="hero" draggable="true" title="Hero Section">
+                  <div class="widget-icon">★</div>
+                  <span>Hero Section</span>
+                </div>
+                <div class="widget-card" data-widget-type="gallery" draggable="true" title="Image Gallery">
+                  <div class="widget-icon">▦</div>
+                  <span>Image Gallery</span>
+                </div>
+                <div class="widget-card" data-widget-type="accordion" draggable="true" title="Accordion FAQ">
+                  <div class="widget-icon">≡</div>
+                  <span>Accordion FAQ</span>
+                </div>
+                <div class="widget-card" data-widget-type="form" draggable="true" title="Contact Form">
+                  <div class="widget-icon">✉</div>
+                  <span>Contact Form</span>
+                </div>
+                <div class="widget-card" data-widget-type="marquee" draggable="true" title="Scrolling Ticker">
+                  <div class="widget-icon">⇄</div>
+                  <span>Marquee Ticker</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <iframe id="site-preview" title="Women of Virtue site preview" src="./index.html?cmsPreview=1#/"></iframe>
+
+          <!-- B. Elementor Block / Element Inspector Drawer -->
+          <div class="sidebar-view" id="view-inspector" hidden>
+            <div class="inspector-header">
+              <button type="button" class="back-to-widgets-btn" id="btn-back-to-widgets" title="Back to widgets">← Widgets</button>
+              <div class="inspector-title-wrap">
+                <span class="element-chip-type" id="inspector-element-type">Heading</span>
+                <h2 class="inspector-title" id="inspector-block-title">Edit Element</h2>
+              </div>
+            </div>
+
+            <!-- Inspector Sub-Tabs: Content | Style | Advanced -->
+            <div class="inspector-subtabs">
+              <button type="button" class="subtab-btn is-active" data-subtab="content">Content</button>
+              <button type="button" class="subtab-btn" data-subtab="style">Style</button>
+              <button type="button" class="subtab-btn" data-subtab="advanced">Advanced</button>
+            </div>
+
+            <!-- Inspector Tab 1: Content -->
+            <div class="inspector-subview" id="subview-content">
+              <div class="inspector-fields" id="dynamic-content-fields">
+                <!-- Dynamically populated per widget/element type -->
+              </div>
+            </div>
+
+            <!-- Inspector Tab 2: Style -->
+            <div class="inspector-subview" id="subview-style" hidden>
+              <!-- 1. Typography -->
+              <div class="inspector-section">
+                <h4>Typography</h4>
+                <div class="control-row">
+                  <label for="style-font-family">Font Family</label>
+                  <select id="style-font-family">
+                    <option value="">Default Site Font</option>
+                    <option value="'Bitter', Georgia, serif">Bitter (Brand Serif)</option>
+                    <option value="'DM Sans', sans-serif">DM Sans (Brand Sans)</option>
+                    <option value="'Shrikhand', cursive">Shrikhand (Brand Script)</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label for="style-font-size">Font Size (px)</label>
+                  <div class="range-with-number">
+                    <input type="range" id="style-font-size-range" min="10" max="120" value="16" />
+                    <input type="number" id="style-font-size" min="10" max="120" value="16" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-font-weight">Font Weight</label>
+                  <select id="style-font-weight">
+                    <option value="">Default</option>
+                    <option value="300">Light (300)</option>
+                    <option value="400">Regular (400)</option>
+                    <option value="500">Medium (500)</option>
+                    <option value="600">Semi-Bold (600)</option>
+                    <option value="700">Bold (700)</option>
+                    <option value="800">Extra Bold (800)</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label for="style-line-height">Line Height</label>
+                  <div class="range-with-number">
+                    <input type="range" id="style-line-height-range" min="0.8" max="2.6" step="0.1" value="1.5" />
+                    <input type="number" id="style-line-height" min="0.8" max="2.6" step="0.1" value="1.5" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-letter-spacing">Letter Spacing (px)</label>
+                  <div class="range-with-number">
+                    <input type="range" id="style-letter-spacing-range" min="-2" max="10" step="0.5" value="0" />
+                    <input type="number" id="style-letter-spacing" min="-2" max="10" step="0.5" value="0" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-text-transform">Transform</label>
+                  <select id="style-text-transform">
+                    <option value="">Default</option>
+                    <option value="uppercase">UPPERCASE</option>
+                    <option value="lowercase">lowercase</option>
+                    <option value="capitalize">Capitalize Words</option>
+                    <option value="none">Normal (None)</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label>Alignment</label>
+                  <div class="align-btn-group" id="style-text-align">
+                    <button type="button" class="align-btn is-active" data-align="left" title="Align Left">Left</button>
+                    <button type="button" class="align-btn" data-align="center" title="Align Center">Center</button>
+                    <button type="button" class="align-btn" data-align="right" title="Align Right">Right</button>
+                    <button type="button" class="align-btn" data-align="justify" title="Justify">Justify</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Colors -->
+              <div class="inspector-section">
+                <h4>Colors &amp; Swatches</h4>
+                <div class="palette-swatches-row">
+                  <button type="button" class="swatch-btn" style="background:#252b29;" data-color="#252b29" title="Ink #252b29"></button>
+                  <button type="button" class="swatch-btn" style="background:#fffefa; border:1px solid #777;" data-color="#fffefa" title="White #fffefa"></button>
+                  <button type="button" class="swatch-btn" style="background:#c9755b;" data-color="#c9755b" title="Accent Coral #c9755b"></button>
+                  <button type="button" class="swatch-btn" style="background:#26352f;" data-color="#26352f" title="Forest #26352f"></button>
+                  <button type="button" class="swatch-btn" style="background:#d4967d;" data-color="#d4967d" title="Rose Pink #d4967d"></button>
+                  <button type="button" class="swatch-btn" style="background:#777c75;" data-color="#777c75" title="Muted Gray #777c75"></button>
+                </div>
+                <div class="control-row">
+                  <label for="style-text-color">Text Color</label>
+                  <div class="color-picker-wrap">
+                    <input type="color" id="style-text-color" value="#303636" />
+                    <input type="text" id="style-text-color-hex" value="#303636" maxlength="7" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-bg-color">Background Color</label>
+                  <div class="color-picker-wrap">
+                    <input type="color" id="style-bg-color" value="#ffffff" />
+                    <input type="text" id="style-bg-color-hex" value="#ffffff" maxlength="7" />
+                    <button type="button" class="chip-action-btn" id="btn-bg-transparent">Clear</button>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-accent-color">Border / Accent Color</label>
+                  <div class="color-picker-wrap">
+                    <input type="color" id="style-accent-color" value="#c9755b" />
+                    <input type="text" id="style-accent-color-hex" value="#c9755b" maxlength="7" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Spacing (Box Model) -->
+              <div class="inspector-section">
+                <div class="section-title-with-btn">
+                  <h4>Padding (Inner)</h4>
+                  <button type="button" class="chip-action-btn" id="btn-link-padding" title="Link / Unlink all sides">🔗 Linked</button>
+                </div>
+                <div class="quad-inputs-grid">
+                  <div><span>Top</span><input type="text" id="style-pad-top" placeholder="0px" /></div>
+                  <div><span>Right</span><input type="text" id="style-pad-right" placeholder="0px" /></div>
+                  <div><span>Bottom</span><input type="text" id="style-pad-bottom" placeholder="0px" /></div>
+                  <div><span>Left</span><input type="text" id="style-pad-left" placeholder="0px" /></div>
+                </div>
+
+                <div class="section-title-with-btn" style="margin-top: 14px;">
+                  <h4>Margin (Outer)</h4>
+                  <button type="button" class="chip-action-btn" id="btn-link-margin" title="Link / Unlink all sides">🔗 Linked</button>
+                </div>
+                <div class="quad-inputs-grid">
+                  <div><span>Top</span><input type="text" id="style-mar-top" placeholder="0px" /></div>
+                  <div><span>Right</span><input type="text" id="style-mar-right" placeholder="0px" /></div>
+                  <div><span>Bottom</span><input type="text" id="style-mar-bottom" placeholder="0px" /></div>
+                  <div><span>Left</span><input type="text" id="style-mar-left" placeholder="0px" /></div>
+                </div>
+              </div>
+
+              <!-- 4. Borders & Corners -->
+              <div class="inspector-section">
+                <h4>Borders &amp; Corners</h4>
+                <div class="control-row">
+                  <label for="style-border-type">Border Style</label>
+                  <select id="style-border-type">
+                    <option value="">None</option>
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label for="style-border-width">Border Width (px)</label>
+                  <div class="range-with-number">
+                    <input type="range" id="style-border-width-range" min="0" max="16" value="0" />
+                    <input type="number" id="style-border-width" min="0" max="16" value="0" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-border-radius">Border Radius (Corner Rounding)</label>
+                  <div class="range-with-number">
+                    <input type="range" id="style-border-radius-range" min="0" max="60" value="0" />
+                    <input type="number" id="style-border-radius" min="0" max="60" value="0" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label for="style-box-shadow">Box Shadow</label>
+                  <select id="style-box-shadow">
+                    <option value="">None</option>
+                    <option value="0 2px 8px rgba(0,0,0,0.08)">Subtle Shadow</option>
+                    <option value="0 8px 24px rgba(0,0,0,0.14)">Elevated Card</option>
+                    <option value="0 14px 38px rgba(0,0,0,0.22)">Deep Elevation</option>
+                    <option value="0 0 16px rgba(201,117,91,0.35)">Warm Brand Glow</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 5. Size & Position (Squarespace Builder) -->
+              <div class="inspector-section">
+                <div class="section-title-with-btn">
+                  <h4>Size &amp; Position</h4>
+                  <button type="button" class="chip-action-btn" id="btn-reset-pos-size" title="Reset custom position and size">↺ Reset</button>
+                </div>
+                <div class="control-row">
+                  <label for="style-pos-x">Offset X / Left (px)</label>
+                  <input type="number" id="style-pos-x" placeholder="0" />
+                </div>
+                <div class="control-row">
+                  <label for="style-pos-y">Offset Y / Top (px)</label>
+                  <input type="number" id="style-pos-y" placeholder="0" />
+                </div>
+                <div class="control-row">
+                  <label for="style-custom-width">Width (px)</label>
+                  <input type="number" id="style-custom-width" placeholder="Auto" min="20" />
+                </div>
+                <div class="control-row">
+                  <label for="style-custom-height">Height (px)</label>
+                  <input type="number" id="style-custom-height" placeholder="Auto" min="20" />
+                </div>
+                <p class="control-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                  💡 Tip: You can also drag the element or drag its corner handles directly on the canvas to move and resize!
+                </p>
+              </div>
+            </div>
+
+            <!-- Inspector Tab 3: Advanced -->
+            <div class="inspector-subview" id="subview-advanced" hidden>
+              <div class="inspector-section">
+                <h4>Advanced Settings</h4>
+                <div class="control-row">
+                  <label for="adv-css-classes">Custom CSS Classes</label>
+                  <input type="text" id="adv-css-classes" placeholder="e.g. hero-highlight rounded-card" />
+                </div>
+                <div class="control-row">
+                  <label for="adv-block-id">Element Key / Identifier</label>
+                  <input type="text" id="adv-block-id" readonly />
+                </div>
+                <div class="control-row">
+                  <label for="adv-z-index">Z-Index</label>
+                  <input type="number" id="adv-z-index" placeholder="e.g. 1, 10" />
+                </div>
+              </div>
+
+              <div class="inspector-section danger-zone">
+                <h4>Element Actions</h4>
+                <div class="block-action-buttons">
+                  <button type="button" class="action-btn duplicate-btn" id="btn-duplicate-block">Duplicate</button>
+                  <button type="button" class="action-btn reset-btn" id="btn-reset-styles">Reset Styles</button>
+                  <button type="button" class="action-btn delete-btn" id="btn-delete-block">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- C. Global Site Settings & Devotionals Drawer -->
+          <div class="sidebar-view" id="view-settings" hidden>
+            <div class="settings-accordion">
+              <details class="settings-group" open>
+                <summary>Site Colors &amp; Branding</summary>
+                <div class="settings-body">
+                  <div class="control-row">
+                    <label for="setting-header-color">Header Pink</label>
+                    <input type="color" id="setting-header-color" value="#d4967d" />
+                  </div>
+                  <div class="control-row">
+                    <label for="setting-heading-color">Devotional Headings</label>
+                    <input type="color" id="setting-heading-color" value="#ffc0cb" />
+                  </div>
+                  <div class="control-row">
+                    <label for="setting-body-color">Body Text</label>
+                    <input type="color" id="setting-body-color" value="#303636" />
+                  </div>
+                  <button class="small-primary-btn" id="btn-save-site-theme" type="button">Apply Colors</button>
+                </div>
+              </details>
+
+              <details class="settings-group">
+                <summary>Devotional Courses</summary>
+                <div class="settings-body">
+                  <form id="devotional-form" class="devotional-add-form">
+                    <label for="devotional-title">Devotional Title</label>
+                    <input id="devotional-title" name="title" required placeholder="e.g. Joy in Scripture" />
+
+                    <label for="devotional-date">Date</label>
+                    <input id="devotional-date" name="publishedAt" type="date" required />
+
+                    <label for="devotional-intro">Intro</label>
+                    <textarea id="devotional-intro" name="intro" rows="2" placeholder="Introductory thoughts…"></textarea>
+
+                    <label for="devotional-image">Photograph URL (HTTPS)</label>
+                    <input id="devotional-image" name="image" type="url" placeholder="https://" />
+
+                    <button class="small-primary-btn" type="submit">Add Devotional</button>
+                  </form>
+                  <ul class="devotional-items-list" id="devotional-list"></ul>
+                </div>
+              </details>
+
+              <details class="settings-group" id="settings-media-library">
+                <summary>Media Library &amp; Image Dropper</summary>
+                <div class="settings-body">
+                  <p class="settings-note">Drag &amp; drop images here from your computer to use them across the website, or paste URLs.</p>
+                  <div class="image-dropzone" id="library-image-dropzone">
+                    <div class="dropzone-icon">📷</div>
+                    <div class="dropzone-text"><strong>Drop images here</strong> or <span class="dropzone-browse">browse files</span></div>
+                    <div class="dropzone-sub">PNG, JPG, WEBP, GIF, SVG up to 15MB</div>
+                    <input type="file" id="library-file-input" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml" multiple style="display:none;" />
+                  </div>
+                  <div class="upload-status" id="library-upload-status" style="font-size:11px; color:var(--accent-color); margin-top:4px;" hidden></div>
+                  <div class="media-library-grid" id="library-media-list">
+                    <!-- Dynamic uploaded images list -->
+                  </div>
+                </div>
+              </details>
+
+              <details class="settings-group" id="settings-messages">
+                <summary>Form Inquiries (heylee@absolutionuecna.org)</summary>
+                <div class="settings-body">
+                  <div class="section-title-with-btn">
+                    <p class="settings-note" style="margin:0;">Inquiries sent to <strong>heylee@absolutionuecna.org</strong></p>
+                    <button class="chip-action-btn" id="btn-refresh-messages" type="button">↻ Refresh</button>
+                  </div>
+                  <div class="inquiries-container" id="inquiries-list">
+                    <p style="font-size:11px; color:var(--text-muted); margin:0;">Loading inquiries…</p>
+                  </div>
+                </div>
+              </details>
+
+              <details class="settings-group">
+                <summary>Backup &amp; Sync</summary>
+                <div class="settings-body">
+                  <p class="settings-note">Export site blocks &amp; content to a JSON file or import a backup.</p>
+                  <div class="backup-btn-grid">
+                    <button class="small-quiet-btn" id="btn-export-content" type="button">Download content.json</button>
+                    <button class="small-quiet-btn" id="btn-import-content" type="button">Import content.json</button>
+                    <input id="import-file" type="file" accept="application/json,.json" hidden />
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- D. Devotionals & Lessons Manager Drawer -->
+          <div class="sidebar-view" id="view-devotionals" hidden>
+            <div class="sidebar-search-wrap" style="padding:14px; border-bottom:1px solid var(--panel-border);">
+              <span class="sidebar-panel-title">Devotionals &amp; Courses</span>
+              <p class="settings-note" style="margin:4px 0 12px;">Create and manage devotional courses and weekly lessons. Each course can have one or multiple lessons.</p>
+              <button type="button" class="small-primary-btn" id="btn-add-devotional-modal" style="width:100%; text-align:center; padding:8px 12px; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Create New Devotional
+              </button>
+            </div>
+            <div class="devotionals-manager-container" id="devotionals-manager-list" style="padding:14px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; flex:1;">
+              <!-- Dynamically populated devotional cards with nested lessons -->
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center: Live Visual Canvas Viewport -->
+        <section class="canvas-container" id="canvas-container">
+          <div class="canvas-device-wrapper is-desktop" id="device-wrapper">
+            <iframe id="site-preview" title="Site Visual Editor Canvas" src="./index.html?cmsPreview=1#/"></iframe>
+          </div>
         </section>
+
+        <!-- Right Slide-out: Navigator Structure Tree -->
+        <aside class="navigator-panel" id="navigator-panel" hidden>
+          <div class="navigator-header">
+            <h3>Structure Navigator</h3>
+            <button type="button" class="close-navigator-btn" id="btn-close-navigator" aria-label="Close navigator">✕</button>
+          </div>
+          <div class="navigator-tree" id="navigator-tree">
+            <!-- Dynamic tree nodes -->
+          </div>
+        </aside>
       </section>
     </main>
+
+    <!-- Devotional Modal Dialog -->
+    <div class="admin-modal-overlay" id="modal-devotional" hidden>
+      <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="modal-dev-title-heading">
+        <div class="modal-header">
+          <h3 id="modal-dev-title-heading">Create Devotional Course</h3>
+          <button type="button" class="modal-close-btn" id="btn-close-dev-modal">✕</button>
+        </div>
+        <form id="form-devotional-modal" class="modal-body">
+          <input type="hidden" id="dev-modal-id" value="" />
+          <div class="modal-field">
+            <label for="dev-modal-title">Devotional Title <span class="req">*</span></label>
+            <input type="text" id="dev-modal-title" placeholder="e.g. Firm Foundations, Walking in Faith" required />
+          </div>
+          <div class="modal-field">
+            <label for="dev-modal-desc">Description / Subtitle</label>
+            <textarea id="dev-modal-desc" rows="3" placeholder="Brief description of this devotional series or topic."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="small-quiet-btn" id="btn-cancel-dev-modal">Cancel</button>
+            <button type="submit" class="small-primary-btn" id="btn-submit-dev-modal">Save Devotional</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lesson Modal Dialog -->
+    <div class="admin-modal-overlay" id="modal-lesson" hidden>
+      <div class="admin-modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="modal-lesson-title-heading">
+        <div class="modal-header">
+          <h3 id="modal-lesson-title-heading">Add Lesson</h3>
+          <button type="button" class="modal-close-btn" id="btn-close-lesson-modal">✕</button>
+        </div>
+        <form id="form-lesson-modal" class="modal-body modal-scrollable">
+          <input type="hidden" id="lesson-modal-id" value="" />
+
+          <div class="modal-grid-2">
+            <div class="modal-field">
+              <label for="lesson-modal-dev-id">Devotional Course <span class="req">*</span></label>
+              <select id="lesson-modal-dev-id" required></select>
+            </div>
+            <div class="modal-field">
+              <label for="lesson-modal-date">Published Date</label>
+              <input type="date" id="lesson-modal-date" />
+            </div>
+          </div>
+
+          <div class="modal-grid-2">
+            <div class="modal-field">
+              <label for="lesson-modal-title">Lesson Title <span class="req">*</span></label>
+              <input type="text" id="lesson-modal-title" placeholder="e.g. Defining Femininity" required />
+            </div>
+            <div class="modal-field">
+              <label for="lesson-modal-slug">URL Slug <span class="req">*</span></label>
+              <input type="text" id="lesson-modal-slug" placeholder="e.g. defining-femininity" required />
+            </div>
+          </div>
+
+          <div class="modal-grid-2">
+            <div class="modal-field">
+              <label for="lesson-modal-image">Featured Photograph URL (HTTPS)</label>
+              <input type="url" id="lesson-modal-image" placeholder="https://..." />
+            </div>
+            <div class="modal-field">
+              <label for="lesson-modal-image-alt">Photograph Alt Description</label>
+              <input type="text" id="lesson-modal-image-alt" placeholder="e.g. Woman in prayer" />
+            </div>
+          </div>
+
+          <div class="modal-section-divider">Introduction</div>
+          <div class="modal-field">
+            <label for="lesson-modal-intro-title">Introductory Heading <span class="req">*</span></label>
+            <input type="text" id="lesson-modal-intro-title" placeholder="e.g. What is a Woman?" required />
+          </div>
+          <div class="modal-field">
+            <label for="lesson-modal-intro-body">Introductory Content / Reflection</label>
+            <textarea id="lesson-modal-intro-body" rows="3" placeholder="Context and introduction for this lesson..."></textarea>
+          </div>
+
+          <div class="modal-section-divider-bar">
+            <span>Lesson Sections &amp; Scriptures</span>
+            <button type="button" class="chip-action-btn" id="btn-add-section-row">+ Add Section</button>
+          </div>
+          <div id="lesson-modal-sections-list" class="sections-builder-list">
+            <!-- Dynamic section items -->
+          </div>
+
+          <div class="modal-section-divider">Resource, Prayer &amp; PDF</div>
+          <div class="modal-grid-2">
+            <div class="modal-field">
+              <label for="lesson-modal-resource-title">Resource / Prayer Title</label>
+              <input type="text" id="lesson-modal-resource-title" placeholder="e.g. This Week's Prayer: or Additional Resources" />
+            </div>
+            <div class="modal-field">
+              <label for="lesson-modal-pdf">Download PDF URL (Optional)</label>
+              <input type="url" id="lesson-modal-pdf" placeholder="https://..." />
+            </div>
+          </div>
+          <div class="modal-field">
+            <label for="lesson-modal-resource-body">Prayer Text or Resource Content</label>
+            <textarea id="lesson-modal-resource-body" rows="4" placeholder="Prayer text, citations, or additional resources..."></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="small-quiet-btn" id="btn-cancel-lesson-modal">Cancel</button>
+            <button type="submit" class="small-primary-btn" id="btn-submit-lesson-modal">Save Lesson</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

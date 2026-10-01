@@ -1,9 +1,335 @@
 {
-  "copyOverrides": {},
-  "richTextOverrides": {},
-  "textStyles": {},
-  "theme": {},
-  "graphics": {},
-  "layout": {},
-  "devotionals": []
+    "blocks":  {
+                   "home":  [
+                                {
+                                    "id":  "block_hero_1",
+                                    "type":  "hero",
+                                    "content":  {
+                                                    "eyebrow":  "Welcome to Women of Virtue",
+                                                    "title1":  "Reject Culture",
+                                                    "title2":  "Follow Christ",
+                                                    "description":  "Join the movement to bring back traditional Femininity.",
+                                                    "buttonText":  "Learn More",
+                                                    "buttonLink":  "#/about",
+                                                    "backgroundImage":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790629802685-Z59JDUC9LV7BDA5CMUSW/unsplash-image-WpFZu1CGBNc.jpg?format=1500w"
+                                                },
+                                    "style":  {
+                                                  "textAlign":  "left",
+                                                  "paddingTop":  "80px",
+                                                  "paddingBottom":  "95px"
+                                              }
+                                },
+                                {
+                                    "id":  "block_quote_1",
+                                    "type":  "quote",
+                                    "content":  {
+                                                    "quote":  "Charm is deceitful, and beauty is vain, but a woman who fears the Lord is to be praised.",
+                                                    "reference":  "Proverbs 31:30"
+                                                },
+                                    "style":  {
+                                                  "backgroundColor":  "#f4f1ea",
+                                                  "accentColor":  "#c9755b"
+                                              }
+                                },
+                                {
+                                    "id":  "block_gallery_1",
+                                    "type":  "gallery",
+                                    "content":  {
+                                                    "title":  "Follow the Journey",
+                                                    "columns":  4,
+                                                    "images":  [
+                                                                   {
+                                                                       "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790632930773-RF3V2JYFYIYKVQQI0EEO/unsplash-image-fKRGi5AnR3Y.jpg?format=1500w",
+                                                                       "alt":  "Brunch \u0026 Fellowship"
+                                                                   },
+                                                                   {
+                                                                       "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633053455-M9PKGDBGT7X31AK2HVEM/unsplash-image-w15nu-WJLNs.jpg?format=1500w",
+                                                                       "alt":  "Prayer Life"
+                                                                   },
+                                                                   {
+                                                                       "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633299594-ZJP2LO473KCB4KZ92TRN/unsplash-image-yuqCAKrbjyE.jpg?format=1500w",
+                                                                       "alt":  "Bible Study"
+                                                                   },
+                                                                   {
+                                                                       "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633201979-AX91BC0BXNUUGWC7AXC8/unsplash-image-8huCshiNhro.jpg?format=1500w",
+                                                                       "alt":  "Jesus is Worth Everything"
+                                                                   }
+                                                               ]
+                                                },
+                                    "style":  {
+                                                  "paddingTop":  "60px",
+                                                  "paddingBottom":  "60px"
+                                              }
+                                },
+                                {
+                                    "id":  "block_form_1",
+                                    "type":  "form",
+                                    "content":  {
+                                                    "title":  "Start a Project",
+                                                    "subtitle":  "Tell us your vision and let\u0027s transform it into reality. From Bible Studies to Brunches, we\u0027ll help you start a community near you!",
+                                                    "submitText":  "Send Message"
+                                                },
+                                    "style":  {
+                                                  "backgroundColor":  "#26352f",
+                                                  "textColor":  "#ffffff",
+                                                  "paddingTop":  "80px",
+                                                  "paddingBottom":  "90px"
+                                              }
+                                }
+                            ],
+                   "about":  [
+                                 {
+                                     "id":  "block_about_heading_1",
+                                     "type":  "heading",
+                                     "content":  {
+                                                     "text":  "For decades, women across the globe have been fed a lie.",
+                                                     "tag":  "h1"
+                                                 },
+                                     "style":  {
+                                                   "fontSize":  "48px",
+                                                   "textAlign":  "left",
+                                                   "paddingTop":  "40px"
+                                               }
+                                 },
+                                 {
+                                     "id":  "block_about_quote_1",
+                                     "type":  "quote",
+                                     "content":  {
+                                                     "quote":  "God created man and woman equal, but different. The Women of Virtue Movement is devoted to reassuring women around the globe that they do not need to suppress their feminine nature.",
+                                                     "reference":  "Women of Virtue"
+                                                 },
+                                     "style":  {
+                                                   "backgroundColor":  "#f0ede4",
+                                                   "accentColor":  "#c9755b"
+                                               }
+                                 },
+                                 {
+                                     "id":  "block_about_accordion_1",
+                                     "type":  "accordion",
+                                     "content":  {
+                                                     "items":  [
+                                                                   {
+                                                                       "title":  "THE WAY",
+                                                                       "content":  "Daily calls to prayer and weekly devotionals. The foundation of Women of Virtue."
+                                                                   },
+                                                                   {
+                                                                       "title":  "THE TRUTH",
+                                                                       "content":  "Breaking down years of unbiblical propaganda thatÃ¢â‚¬â„¢s been fed to young women. Rebuilding womenÃ¢â‚¬â„¢s true, biblical mindset."
+                                                                   },
+                                                                   {
+                                                                       "title":  "THE LIFE",
+                                                                       "content":  "Guidance on living out the Virtues in daily life. Both for married and unmarried women."
+                                                                   }
+                                                               ]
+                                                 },
+                                     "style":  {
+                                                   "paddingTop":  "20px",
+                                                   "paddingBottom":  "40px"
+                                               }
+                                 }
+                             ],
+                   "devotionals":  [
+
+                                   ],
+                   "devotionals/jelly":  [
+
+                                         ],
+                   "devotionals/defining-femininity":  [
+
+                                                       ]
+               },
+    "copyOverrides":  {
+                          "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0":  "The Prayer for the Human Family Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer"
+                      },
+    "richTextOverrides":  {
+
+                          },
+    "textStyles":  {
+                       "devotionals:h1:devotional-courses:0":  {
+                                                                   "color":  "#c9755b",
+                                                                   "textColor":  "#c9755b"
+                                                               }
+                   },
+    "theme":  {
+
+              },
+    "graphics":  {
+
+                 },
+    "layout":  {
+
+               },
+    "positionOverrides":  {
+                              "pos:home:img:el:0":  {
+                                                        "y":  0,
+                                                        "width":  253,
+                                                        "height":  242,
+                                                        "x":  0
+                                                    },
+                              "devotionals:h1:devotional-courses:0":  {
+                                                                          "y":  15,
+                                                                          "x":  -4
+                                                                      },
+                              "block:block_hero_1:title2":  {
+                                                                "y":  -5,
+                                                                "x":  -38
+                                                            },
+                              "photo":  {
+                                            "y":  -218,
+                                            "width":  613,
+                                            "height":  818,
+                                            "x":  0
+                                        },
+                              "block:block_hero_1:button":  {
+                                                                "y":  16,
+                                                                "x":  131
+                                                            }
+                          },
+    "devotionals":  [
+                        {
+                            "id":  "firm-foundations",
+                            "title":  "Firm Foundations",
+                            "description":  "Weekly Devotionals for Women of Virtue",
+                            "lessons":  [
+                                            {
+                                                "id":  "lesson-defining-femininity",
+                                                "slug":  "defining-femininity",
+                                                "title":  "Defining Femininity",
+                                                "titleHtml":  "",
+                                                "publishedAt":  "2026-01-05",
+                                                "introTitle":  "What is a Woman?",
+                                                "intro":  "Contrary to the blurred lines of the fallen world, the bible defines a woman quite clearly. Follow along to learn what GodÃ¢â‚¬â„¢s word has to say about the true woman.",
+                                                "body":  "",
+                                                "sections":  [
+                                                                 {
+                                                                     "title":  "Creation and Identity",
+                                                                     "paragraphs":  [
+                                                                                        "Genesis 1:27",
+                                                                                        "Ã¢â‚¬Å“So God created man in his own image, in the image of God he created him; Male and Female he created them.Ã¢â‚¬Â",
+                                                                                        "Both Women and Men share equal value in being created in God\u0027s image.",
+                                                                                        "Genesis 2:22",
+                                                                                        "Ã¢â‚¬Å“And the rib that the Lord God had taken from the man he made into a Woman and brought her to the man.Ã¢â‚¬Â",
+                                                                                        "God intentionally formed womanhood."
+                                                                                    ]
+                                                                 },
+                                                                 {
+                                                                     "title":  "Character and Value",
+                                                                     "paragraphs":  [
+                                                                                        "Proverbs 31:30",
+                                                                                        "Ã¢â‚¬Å“Charm is deceitful, and beauty is vain, but a woman who fears the lord is to be praisedÃ¢â‚¬Â",
+                                                                                        "True worth comes from honoring and fearing the Lord",
+                                                                                        "Proverbs 14:1",
+                                                                                        "Ã¢â‚¬Å“Every wise woman buildeth her house; but the foolish plucketh it down with her handsÃ¢â‚¬Â",
+                                                                                        "A womanÃ¢â‚¬â„¢s actions and attitude, both within the home and outside of it, have a profound impact.",
+                                                                                        "Proverbs 31:25",
+                                                                                        "Ã¢â‚¬Å“Strength and honor are her clothing; and she shall rejoice in time to come.Ã¢â‚¬Â",
+                                                                                        "Character, virtue, and dignity define a powerful and capable woman."
+                                                                                    ]
+                                                                 },
+                                                                 {
+                                                                     "title":  "Roles and Distinction",
+                                                                     "paragraphs":  [
+                                                                                        "Genesis 2:18",
+                                                                                        "Ã¢â‚¬Å“Then the lord God said, Ã¢â‚¬ËœIt is not good for man to be alone, I shall make a helper fit for himÃ¢â‚¬Â",
+                                                                                        "The woman was designed as a partner and strong helper. {Ezer}",
+                                                                                        "Ezer was often used to refer to God himself when he was called on for help and rescue.",
+                                                                                        "Deuteronomy 22:5",
+                                                                                        "Ã¢â‚¬Å“A woman shall not wear a manÃ¢â‚¬â„¢s garment, nor shall a man put on a womanÃ¢â‚¬â„¢s cloakÃ¢â‚¬Â",
+                                                                                        "Scripture continually affirms a clear distinction between male and female identities."
+                                                                                    ]
+                                                                 }
+                                                             ],
+                                                "resourceTitle":  "This Weeks Prayer:",
+                                                "resource":  "The Prayer for the Human Family Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
+                                                "image":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790621013944-MPTRWXGPL1YPY8P4GTIT/unsplash-image-iA-YMIV6GoM.jpg?format=500w",
+                                                "imageAlt":  "Woman praying",
+                                                "imageHeight":  1182.5,
+                                                "imageOffset":  0,
+                                                "pdfUrl":  ""
+                                            },
+                                            {
+                                                "id":  "lesson-prayer-life-and-church-community",
+                                                "slug":  "prayer-life-and-church-community",
+                                                "title":  "Prayer Life and Church Community",
+                                                "titleHtml":  "",
+                                                "publishedAt":  "2026-01-12",
+                                                "introTitle":  "Women were never meant to face life alone.",
+                                                "intro":  "",
+                                                "body":  "",
+                                                "sections":  [
+                                                                 {
+                                                                     "title":  "Prayer Life",
+                                                                     "paragraphs":  [
+                                                                                        "1 Thessalonians 5:16Ã¢â‚¬â€œ18",
+                                                                                        "\"Rejoice always, pray continually, give thanks in all circumstances; for this is GodÃ¢â‚¬â„¢s will for you in Christ Jesus.\"",
+                                                                                        "When you have a healthy prayer life, it is easier to feel more connected to Christ. Thus making it easier to trust that he is working in your favor.",
+                                                                                        "Romans 12:12",
+                                                                                        "\"Rejoice in hope, be patient in tribulation, be constant in prayer.\"",
+                                                                                        "Scripture regularly reminds us to be Ã¢â‚¬Å“constant in prayer.Ã¢â‚¬Â We ought not to forsake building a personal relationship with the Lord through prayer."
+                                                                                    ]
+                                                                 },
+                                                                 {
+                                                                     "title":  "Church Community",
+                                                                     "paragraphs":  [
+                                                                                        "Romans 12:4Ã¢â‚¬â€œ5:",
+                                                                                        "\"For as in one body we have many members, and the members do not all have the same function, so we, though many, are one body in Christ, and individually members one of another.\"",
+                                                                                        "Every woman brings her own unique set of gifts into the body of Christ.",
+                                                                                        "Galatians 6:2:",
+                                                                                        "\"Bear one another\u0027s burdens, and so fulfill the law of Christ.\"",
+                                                                                        "When we are able to rely on each otherÃ¢â‚¬â„¢s shoulders, we lighten the load of each individual.",
+                                                                                        "Hebrews 10:24Ã¢â‚¬â€œ25:",
+                                                                                        "\"And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another.\"",
+                                                                                        "It is important for sisters in Christ to keep each other not only company, but accountable."
+                                                                                    ]
+                                                                 }
+                                                             ],
+                                                "resourceTitle":  "Additional Resources",
+                                                "resource":  "Add a short summary or a list of helpful resources here. 1928 Book of Common Prayer: The General Thanksgiving Almighty God, Father of all mercies, we thine unworthy servants do give thee most humble and hearty thanks for all thy goodness and loving-kindness to us and to all men. We bless thee for our creation, preservation, and all the blessings of this life; but above all, for thine inestimable love in the redemption of the world by our Lord Jesus Christ; for the means of grace, and for the hope of glory. And, we beseech thee, give us that due sense of all thy mercies, that our hearts may be unfeignedly thankful; and that we show forth thy praise, not only with our lips, but in our lives, by giving up ourselves to thy service, and by walking before thee in holiness and righteousness all our days; through Jesus Christ our Lord, to whom, with thee and the Holy Ghost, be all honor and glory, world without end. Amen.",
+                                                "image":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790624992327-BEGE1WTS3E9WQ4ULYJGH/unsplash-image-mn5sKCN4eFs.jpg?format=500w",
+                                                "imageAlt":  "Church fellowship",
+                                                "imageHeight":  1072.9,
+                                                "imageOffset":  -4.6,
+                                                "pdfUrl":  ""
+                                            }
+                                        ]
+                        },
+                        {
+                            "id":  "test-file",
+                            "title":  "test file",
+                            "description":  "peanut butter",
+                            "lessons":  [
+                                            {
+                                                "id":  "lesson-jelly",
+                                                "slug":  "jelly",
+                                                "title":  "jelly",
+                                                "titleHtml":  "",
+                                                "publishedAt":  "2026-10-01",
+                                                "introTitle":  "jelly",
+                                                "intro":  "jelly is good",
+                                                "body":  "",
+                                                "sections":  [
+                                                                 {
+                                                                     "title":  "Biblical Foundation",
+                                                                     "paragraphs":  [
+                                                                                        "amen amen"
+                                                                                    ]
+                                                                 },
+                                                                 {
+                                                                     "title":  "hdhudwuidwdv",
+                                                                     "paragraphs":  [
+
+                                                                                    ]
+                                                                 }
+                                                             ],
+                                                "resourceTitle":  "This Week\u0027s Prayer:",
+                                                "resource":  "uiwhfiwubuwfhwi",
+                                                "image":  "",
+                                                "imageAlt":  "",
+                                                "imageHeight":  818,
+                                                "imageOffset":  0,
+                                                "pdfUrl":  ""
+                                            }
+                                        ]
+                        }
+                    ]
 }

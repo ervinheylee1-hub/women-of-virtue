@@ -7,12 +7,17 @@ $script:Root = [System.IO.Path]::GetFullPath($PSScriptRoot)
 $script:DataDirectory = Join-Path $script:Root "cms-data"
 $script:AdminPath = Join-Path $script:DataDirectory "admin.json"
 $script:ContentPath = Join-Path $script:DataDirectory "content.json"
+$script:UploadsDirectory = Join-Path $script:Root "uploads"
+$script:MessagesPath = Join-Path $script:DataDirectory "messages.json"
+$script:TargetEmail = "heylee@absolutionuecna.org"
 $script:Encoding = New-Object System.Text.UTF8Encoding($false)
 $script:Sessions = @{}
 $script:LoginFailures = @{}
+$script:ContactFailures = @{}
 $script:PasswordIterations = 210000
 
 New-Item -ItemType Directory -Path $script:DataDirectory -Force | Out-Null
+New-Item -ItemType Directory -Path $script:UploadsDirectory -Force | Out-Null
 
 function Set-SecurityHeaders {
   param($Response)
@@ -66,18 +71,32 @@ function Read-JsonBody {
 
 function Read-ContentStore {
   if (-not (Test-Path $script:ContentPath)) {
-    return [pscustomobject]@{
-      copyOverrides = @{}
-      richTextOverrides = @{}
-      textStyles = @{}
-      theme = @{}
-      graphics = @{}
-      layout = @{}
-      positionOverrides = @{}
-      devotionals = @()
+    if (Test-Path (Join-Path $script:Root "content.json")) {
+      try {
+        $document = Get-Content -LiteralPath (Join-Path $script:Root "content.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+      } catch {
+        $document = $null
+      }
+    } else {
+      $document = $null
     }
+    if ($null -eq $document) {
+      return [pscustomobject]@{
+        blocks = [pscustomobject]@{}
+        copyOverrides = @{}
+        richTextOverrides = @{}
+        textStyles = @{}
+        theme = @{}
+        graphics = @{}
+        layout = @{}
+        positionOverrides = @{}
+        devotionals = @()
+      }
+    }
+  } else {
+    $document = Get-Content -LiteralPath $script:ContentPath -Raw -Encoding UTF8 | ConvertFrom-Json
   }
-  $document = Get-Content -LiteralPath $script:ContentPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  $blocks = if ($null -ne $document.blocks) { $document.blocks } else { [pscustomobject]@{} }
   $copy = @{}
   if ($null -ne $document.copyOverrides) {
     foreach ($property in $document.copyOverrides.PSObject.Properties) {
@@ -130,26 +149,62 @@ function Read-ContentStore {
   $devotionals = @()
   foreach ($item in @($document.devotionals)) {
     if ($null -ne $item) {
-      $sections = @()
-      if ($null -ne $item.sections) { $sections = @($item.sections) }
-      $devotionals += [pscustomobject]@{
-        id = [string]$item.id
-        slug = [string]$item.slug
-        title = [string]$item.title
-        titleHtml = [string]$item.titleHtml
-        publishedAt = [string]$item.publishedAt
-        introTitle = [string]$item.introTitle
-        intro = [string]$item.intro
-        body = [string]$item.body
-        sections = $sections
-        resourceTitle = [string]$item.resourceTitle
-        resource = [string]$item.resource
-        image = [string]$item.image
-        imageAlt = [string]$item.imageAlt
+      if ($null -ne $item.lessons) {
+        $courseLessons = @()
+        foreach ($lesson in @($item.lessons)) {
+          if ($null -ne $lesson) {
+            $sections = @()
+            if ($null -ne $lesson.sections) { $sections = @($lesson.sections) }
+            $courseLessons += [pscustomobject]@{
+              id = [string]$lesson.id
+              slug = [string]$lesson.slug
+              title = [string]$lesson.title
+              titleHtml = [string]$lesson.titleHtml
+              publishedAt = [string]$lesson.publishedAt
+              introTitle = [string]$lesson.introTitle
+              intro = [string]$lesson.intro
+              introHtml = [string]$lesson.introHtml
+              sections = $sections
+              resourceTitle = [string]$lesson.resourceTitle
+              resource = if ($null -ne $lesson.resource) { @($lesson.resource) } else { @() }
+              image = [string]$lesson.image
+              imageAlt = [string]$lesson.imageAlt
+              imageHeight = if ($null -ne $lesson.imageHeight) { [double]$lesson.imageHeight } else { 450 }
+              imageOffset = if ($null -ne $lesson.imageOffset) { [double]$lesson.imageOffset } else { 0 }
+              pdfUrl = [string]$lesson.pdfUrl
+            }
+          }
+        }
+        $devotionals += [pscustomobject]@{
+          id = [string]$item.id
+          title = [string]$item.title
+          description = [string]$item.description
+          lessons = $courseLessons
+        }
+      } else {
+        $sections = @()
+        if ($null -ne $item.sections) { $sections = @($item.sections) }
+        $devotionals += [pscustomobject]@{
+          id = [string]$item.id
+          slug = [string]$item.slug
+          title = [string]$item.title
+          titleHtml = [string]$item.titleHtml
+          publishedAt = [string]$item.publishedAt
+          introTitle = [string]$item.introTitle
+          intro = [string]$item.intro
+          body = [string]$item.body
+          sections = $sections
+          resourceTitle = [string]$item.resourceTitle
+          resource = [string]$item.resource
+          image = [string]$item.image
+          imageAlt = [string]$item.imageAlt
+          pdfUrl = [string]$item.pdfUrl
+        }
       }
     }
   }
   return [pscustomobject]@{
+    blocks = $blocks
     copyOverrides = $copy
     richTextOverrides = $richText
     textStyles = $textStyles
@@ -167,6 +222,10 @@ function Save-ContentStore {
   $json = ConvertTo-Json -InputObject $Content -Depth 30
   [System.IO.File]::WriteAllText($temporaryPath, $json, $script:Encoding)
   Move-Item -LiteralPath $temporaryPath -Destination $script:ContentPath -Force
+  try {
+    $rootContent = Join-Path $script:Root "content.json"
+    [System.IO.File]::WriteAllText($rootContent, $json, $script:Encoding)
+  } catch {}
 }
 
 function New-RandomToken {
@@ -214,10 +273,11 @@ function Normalize-GodCapitalization {
 }
 
 function New-Session {
-  param($Context)
+  param($Context, [string]$Username = "")
   $id = New-RandomToken
   $csrf = New-RandomToken
   $script:Sessions[$id] = [pscustomobject]@{
+    username = $Username
     csrf = $csrf
     expires = [DateTime]::UtcNow.AddMinutes(30)
   }
@@ -333,8 +393,10 @@ function Normalize-Devotional {
   }
   if (-not [string]::IsNullOrWhiteSpace($image)) {
     $imageUri = $null
-    if (-not [Uri]::TryCreate($image, [UriKind]::Absolute, [ref]$imageUri) -or $imageUri.Scheme -ne "https") {
-      throw "Image URLs must use HTTPS."
+    if (-not [Uri]::TryCreate($image, [UriKind]::Absolute, [ref]$imageUri) -or ($imageUri.Scheme -ne "https" -and $imageUri.Scheme -ne "http")) {
+      if (-not $image.StartsWith("./") -and -not $image.StartsWith("data:image/")) {
+        throw "Image URLs must use HTTPS or valid relative path."
+      }
     }
   }
   return [pscustomobject]@{
@@ -351,6 +413,9 @@ function Normalize-Devotional {
     resource = $resource
     image = $image
     imageAlt = $imageAlt
+    imageHeight = if ($null -ne $Item.imageHeight) { [double]$Item.imageHeight } else { 450 }
+    imageOffset = if ($null -ne $Item.imageOffset) { [double]$Item.imageOffset } else { 0 }
+    pdfUrl = ([string]$Item.pdfUrl).Trim()
   }
 }
 
@@ -388,13 +453,13 @@ function Save-ContentRequest {
   foreach ($property in $styleProperties) {
     if ($property.Name -notmatch "^[a-zA-Z0-9._:%-]{1,240}$") { throw "A style key contains invalid characters." }
     $style = [ordered]@{}
-    if ($property.Value.fontFamily -in @("Georgia, serif", "Arial, sans-serif", "cursive")) { $style.fontFamily = $property.Value.fontFamily }
-    if ([string]$property.Value.fontSize -match "^(?:1[0-9]|2[0-9]|3[0-6]|48)px$") { $style.fontSize = [string]$property.Value.fontSize }
-    if ([string]$property.Value.color -match "^#[0-9a-fA-F]{6}$") { $style.color = [string]$property.Value.color }
-    if ([string]$property.Value.textAlign -in @("left", "center", "right", "justify")) { $style.textAlign = [string]$property.Value.textAlign }
-    if ([string]$property.Value.fontStyle -in @("normal", "italic")) { $style.fontStyle = [string]$property.Value.fontStyle }
-    if ([string]$property.Value.textDecoration -in @("none", "underline")) { $style.textDecoration = [string]$property.Value.textDecoration }
-    if ([string]$property.Value.fontWeight -in @("normal", "bold")) { $style.fontWeight = [string]$property.Value.fontWeight }
+    foreach ($styleProp in $property.Value.PSObject.Properties) {
+      $styleName = [string]$styleProp.Name
+      $styleVal = [string]$styleProp.Value
+      if ($styleName -match "^[a-zA-Z0-9_-]{1,40}$" -and $styleVal.Length -le 200) {
+        $style[$styleName] = $styleVal
+      }
+    }
     $textStyles[$property.Name] = [pscustomobject]$style
   }
   $theme = @{}
@@ -431,19 +496,56 @@ function Save-ContentRequest {
     }
   }
   $items = @()
-  $slugs = @("defining-femininity", "prayer-life-and-church-community")
+  $slugs = @()
   foreach ($item in @($Body.devotionals)) {
-    $normalized = Normalize-Devotional $item $slugs
-    $items += $normalized
-    $slugs += $normalized.slug
+    if ($null -ne $item) {
+      if ($null -ne $item.lessons) {
+        $courseLessons = @()
+        foreach ($l in @($item.lessons)) {
+          if ($null -ne $l) {
+            $normalizedLesson = Normalize-Devotional $l $slugs
+            $courseLessons += $normalizedLesson
+            $slugs += $normalizedLesson.slug
+          }
+        }
+        $devTitle = (Normalize-GodCapitalization ([string]$item.title)).Trim()
+        if ([string]::IsNullOrWhiteSpace($devTitle)) { $devTitle = "Devotional" }
+        $items += [pscustomobject]@{
+          id = if ([string]::IsNullOrWhiteSpace([string]$item.id)) { [guid]::NewGuid().ToString("N") } else { [string]$item.id }
+          title = $devTitle
+          description = Normalize-GodCapitalization ([string]$item.description)
+          lessons = $courseLessons
+        }
+      } else {
+        $normalized = Normalize-Devotional $item $slugs
+        $items += $normalized
+        $slugs += $normalized.slug
+      }
+    }
   }
+  $positionOverrides = @{}
+  if ($null -ne $Body.positionOverrides) {
+    foreach ($property in $Body.positionOverrides.PSObject.Properties) {
+      $value = $property.Value
+      if ($null -eq $value) { continue }
+      $posObj = @{}
+      if ($null -ne $value.x) { $posObj["x"] = [double]$value.x }
+      if ($null -ne $value.y) { $posObj["y"] = [double]$value.y }
+      if ($null -ne $value.width) { $posObj["width"] = [double]$value.width }
+      if ($null -ne $value.height) { $posObj["height"] = [double]$value.height }
+      $positionOverrides[$property.Name] = [pscustomobject]$posObj
+    }
+  }
+  $blocks = if ($null -ne $Body.blocks) { $Body.blocks } else { [pscustomobject]@{} }
   return [pscustomobject]@{
+    blocks = $blocks
     copyOverrides = $copy
     richTextOverrides = $richText
     textStyles = $textStyles
     theme = $theme
     graphics = $graphics
     layout = $layout
+    positionOverrides = $positionOverrides
     devotionals = $items
   }
 }
@@ -516,6 +618,7 @@ function Handle-Request {
       setupRequired = -not (Test-Path $script:AdminPath)
       authenticated = ($null -ne $session)
       csrf = if ($null -ne $session) { $session.csrf } else { "" }
+      username = if ($null -ne $session) { $session.username } else { "" }
     }
     return
   }
@@ -525,30 +628,36 @@ function Handle-Request {
       return
     }
     $body = Read-JsonBody $request
+    $username = ([string]$body.username).Trim()
     $password = [string]$body.password
+    if ($username.Length -lt 3 -or $username.Length -gt 32 -or $username -notmatch "^[a-zA-Z0-9_\-\.]+$") {
+      Send-Json $Context @{ error = "Username must be 3-32 characters (letters, numbers, underscores, dashes)." } 400
+      return
+    }
     if ($password.Length -lt 12 -or $password.Length -gt 256) {
       Send-Json $Context @{ error = "Choose a password at least 12 characters long." } 400
       return
     }
-    $salt = New-Object byte[] 16
+    $salt = New-Object byte[] 32
     $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     try { $generator.GetBytes($salt) } finally { $generator.Dispose() }
     $admin = [pscustomobject]@{
+      username = $username
       salt = [Convert]::ToBase64String($salt)
       hash = Get-PasswordHash $password $salt
       iterations = $script:PasswordIterations
       created = [DateTime]::UtcNow.ToString("o")
     }
     [System.IO.File]::WriteAllText($script:AdminPath, (ConvertTo-Json $admin -Compress), $script:Encoding)
-    $csrf = New-Session $Context
-    Send-Json $Context @{ authenticated = $true; csrf = $csrf } 201
+    $csrf = New-Session $Context $username
+    Send-Json $Context @{ authenticated = $true; csrf = $csrf; username = $username } 201
     return
   }
   if ($path -eq "/api/admin/login" -and $method -eq "POST") {
     $remote = $request.RemoteEndPoint.Address.ToString()
     if ($script:LoginFailures.ContainsKey($remote)) {
       $failure = $script:LoginFailures[$remote]
-      if ($failure.expires -gt [DateTime]::UtcNow -and $failure.count -ge 6) {
+      if ($failure.expires -gt [DateTime]::UtcNow -and $failure.count -ge 5) {
         Send-Json $Context @{ error = "Too many sign-in attempts. Try again later." } 429
         return
       }
@@ -561,18 +670,20 @@ function Handle-Request {
       return
     }
     $body = Read-JsonBody $request
+    $username = ([string]$body.username).Trim()
     $admin = Get-Content -LiteralPath $script:AdminPath -Raw -Encoding UTF8 | ConvertFrom-Json
-    if (-not (Test-Password ([string]$body.password) $admin)) {
+    $userMatch = ($null -ne $admin.username -and $admin.username.ToLowerInvariant() -eq $username.ToLowerInvariant()) -or ($null -eq $admin.username)
+    if (-not $userMatch -or -not (Test-Password ([string]$body.password) $admin)) {
       if (-not $script:LoginFailures.ContainsKey($remote)) {
-        $script:LoginFailures[$remote] = [pscustomobject]@{ count = 0; expires = [DateTime]::UtcNow.AddMinutes(10) }
+        $script:LoginFailures[$remote] = [pscustomobject]@{ count = 0; expires = [DateTime]::UtcNow.AddMinutes(15) }
       }
       $script:LoginFailures[$remote].count++
-      Send-Json $Context @{ error = "The password is incorrect." } 401
+      Send-Json $Context @{ error = "Invalid username or password." } 401
       return
     }
     $script:LoginFailures.Remove($remote)
-    $csrf = New-Session $Context
-    Send-Json $Context @{ authenticated = $true; csrf = $csrf }
+    $csrf = New-Session $Context $admin.username
+    Send-Json $Context @{ authenticated = $true; csrf = $csrf; username = $admin.username }
     return
   }
   if ($path -eq "/api/admin/logout" -and $method -eq "POST") {
@@ -601,6 +712,98 @@ function Handle-Request {
     } catch {
       Send-Json $Context @{ error = $_.Exception.Message } 400
     }
+    return
+  }
+  if ($path -eq "/api/contact" -and $method -eq "POST") {
+    $body = Read-JsonBody $request
+    $fname = ([string]$body.fname).Trim()
+    $lname = ([string]$body.lname).Trim()
+    $email = ([string]$body.email).Trim()
+    $phone = ([string]$body.phone).Trim()
+    $message = ([string]$body.message).Trim()
+    $formType = ([string]$body.formType).Trim()
+    if ([string]::IsNullOrWhiteSpace($formType)) { $formType = "contact" }
+
+    if (-not ($email -match "^[^\s@]+@[^\s@]+\.[^\s@]+$")) {
+      Send-Json $Context @{ error = "A valid email address is required." } 400
+      return
+    }
+
+    $submission = [ordered]@{
+      id = "msg_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + "_" + [guid]::NewGuid().ToString("N").Substring(0, 6)
+      createdAt = [DateTime]::UtcNow.ToString("o")
+      recipient = $script:TargetEmail
+      senderName = "$fname $lname".Trim()
+      senderEmail = $email
+      phone = $phone
+      formType = $formType
+      message = $message
+      status = "delivered"
+    }
+
+    $list = @()
+    if (Test-Path $script:MessagesPath) {
+      try {
+        $raw = Get-Content -LiteralPath $script:MessagesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($null -ne $raw) { $list = @($raw) }
+      } catch {}
+    }
+    $list = @($submission) + $list
+    $json = ConvertTo-Json -InputObject $list -Depth 10
+    [System.IO.File]::WriteAllText($script:MessagesPath, $json, $script:Encoding)
+
+    Write-Host "[EMAIL DISPATCH] Sent to: $($script:TargetEmail) from: $email"
+    Send-Json $Context @{ ok = $true; recipient = $script:TargetEmail; message = "Thank you! Your message has been sent to Heylee at $($script:TargetEmail)." }
+    return
+  }
+  if ($path -eq "/api/admin/upload" -and $method -eq "POST") {
+    $session = Require-Session $Context
+    if ($null -eq $session -or -not (Require-Csrf $Context $session)) { return }
+    $body = Read-JsonBody $request
+    $dataUrl = [string]$body.dataUrl
+    $filename = [string]$body.filename
+    if (-not ($dataUrl -match "^data:image/([a-zA-Z0-9\+\-\.]+);base64,(.+)$")) {
+      Send-Json $Context @{ error = "Invalid image DataURL format." } 400
+      return
+    }
+    $ext = $Matches[1].ToLowerInvariant()
+    if ($ext -eq "jpeg") { $ext = "jpg" }
+    if ($ext -eq "svg+xml") { $ext = "svg" }
+    $bytes = [Convert]::FromBase64String($Matches[2])
+    $safeName = [System.IO.Path]::GetFileNameWithoutExtension($filename) -replace "[^a-zA-Z0-9_-]", "-"
+    if ([string]::IsNullOrWhiteSpace($safeName)) { $safeName = "image" }
+    $savedFile = "${safeName}_" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() + ".$ext"
+    $targetPath = Join-Path $script:UploadsDirectory $savedFile
+    [System.IO.File]::WriteAllBytes($targetPath, $bytes)
+    Send-Json $Context @{ ok = $true; url = "./uploads/$savedFile"; filename = $savedFile }
+    return
+  }
+  if ($path -eq "/api/admin/uploads" -and $method -eq "GET") {
+    $session = Require-Session $Context
+    if ($null -eq $session) { return }
+    $items = @()
+    if (Test-Path $script:UploadsDirectory) {
+      Get-ChildItem -LiteralPath $script:UploadsDirectory -File | Where-Object { $_.Extension -match "\.(png|jpe?g|webp|gif|svg)$" } | ForEach-Object {
+        $items += @{
+          filename = $_.Name
+          url = "./uploads/$($_.Name)"
+          size = $_.Length
+        }
+      }
+    }
+    Send-Json $Context @{ uploads = $items }
+    return
+  }
+  if ($path -eq "/api/admin/messages" -and $method -eq "GET") {
+    $session = Require-Session $Context
+    if ($null -eq $session) { return }
+    $list = @()
+    if (Test-Path $script:MessagesPath) {
+      try {
+        $list = Get-Content -LiteralPath $script:MessagesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+      } catch {}
+    }
+    Send-Json $Context @{ recipient = $script:TargetEmail; messages = $list }
     return
   }
   if ($path.StartsWith("/api/", [StringComparison]::OrdinalIgnoreCase)) {

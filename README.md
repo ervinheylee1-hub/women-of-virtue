@@ -1,43 +1,104 @@
-# Women of Virtue Local CMS
+# Women of Virtue · Visual CMS & Elementor-Style Page Builder
 
-## Start the site
+A modern, block-based visual front-end editor and authenticated CMS for **Women of Virtue**.
 
-Open PowerShell in this folder and run:
+---
 
+## Quick Start
+
+You can run the backend server using either **Node.js** or **PowerShell**:
+
+### Option A: Node.js (Recommended)
+Open a terminal in `women-of-virtue-main` and run:
+```bash
+node server.js
+```
+or
+```bash
+npm start
+```
+
+### Option B: PowerShell
 ```powershell
 .\server.ps1 -Port 5173
 ```
 
-Then visit `http://127.0.0.1:5173/`. The admin panel is at `http://127.0.0.1:5173/admin`.
+Once running:
+- **Public Website**: Visit `http://127.0.0.1:5173/`
+- **Visual Admin Editor**: Visit `http://127.0.0.1:5173/admin`
 
-In VS Code, open **Run and Debug** and start **Women of Virtue (local)** to start the local server and open the site in Microsoft Edge. The site is served from the repository root, matching the relative paths used on GitHub Pages.
+---
 
-If PowerShell blocks the local script, inspect `server.ps1` and use the normal user-scoped policy for local scripts:
+## Security & Authentication Architecture
 
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
+The admin panel is protected with enterprise-grade cryptographic authentication:
 
-Restart PowerShell and start the server. The application does not change or bypass the machine's execution policy. Managed policy may require an administrator.
+- **Username & Password Authentication**: On first visit, you are prompted to create an administrator **Username** (3–32 characters) and a strong **Password** (min 12 characters).
+- **Salted Cryptographic Hashing**: Passwords are encrypted using PBKDF2-SHA256 with a unique 32-byte cryptographically secure random salt and 210,000 iterations.
+- **Timing-Attack Resistance**: Authentication verifies credentials using constant-time comparison buffer loops (`crypto.timingSafeEqual`).
+- **Brute-Force Rate Limiting**: The server tracks failed sign-in attempts per IP and temporarily locks out requests after 5 consecutive failures.
+- **Session Security**: Authenticated sessions use cryptographically generated 256-bit random tokens, stored server-side with rolling 30-minute expiration, and sent via `HttpOnly`, `SameSite=Strict`, `Path=/` cookies.
+- **CSRF Defense**: All state-changing mutations (`PUT`, `POST`, `DELETE`) require a synchronized `X-CSRF-Token` header.
+- **Public Lockdown**: On public static hosting (e.g. GitHub Pages), unauthenticated public access to the admin dashboard is strictly denied. The admin interface is available only through your private backend server.
 
-## Admin access
+---
 
-On first visit, create an administrator password of at least 12 characters. Passwords are stored as salted PBKDF2-SHA256 hashes. The server binds only to `127.0.0.1`, uses HttpOnly/SameSite session cookies and CSRF tokens, and rate-limits failed sign-ins.
+## Elementor-Style Visual Front-End Editor
 
-Select page text in the preview to edit it. Drag outlined blocks to reorder same-level homepage sections, gallery photos, header/navigation items, page columns, course sections, lesson rows, and lesson-page regions. Order is saved in the local CMS or browser storage and included in downloaded `content.json` files. The formatting toolbar supports serif, sans-serif, and script fonts; font size and color; bold, italic, underline; paragraph and heading styles; blockquotes; and text alignment. Theme controls update the header pink, devotional-heading pink, and body text color. Homepage hero headlines, supporting copy, and button text have direct dashboard fields. Site image fields accept public HTTPS URLs for the hero, course banner, galleries, page photography, and built-in lesson images; these overrides are included in downloaded `content.json` files.
+The admin panel provides a live, interactive block builder inspired by Elementor:
 
-New devotionals support a publication date, title and introduction subheading, multiple named rich-text sections, resources, and HTTPS image URLs with alt text. Section text keeps paragraphs, emphasis, headings, lists, and blockquotes and uses the site lesson typography. You can also edit page subheadings and button labels by selecting them in the preview.
+### 1. Interactive Live Canvas
+- **Visual Outlines**: Hovering over any block on the page highlights its boundaries.
+- **Block Action Bar**: Each block features an action bar with:
+  - **Block Tag Badge**: Identifies widget type (e.g., `HERO`, `HEADING`, `QUOTE`, `GALLERY`).
+  - **Move Up (▲) / Move Down (▼)**: Smoothly reorders blocks on the page.
+  - **Duplicate (⎘)**: Clones the block with all its contents and styling.
+  - **Delete (✕)**: Removes the block from the page layout.
+- **Between-Block `+` Inserters**: Hovering between any two sections reveals a `+` inserter bar to insert widgets directly into that spot.
+- **Direct Selection**: Clicking any block highlights it and immediately opens its settings in the Inspector.
 
-With the local PowerShell server running, content persists in `cms-data/content.json`; the password hash is kept separately in `cms-data/admin.json`. Both files are ignored by Git. The CMS APIs are available only through this localhost server.
+### 2. Comprehensive Widget Library
+- **Basic Widgets**:
+  - `Heading`: Multi-level headings (`H1`–`H6`) with font, size, and alignment options.
+  - `Text Editor`: Rich text paragraphs for storytelling, reflections, and teachings.
+  - `Button`: Call-to-action buttons with `Primary (Filled)`, `Outline`, and `Pill` styles.
+  - `Image`: Single photos with HTTPS URL, alt text, and captions.
+  - `Scripture Quote`: Scripture quotes with decorative quotation marks and scripture citations.
+  - `Spacer & Line`: Adjustable vertical spacing with optional decorative divider line.
+- **Layout & Structure**:
+  - `2 Columns (50/50)`: Equal side-by-side layout.
+  - `3 Columns (33/33/33)`: Three-column layout.
+  - `2 Columns (67/33)`: Asymmetrical wide/narrow column layout.
+- **Specialty & Creative**:
+  - `Hero Section`: Full-width banner with eyebrow, headlines, description, CTA button, and background image overlay.
+  - `Image Gallery`: Multi-column responsive photo grid (2, 3, or 4 columns).
+  - `Accordion FAQ`: Collapsible details/summary items for Q&As.
+  - `Contact Form`: Form layout for inquiries, bible study sign-ups, and prayer requests.
+  - `Marquee Ticker`: Smooth scrolling marquee banner.
 
-## GitHub Pages mode
+### 3. Elementor 3-Tab Inspector
+- **Content Tab**: Edit widget-specific text, URLs, headings, accordion items, and buttons.
+- **Style Tab**:
+  - **Typography**: Select font families (`Bitter`, `DM Sans`, `Shrikhand`), font size slider (12px–96px), and font weights (Regular, Medium, Semi-Bold, Bold).
+  - **Alignment**: Quick alignment buttons (Left, Center, Right, Justify).
+  - **Colors**: Real-time color pickers and hex inputs for Text, Background, and Accent colors.
+  - **Spacing & Borders**: Box-model padding, margins, and border radius.
+- **Advanced Tab**:
+  - Custom CSS classes and block ID.
+  - One-click Duplicate and Delete buttons.
 
-The `main` branch is deployed to GitHub Pages by the GitHub Actions workflow. In the repository's **Settings > Pages**, set **Build and deployment > Source** to **GitHub Actions**. The site files, including `content.json`, use relative paths and work from both the local server root and the repository's `/women-of-virtue/` Pages path.
+### 4. Top Utility Bar & Tools
+- **Device Switcher**: Test your site across **Desktop** (100%), **Tablet** (768px), and **Mobile** (375px) viewports with realistic device bezels.
+- **Page Selector**: Switch seamlessly between `Home`, `About`, `Contact`, `Devotionals`, and individual lessons.
+- **History (Undo/Redo)**: Full snapshot history stack with `Ctrl+Z` (Undo) and `Ctrl+Y` (Redo).
+- **Structure Navigator**: Slide-out hierarchical tree of all blocks on the current page for quick selection and reordering.
+- **Clean Preview Mode**: Toggle the Eye icon to hide all editor handles and preview the live page as end-users see it.
+- **Save & Publish**: Instant save with `Ctrl+S` or the "Save Changes" button, with a live status indicator.
 
-Open `https://ervinheylee1-hub.github.io/women-of-virtue/admin/` (or `/admin`) to use browser mode. Edits persist in that browser's `localStorage`; use **Download content.json** and import/replace the repository's `content.json` with that download to publish changes for all visitors. Use **Import content.json** to load a committed copy into the current browser.
+---
 
-To publish from VS Code, open **Source Control**, review the changed files, stage the files to publish (including `content.json` for content edits), enter a commit message, select **Commit**, then select **Sync Changes** or **Push**. Each push to `main` starts a fresh Pages deployment; check the **Actions** tab for its status. From a terminal, the equivalent is `git add .`, `git commit -m "Describe the change"`, and `git push origin main`.
+## Data Persistence & Publishing
 
-GitHub Pages is static hosting: browser-mode editing has no server-side authentication, and localStorage is per browser/device. Do not store secrets or rely on it for private admin access. Use the localhost PowerShell mode when authenticated server-side editing is required.
-
-Opening `index.html` directly keeps the built-in site content. Browsers generally restrict local-file fetches, so use GitHub Pages or the local server for JSON persistence and the preview-based editor.git --version
+- When running the backend server, edits persist automatically to `cms-data/content.json` and sync with root `content.json`.
+- The admin credentials hash is kept securely in `cms-data/admin.json` (ignored by Git).
+- Use **Download content.json** / **Import content.json** under Site Settings for manual backup or cross-environment migration.

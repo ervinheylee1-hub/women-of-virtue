@@ -3,6 +3,7 @@ const nav = document.querySelector("#site-nav");
 const menuToggle = document.querySelector(".menu-toggle");
 const cmsStorageKey = "women-of-virtue-content-v1";
 let cmsContent = {
+  blocks: {},
   copyOverrides: {},
   richTextOverrides: {},
   textStyles: {},
@@ -22,38 +23,119 @@ function escapeCmsText(value) {
   })[character]);
 }
 
-function allLessons() {
-  const added = cmsContent.devotionals.map(item => ({
-    slug: item.slug,
-    title: escapeCmsText(item.title),
+function normalizeLessonItem(item) {
+  if (!item) return null;
+  const slug = item.slug || (item.title ? item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "");
+  const sections = Array.isArray(item.sections) && item.sections.some(Boolean)
+    ? item.sections.filter(Boolean).map(section => {
+      const [title, paragraphs] = Array.isArray(section) ? section : [section.title, section.paragraphs];
+      return [
+        escapeCmsText(title || "Section"),
+        Array.isArray(paragraphs) ? paragraphs.map(p => (
+          p && typeof p === "object" && Object.hasOwn(p, "html") ? { html: sanitizeCmsHtml(p.html) } : p
+        )) : []
+      ];
+    })
+    : (item.body ? [["Devotional", [{ html: sanitizeCmsHtml(item.body) }]]] : []);
+
+  let resource = [];
+  if (Array.isArray(item.resource)) {
+    resource = item.resource.map(p => (
+      p && typeof p === "object" && Object.hasOwn(p, "html") ? { html: sanitizeCmsHtml(p.html) } : p
+    ));
+  } else if (item.resource) {
+    resource = [{ html: sanitizeCmsHtml(item.resource) }];
+  }
+
+  return {
+    id: item.id || `lesson-${slug}`,
+    slug: slug,
+    title: escapeCmsText(item.title || "Lesson"),
     titleHtml: sanitizeCmsHtml(item.titleHtml || ""),
     publishedAt: item.publishedAt || "",
-    next: "",
-    introTitle: escapeCmsText(item.introTitle || item.title),
-    intro: "",
-    introHtml: sanitizeCmsHtml(item.intro),
-    sections: Array.isArray(item.sections) && item.sections.some(Boolean)
-      ? item.sections.filter(Boolean).map(section => {
-        const [title, paragraphs] = Array.isArray(section) ? section : [section.title, section.paragraphs];
-        return [escapeCmsText(title), Array.isArray(paragraphs) ? paragraphs.map(paragraph => (
-          paragraph && typeof paragraph === "object" && Object.hasOwn(paragraph, "html")
-            ? { html: sanitizeCmsHtml(paragraph.html) }
-            : paragraph
-        )) : []];
-      })
-      : [["Devotional", item.body ? [{ html: sanitizeCmsHtml(item.body) }] : []]],
+    next: item.next || "",
+    introTitle: escapeCmsText(item.introTitle || item.title || "Introduction"),
+    intro: item.intro || "",
+    introHtml: item.introHtml ? sanitizeCmsHtml(item.introHtml) : "",
+    sections: sections,
     resourceTitle: escapeCmsText(item.resourceTitle || "Additional Resources"),
-    resource: item.resource ? [{ html: sanitizeCmsHtml(item.resource) }] : [],
-    image: cmsImage(`devotional:${item.slug}`, item.image || images.bible),
-    imageAlt: escapeCmsText(item.imageAlt || ""),
-    imageHeight: 450,
-    imageOffset: 0
-  }));
-  const existing = lessons.map(lesson => ({
-    ...lesson,
-    image: cmsImage(`lesson:${lesson.slug}`, lesson.image)
-  }));
-  return [...existing, ...added];
+    resource: resource,
+    image: cmsImage(`lesson:${slug}`, item.image || images.bible),
+    imageAlt: escapeCmsText(item.imageAlt || item.title || ""),
+    imageHeight: item.imageHeight || 600,
+    imageOffset: item.imageOffset || 0,
+    pdfUrl: item.pdfUrl || ""
+  };
+}
+
+function allDevotionals() {
+  if (Array.isArray(cmsContent.devotionals) && cmsContent.devotionals.length > 0) {
+    const hasUnits = cmsContent.devotionals.some(d => d && Array.isArray(d.lessons));
+    if (hasUnits) {
+      return cmsContent.devotionals.map(d => {
+        if (d && Array.isArray(d.lessons)) {
+          return {
+            id: d.id || (d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "unit"),
+            title: escapeCmsText(d.title || "Devotional Course"),
+            description: escapeCmsText(d.description || ""),
+            lessons: d.lessons.map(normalizeLessonItem).filter(Boolean)
+          };
+        }
+        return {
+          id: d.id || "unit",
+          title: escapeCmsText(d.devotionalTitle || d.title || "Devotional Course"),
+          description: "",
+          lessons: [normalizeLessonItem(d)].filter(Boolean)
+        };
+      });
+    } else {
+      const defaultLessons = lessons.map(normalizeLessonItem).filter(Boolean);
+      const customLessons = cmsContent.devotionals.map(normalizeLessonItem).filter(Boolean);
+      return [
+        {
+          id: "firm-foundations",
+          title: "Firm Foundations",
+          description: "Weekly Devotionals for Women of Virtue",
+          lessons: [...defaultLessons, ...customLessons]
+        }
+      ];
+    }
+  }
+
+  return [
+    {
+      id: "firm-foundations",
+      title: "Firm Foundations",
+      description: "Weekly Devotionals for Women of Virtue",
+      lessons: lessons.map(normalizeLessonItem).filter(Boolean)
+    }
+  ];
+}
+
+function allLessons() {
+  const devotionals = allDevotionals();
+  const list = [];
+  devotionals.forEach(dev => {
+    if (Array.isArray(dev.lessons)) {
+      list.push(...dev.lessons);
+    }
+  });
+  return list;
+}
+
+function getDevotionalForLesson(slug) {
+  const devotionals = allDevotionals();
+  return devotionals.find(d => (d.lessons || []).some(l => l.slug === slug)) || null;
+}
+
+function findNextLesson(slug) {
+  const parent = getDevotionalForLesson(slug);
+  if (!parent || !Array.isArray(parent.lessons)) return null;
+  const idx = parent.lessons.findIndex(l => l.slug === slug);
+  if (idx >= 0 && idx < parent.lessons.length - 1) {
+    return parent.lessons[idx + 1];
+  }
+  return null;
 }
 
 function sanitizeCmsHtml(value) {
@@ -104,14 +186,21 @@ function applyCmsText(element, key) {
     setCmsText(element, cmsContent.copyOverrides[key]);
   }
   const style = cmsContent.textStyles[key];
-  if (!style) return;
-  if (["Georgia, serif", "Arial, sans-serif", "cursive"].includes(style.fontFamily)) element.style.fontFamily = style.fontFamily;
-  if (/^(?:1[0-9]|2[0-9]|3[0-6]|48)px$/.test(style.fontSize || "")) element.style.fontSize = style.fontSize;
-  if (/^#[0-9a-f]{6}$/i.test(style.color || "")) element.style.color = style.color;
-  if (["left", "center", "right", "justify"].includes(style.textAlign)) element.style.textAlign = style.textAlign;
-  if (["normal", "italic"].includes(style.fontStyle)) element.style.fontStyle = style.fontStyle;
-  if (["none", "underline"].includes(style.textDecoration)) element.style.textDecoration = style.textDecoration;
-  if (["normal", "bold"].includes(style.fontWeight)) element.style.fontWeight = style.fontWeight;
+  if (!style || typeof style !== "object") return;
+  if (style.fontFamily) element.style.fontFamily = style.fontFamily;
+  if (style.fontSize) element.style.fontSize = style.fontSize;
+  if (style.color) element.style.color = style.color;
+  if (style.backgroundColor) element.style.backgroundColor = style.backgroundColor;
+  if (style.textAlign) element.style.textAlign = style.textAlign;
+  if (style.fontStyle) element.style.fontStyle = style.fontStyle;
+  if (style.textDecoration) element.style.textDecoration = style.textDecoration;
+  if (style.textTransform) element.style.textTransform = style.textTransform;
+  if (style.fontWeight) element.style.fontWeight = style.fontWeight;
+  if (style.lineHeight) element.style.lineHeight = style.lineHeight;
+  if (style.letterSpacing) element.style.letterSpacing = style.letterSpacing;
+  if (style.padding) element.style.padding = style.padding;
+  if (style.margin) element.style.margin = style.margin;
+  if (style.borderRadius) element.style.borderRadius = style.borderRadius;
 }
 
 function applyCmsTheme() {
@@ -155,6 +244,49 @@ function applyCmsLayout() {
     const savedOrder = Array.isArray(cmsContent.layout[group]) ? cmsContent.layout[group] : [];
     const ordered = [...savedOrder.filter(key => byKey.has(key)).map(key => byKey.get(key)), ...elements.filter(element => !savedOrder.includes(element.dataset.cmsLayoutKey))];
     parent.append(...ordered);
+  }
+}
+
+function applyCmsPositionOverrides() {
+  if (!cmsContent.positionOverrides || typeof cmsContent.positionOverrides !== "object") return;
+  for (const [key, pos] of Object.entries(cmsContent.positionOverrides)) {
+    if (!pos) continue;
+    let el = null;
+    try {
+      el = document.querySelector(`[data-wov-block-id="${CSS.escape(key)}"], [data-cms-key="${CSS.escape(key)}"], [data-cms-layout-key="${CSS.escape(key)}"]`);
+    } catch {}
+    if (!el) {
+      el = [...document.querySelectorAll("[data-cms-key], [data-wov-block-id], [data-cms-layout-key]")].find(e => e.dataset.cmsKey === key || e.dataset.wovBlockId === key || e.dataset.cmsLayoutKey === key);
+    }
+    if (!el && document.getElementById(key)) {
+      el = document.getElementById(key);
+    }
+    if (el) {
+      if (pos.x !== undefined || pos.y !== undefined) {
+        el.style.position = "relative";
+        if (pos.x !== undefined) el.style.left = `${pos.x}px`;
+        if (pos.y !== undefined) el.style.top = `${pos.y}px`;
+      }
+      if (pos.width !== undefined && pos.width > 0) {
+        el.style.width = `${pos.width}px`;
+        if (el.tagName.toLowerCase() === "img") {
+          el.style.maxWidth = "none";
+        } else if (window.getComputedStyle(el).display === "inline") {
+          el.style.display = "inline-block";
+        }
+      }
+      if (pos.height !== undefined && pos.height > 0) {
+        el.style.height = `${pos.height}px`;
+        if (el.tagName.toLowerCase() === "img") {
+          el.style.objectFit = "cover";
+        } else {
+          el.style.minHeight = `${pos.height}px`;
+        }
+        if (el.classList.contains("lesson-photo")) {
+          el.style.setProperty("--lesson-image-height", `${pos.height}px`);
+        }
+      }
+    }
   }
 }
 
@@ -208,8 +340,15 @@ function setCmsText(element, value) {
 
 async function loadCmsContent() {
   let data = null;
+  const isCmsPreview = new URLSearchParams(window.location.search).get("cmsPreview") === "1";
+  if (isCmsPreview) {
+    try {
+      const saved = localStorage.getItem(cmsStorageKey);
+      if (saved) data = JSON.parse(saved);
+    } catch {}
+  }
   const localServer = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-  if (localServer) {
+  if (!data && localServer) {
     try {
       const response = await fetch("./api/public-content", { cache: "no-store" });
       if (response.ok) data = await response.json();
@@ -235,12 +374,14 @@ async function loadCmsContent() {
   }
   if (!data) return;
   cmsContent = {
+    blocks: data.blocks && typeof data.blocks === "object" ? data.blocks : {},
     copyOverrides: data.copyOverrides || {},
     richTextOverrides: data.richTextOverrides || {},
     textStyles: data.textStyles || {},
     theme: data.theme || {},
     graphics: data.graphics || {},
     layout: data.layout && typeof data.layout === "object" ? data.layout : {},
+    positionOverrides: data.positionOverrides && typeof data.positionOverrides === "object" ? data.positionOverrides : {},
     devotionals: Array.isArray(data.devotionals) ? data.devotionals : []
   };
 }
@@ -429,13 +570,32 @@ function coursePage() {
   const availableLessons = allLessons();
   const completed = progressData();
   const count = availableLessons.filter(lesson => completed[lesson.slug]).length;
-  const percent = Math.round(count / availableLessons.length * 100);
+  const percent = availableLessons.length > 0 ? Math.round(count / availableLessons.length * 100) : 0;
+  const devotionals = allDevotionals();
+
   return `<div class="page-fade devotional-page">
     <section class="course-banner page-section" aria-label="Devotional courses" data-cms-layout-group="course-sections" data-cms-layout-key="banner"></section>
     <section class="course-list-region page-section" data-cms-layout-group="course-sections" data-cms-layout-key="lessons"><div class="course-page">
       <div class="course-intro"><h1>Devotional Courses</h1><p>Weekly Devotionals for Women of Virtue</p><p>Work through these continual courses on the various aspects of the Virtus woman.</p></div>
       <div class="course-head"><div class="progress-wrap"><div class="progress-track" role="progressbar" aria-label="Course Progress" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><span class="progress-count">${percent}%</span><span class="progress-label">Progress</span></div></div>
-      <details class="course-unit" open><summary><strong>Firm Foundations</strong><span>${availableLessons.length} Lessons</span></summary><ul class="lesson-list">${availableLessons.map(lesson => `<li class="lesson-row" data-cms-layout-group="course-lessons" data-cms-layout-key="lesson:${lesson.slug}"><div class="lesson-row-copy"><a href="#/devotionals/${lesson.slug}">${lesson.titleHtml || lesson.title}</a>${lesson.publishedAt ? `<span class="lesson-date">${formatPublishedDate(lesson.publishedAt)}</span>` : ""}</div><label class="lesson-check"><input type="checkbox" data-lesson="${lesson.slug}" ${completed[lesson.slug] ? "checked" : ""} /></label></li>`).join("")}</ul></details>
+      ${devotionals.map((dev, devIndex) => `
+        <details class="course-unit" ${devIndex === 0 ? "open" : "open"}>
+          <summary><strong>${dev.title}</strong><span>${dev.lessons.length} ${dev.lessons.length === 1 ? "Lesson" : "Lessons"}</span></summary>
+          ${dev.description ? `<p style="font-size:13px; color:var(--muted); margin:0 0 14px;">${dev.description}</p>` : ""}
+          <ul class="lesson-list">
+            ${dev.lessons.map(lesson => `
+              <li class="lesson-row" data-cms-layout-group="course-lessons" data-cms-layout-key="lesson:${lesson.slug}">
+                <div class="lesson-row-copy">
+                  <a href="#/devotionals/${lesson.slug}">${lesson.titleHtml || lesson.title}</a>
+                  ${lesson.publishedAt ? `<span class="lesson-date">${formatPublishedDate(lesson.publishedAt)}</span>` : ""}
+                </div>
+                <label class="lesson-check"><input type="checkbox" data-lesson="${lesson.slug}" ${completed[lesson.slug] ? "checked" : ""} /></label>
+              </li>
+            `).join("")}
+            ${dev.lessons.length === 0 ? `<li class="lesson-row" style="color:var(--muted); font-style:italic; font-size:13px; padding:12px 0;">No lessons added yet.</li>` : ""}
+          </ul>
+        </details>
+      `).join("")}
     </div></section>
     <section class="course-faq-region page-section" data-cms-layout-group="course-sections" data-cms-layout-key="faq"><div class="faq"><h1>Questions? We've got answers.</h1>${faqs.map(([question, answer], index) => `<details class="disclosure" ${index === 0 ? "open" : ""}><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div></section>
   </div>`;
@@ -443,13 +603,18 @@ function coursePage() {
 
 function lessonPage(lesson) {
   const isComplete = progressData()[lesson.slug] === true;
-  const nextLink = lesson.next ? `#/devotionals/${lesson.next}` : "#/devotionals";
+  const parentDevotional = getDevotionalForLesson(lesson.slug);
+  const devotionalTitle = parentDevotional ? parentDevotional.title : "Firm Foundations";
+  const devotionalLessons = parentDevotional ? parentDevotional.lessons : allLessons();
+  const nextLesson = findNextLesson(lesson.slug);
+  const nextLink = nextLesson ? `#/devotionals/${nextLesson.slug}` : "#/devotionals";
+
   return `<div class="page-fade"><article class="lesson-page">
     <nav class="lesson-crumb" aria-label="Course navigation" data-cms-layout-group="lesson-page" data-cms-layout-key="breadcrumb"><a href="#/devotionals">Devotional Courses</a><a href="${nextLink}">Complete &amp; Continue</a></nav>
-    <header class="lesson-title" data-cms-layout-group="lesson-page" data-cms-layout-key="title"><p class="eyebrow">Firm Foundations · ${allLessons().length} Lessons${lesson.publishedAt ? ` · ${formatPublishedDate(lesson.publishedAt)}` : ""}</p><h1>${lesson.titleHtml || lesson.title}</h1></header>
+    <header class="lesson-title" data-cms-layout-group="lesson-page" data-cms-layout-key="title"><p class="eyebrow">${devotionalTitle} · ${devotionalLessons.length} ${devotionalLessons.length === 1 ? "Lesson" : "Lessons"}${lesson.publishedAt ? ` · ${formatPublishedDate(lesson.publishedAt)}` : ""}</p><h1>${lesson.titleHtml || lesson.title}</h1></header>
     <div class="lesson-grid" data-cms-layout-group="lesson-page" data-cms-layout-key="content" data-lesson="${lesson.slug}" style="--lesson-image-offset: ${lesson.imageOffset || 0}px"><div class="lesson-copy" data-cms-layout-group="lesson-columns" data-cms-layout-key="copy">
-      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${escapeCmsText(lesson.intro)}</p>` : ""}${lesson.sections.map(([title, paragraphs]) => `<details class="lesson-section"><summary>${title}</summary>${paragraphs.map(renderLessonParagraph).join("")}</details>`).join("")}</section>
-      <section class="lesson-content"><a class="download-link" href="">Download PDF</a><details class="lesson-section"><summary>${lesson.resourceTitle}</summary>${lesson.resource.map(renderLessonParagraph).join("")}</details></section>
+      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs]) => `<details class="lesson-section" open><summary>${title}</summary>${(paragraphs || []).map(renderLessonParagraph).join("")}</details>`).join("")}</section>
+      <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section" open><summary>${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map(renderLessonParagraph).join("")}</details>` : ""}</section>
     </div><img class="lesson-photo" data-cms-layout-group="lesson-columns" data-cms-layout-key="photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
     <div class="lesson-end" data-cms-layout-group="lesson-page" data-cms-layout-key="completion"><label><input type="checkbox" data-lesson="${lesson.slug}" ${isComplete ? "checked" : ""} /> Mark lesson complete</label><a class="button" href="${nextLink}">Complete &amp; Continue</a></div>
   </article></div>`;
@@ -468,11 +633,164 @@ function formatPublishedDate(value) {
   return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(date);
 }
 
+function renderBlock(block) {
+  if (!block || !block.type) return "";
+  const id = block.id || `b_${Math.random().toString(36).slice(2, 9)}`;
+  const content = block.content || {};
+  const style = block.style || {};
+  const customStyles = [
+    style.textAlign ? `text-align: ${style.textAlign};` : "",
+    style.backgroundColor ? `background-color: ${style.backgroundColor};` : "",
+    style.textColor || style.color ? `color: ${style.textColor || style.color};` : "",
+    style.paddingTop ? `padding-top: ${style.paddingTop};` : "",
+    style.paddingBottom ? `padding-bottom: ${style.paddingBottom};` : "",
+    style.paddingLeft ? `padding-left: ${style.paddingLeft};` : "",
+    style.paddingRight ? `padding-right: ${style.paddingRight};` : "",
+    style.marginTop ? `margin-top: ${style.marginTop};` : "",
+    style.marginBottom ? `margin-bottom: ${style.marginBottom};` : "",
+    style.fontSize ? `font-size: ${style.fontSize};` : "",
+    style.fontFamily ? `font-family: ${style.fontFamily};` : "",
+    style.fontWeight ? `font-weight: ${style.fontWeight};` : "",
+    style.borderRadius ? `border-radius: ${style.borderRadius};` : ""
+  ].filter(Boolean).join(" ");
+
+  const styleAttr = customStyles ? `style="${customStyles}"` : "";
+
+  switch (block.type) {
+    case "hero": {
+      const bg = content.backgroundImage ? `style="background-image: url('${escapeCmsText(content.backgroundImage)}');"` : "";
+      return `<section class="wov-block wov-block-hero page-section" data-wov-block-id="${id}" data-wov-block-type="hero" ${bg}>
+        <div class="hero-overlay"></div>
+        <div class="hero-content" ${styleAttr}>
+          ${content.eyebrow ? `<p class="eyebrow" data-cms-key="block:${id}:eyebrow">${escapeCmsText(content.eyebrow)}</p>` : ""}
+          ${content.title1 ? `<h1 data-cms-key="block:${id}:title1">${escapeCmsText(content.title1)}</h1>` : ""}
+          ${content.title2 ? `<h1 data-cms-key="block:${id}:title2">${escapeCmsText(content.title2)}</h1>` : ""}
+          ${content.description ? `<p data-cms-key="block:${id}:description">${escapeCmsText(content.description)}</p>` : ""}
+          ${content.buttonText ? `<a class="button" data-cms-key="block:${id}:button" href="${escapeCmsText(content.buttonLink || '#/about')}">${escapeCmsText(content.buttonText)}</a>` : ""}
+        </div>
+      </section>`;
+    }
+    case "heading": {
+      const tag = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(content.tag) ? content.tag : "h2";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="heading" style="padding: 14px 0;">
+        <${tag} ${styleAttr} data-cms-key="block:${id}:heading">${escapeCmsText(content.text || "Heading Text")}</${tag}>
+      </div>`;
+    }
+    case "text": {
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="text" style="padding: 12px 0;">
+        <div class="cms-rich-copy" ${styleAttr} data-cms-key="block:${id}:text">${sanitizeCmsHtml(content.html || content.text || "<p>Add your content here...</p>")}</div>
+      </div>`;
+    }
+    case "button": {
+      const variantClass = content.variant === "outline" ? "wov-btn-outline" : (content.variant === "pill" ? "wov-btn-primary wov-btn-pill" : "wov-btn-primary");
+      return `<div class="wov-block wov-block-container" style="text-align: ${style.textAlign || 'center'}; padding: 16px 0;" data-wov-block-id="${id}" data-wov-block-type="button">
+        <a class="wov-block-btn ${variantClass}" href="${escapeCmsText(content.link || '#/')}" ${styleAttr} data-cms-key="block:${id}:btn">${escapeCmsText(content.text || "Learn More")}</a>
+      </div>`;
+    }
+    case "image": {
+      return `<div class="wov-block wov-block-container" style="text-align: ${style.textAlign || 'center'}; padding: 20px 0;" data-wov-block-id="${id}" data-wov-block-type="image">
+        <img src="${escapeCmsText(content.url || '')}" alt="${escapeCmsText(content.alt || '')}" ${styleAttr} style="max-width: 100%; height: auto;" />
+        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 12px; margin-top: 6px;">${escapeCmsText(content.caption)}</p>` : ""}
+      </div>`;
+    }
+    case "quote": {
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="quote">
+        <div class="wov-block-quote" ${styleAttr}>
+          <blockquote>“${escapeCmsText(content.quote || "Your scripture quote here")}”</blockquote>
+          ${content.reference ? `<cite>— ${escapeCmsText(content.reference)}</cite>` : ""}
+        </div>
+      </div>`;
+    }
+    case "accordion": {
+      const items = Array.isArray(content.items) ? content.items : [];
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="accordion" ${styleAttr}>
+        <div class="wov-block-accordion">
+          ${items.map((item, idx) => `
+            <details class="wov-accordion-item" ${idx === 0 ? "open" : ""}>
+              <summary>${escapeCmsText(item.title || "Section")}</summary>
+              <div class="wov-accordion-content">${sanitizeCmsHtml(item.content || "")}</div>
+            </details>
+          `).join("")}
+        </div>
+      </div>`;
+    }
+    case "gallery": {
+      const cols = Number(content.columns) || 4;
+      const images = Array.isArray(content.images) ? content.images : [];
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="gallery" ${styleAttr}>
+        ${content.title ? `<div class="section-heading"><h2>${escapeCmsText(content.title)}</h2></div>` : ""}
+        <div class="wov-block-gallery-grid wov-gallery-cols-${cols}">
+          ${images.map(img => `
+            <div class="wov-gallery-item">
+              <img src="${escapeCmsText(img.url || '')}" alt="${escapeCmsText(img.alt || '')}" loading="lazy" />
+            </div>
+          `).join("")}
+        </div>
+      </div>`;
+    }
+    case "columns": {
+      const layoutClass = `wov-layout-${content.layout || "50-50"}`;
+      const cols = Array.isArray(content.columns) ? content.columns : [[], []];
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="columns" ${styleAttr}>
+        <div class="wov-block-columns ${layoutClass}">
+          ${cols.map(colBlocks => `
+            <div class="wov-col">
+              ${Array.isArray(colBlocks) ? colBlocks.map(renderBlock).join("") : ""}
+            </div>
+          `).join("")}
+        </div>
+      </div>`;
+    }
+    case "form": {
+      return `<div class="wov-block page-section" data-wov-block-id="${id}" data-wov-block-type="form" ${styleAttr}>
+        <div class="project" style="background: transparent; color: inherit; padding: 60px 8vw;">
+          <div class="project-copy">
+            <h2>${escapeCmsText(content.title || "Get in Touch")}</h2>
+            <p>${escapeCmsText(content.subtitle || "")}</p>
+          </div>
+          <form class="form" data-form="contact">
+            <div class="field"><label for="f-first-${id}">First Name <span>(required)</span></label><input id="f-first-${id}" name="fname" required /></div>
+            <div class="field"><label for="f-last-${id}">Last Name <span>(required)</span></label><input id="f-last-${id}" name="lname" required /></div>
+            <div class="field full"><label for="f-email-${id}">Email <span>(required)</span></label><input id="f-email-${id}" name="email" type="email" required /></div>
+            <div class="field full"><label for="f-msg-${id}">Message <span>(required)</span></label><textarea id="f-msg-${id}" name="message" rows="3" required></textarea></div>
+            <button class="button" type="submit">${escapeCmsText(content.submitText || "Send")}</button>
+            <p class="form-status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>`;
+    }
+    case "spacer": {
+      const height = style.height || "40px";
+      const showLine = content.showLine ? `<div class="wov-spacer-line"></div>` : "";
+      return `<div class="wov-block wov-block-container wov-block-spacer" data-wov-block-id="${id}" data-wov-block-type="spacer" style="height: ${height};">
+        ${showLine}
+      </div>`;
+    }
+    case "marquee": {
+      const text = escapeCmsText(content.text || "Follow the Journey ⦁ Follow the Journey");
+      return `<div class="wov-block journey-marquee" data-wov-block-id="${id}" data-wov-block-type="marquee" ${styleAttr}>
+        <span>${text}</span><span aria-hidden="true">${text}</span>
+      </div>`;
+    }
+    default:
+      return "";
+  }
+}
+
+function renderBlocksPage(blocks) {
+  if (!Array.isArray(blocks) || blocks.length === 0) return "";
+  return `<div class="page-fade wov-blocks-page">${blocks.map(renderBlock).join("")}</div>`;
+}
+
 function render() {
   const path = window.location.hash.replace(/^#\/?/, "").replace(/\/$/, "");
+  const routeKey = path || "home";
   const lesson = path.startsWith("devotionals/") ? allLessons().find(item => item.slug === path.slice("devotionals/".length)) : null;
   document.body.dataset.route = lesson ? "devotionals" : path || "home";
-  if (!path) main.innerHTML = homePage();
+
+  if (cmsContent.blocks && Array.isArray(cmsContent.blocks[routeKey]) && cmsContent.blocks[routeKey].length > 0) {
+    main.innerHTML = renderBlocksPage(cmsContent.blocks[routeKey]);
+  } else if (!path) main.innerHTML = homePage();
   else if (path === "about") main.innerHTML = aboutPage();
   else if (path === "contact") main.innerHTML = contactPage();
   else if (path === "devotionals") main.innerHTML = coursePage();
@@ -480,6 +798,7 @@ function render() {
   else main.innerHTML = `<section class="page-intro"><div class="page-intro-inner"><p class="eyebrow">Women of Virtue</p><h1>Page not found.</h1><a class="button" href="#/">Return home</a></div></section>`;
 
   applyCmsLayout();
+  applyCmsPositionOverrides();
   applyCmsTheme();
   document.querySelectorAll(".site-nav a").forEach(link => {
     const target = link.getAttribute("href").slice(1);
@@ -511,12 +830,81 @@ menuToggle.addEventListener("click", () => {
 main.addEventListener("change", event => {
   if (event.target.matches("[data-lesson]")) saveLesson(event.target.dataset.lesson, event.target.checked);
 });
-main.addEventListener("submit", event => {
+main.addEventListener("submit", async event => {
   const form = event.target.closest("form[data-form]");
   if (!form) return;
   event.preventDefault();
-  form.querySelector(".form-status").textContent = "Thank you for reaching out. Your message is ready to send.";
-  form.reset();
+
+  const statusEl = form.querySelector(".form-status");
+  const submitBtn = form.querySelector("button[type='submit']");
+  const formType = form.dataset.form || "contact";
+
+  const fname = (form.querySelector("[name='fname']")?.value || "").trim();
+  const lname = (form.querySelector("[name='lname']")?.value || "").trim();
+  const email = (form.querySelector("[name='email']")?.value || "").trim();
+  const phone = (form.querySelector("[name='phone']")?.value || "").trim();
+  const message = (form.querySelector("[name='message']")?.value || form.querySelector("textarea")?.value || "").trim();
+
+  if (submitBtn) submitBtn.disabled = true;
+  if (statusEl) {
+    statusEl.style.color = "#777c75";
+    statusEl.textContent = "Sending message to Heylee (heylee@absolutionuecna.org)…";
+  }
+
+  const payload = {
+    recipient: "heylee@absolutionuecna.org",
+    formType,
+    fname,
+    lname,
+    email,
+    phone,
+    message
+  };
+
+  try {
+    const res = await fetch("./api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      if (statusEl) {
+        statusEl.style.color = "#2e7d32";
+        statusEl.textContent = `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee at heylee@absolutionuecna.org.`;
+      }
+      form.reset();
+    } else {
+      throw new Error(data.error || `Server returned ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("Contact API fallback to mailto:", err.message);
+    const subject = encodeURIComponent(`[Women of Virtue] ${formType === 'project' ? 'Start a Project' : 'Inquiry'} from ${fname} ${lname}`.trim());
+    const bodyText = encodeURIComponent(`From: ${fname} ${lname}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`);
+    const mailtoUrl = `mailto:heylee@absolutionuecna.org?subject=${subject}&body=${bodyText}`;
+
+    if (statusEl) {
+      statusEl.style.color = "#2e7d32";
+      statusEl.innerHTML = `Your message is ready! If your mail client didn't open automatically, <a href="${mailtoUrl}" target="_blank" style="text-decoration:underline; font-weight:bold; color:inherit;">click here to email Heylee directly at heylee@absolutionuecna.org</a>.`;
+    }
+    window.location.href = mailtoUrl;
+    form.reset();
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+});
+
+window.renderBlock = renderBlock;
+window.render = render;
+window.getCmsContent = () => cmsContent;
+window.setCmsContent = (c) => { cmsContent = c; render(); };
+
+window.addEventListener("message", event => {
+  if (event.data && event.data.type === "WOV_UPDATE_CONTENT") {
+    cmsContent = event.data.content;
+    render();
+  }
 });
 
 async function initializeSite() {

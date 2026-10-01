@@ -1,0 +1,10 @@
+{
+  "name": "women-of-virtue-cms",
+  "version": "1.0.0",
+  "description": "Women of Virtue CMS and Elementor-style visual editor",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

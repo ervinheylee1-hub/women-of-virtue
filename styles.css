@@ -207,3 +207,200 @@ details[open] > summary::after { content: "−"; }
   .lesson-crumb { flex-direction: column; }
   .lesson-end { align-items: start; flex-direction: column; }
 }
+
+/* ==========================================================================
+   Elementor-Style Block Widget Components
+   ========================================================================== */
+.wov-blocks-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.wov-block {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wov-block-container {
+  width: min(1180px, 90vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wov-block-hero {
+  position: relative;
+  display: flex;
+  min-height: 480px;
+  align-items: center;
+  overflow: hidden;
+  color: var(--white);
+  background: var(--forest-deep);
+  background-size: cover;
+  background-position: center;
+}
+
+.wov-block-hero .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(20, 27, 24, .85), rgba(20, 27, 24, .45));
+}
+
+.wov-block-hero .hero-content {
+  position: relative;
+  z-index: 2;
+  width: min(1050px, 88%);
+  margin: 0 auto;
+  padding: 80px 0 95px;
+}
+
+.wov-block-columns {
+  display: grid;
+  gap: 24px;
+}
+.wov-layout-50-50 { grid-template-columns: 1fr 1fr; }
+.wov-layout-33-33-33 { grid-template-columns: 1fr 1fr 1fr; }
+.wov-layout-67-33 { grid-template-columns: 2fr 1fr; }
+.wov-layout-33-67 { grid-template-columns: 1fr 2fr; }
+.wov-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wov-block-quote {
+  padding: 36px 42px;
+  background: #f0ede4;
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  margin: 20px 0;
+}
+.wov-block-quote blockquote {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-size: clamp(19px, 2.2vw, 26px);
+  line-height: 1.45;
+  color: var(--ink);
+  font-style: italic;
+}
+.wov-block-quote cite {
+  display: block;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-style: normal;
+}
+
+.wov-block-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wov-accordion-item {
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.wov-accordion-item summary {
+  padding: 16px 20px;
+  cursor: pointer;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 17px;
+  background: #fbf9f4;
+  user-select: none;
+}
+.wov-accordion-item summary:hover {
+  background: #f4f0e6;
+}
+.wov-accordion-content {
+  padding: 18px 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.wov-block-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 26px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.wov-btn-primary {
+  background: var(--ink);
+  color: var(--white);
+  border: 1px solid var(--ink);
+}
+.wov-btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.wov-btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid currentColor;
+}
+.wov-btn-outline:hover {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+.wov-btn-pill {
+  border-radius: 9999px;
+}
+
+.wov-block-gallery-grid {
+  display: grid;
+  gap: 16px;
+}
+.wov-gallery-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.wov-gallery-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.wov-gallery-cols-4 { grid-template-columns: repeat(4, 1fr); }
+.wov-gallery-item {
+  overflow: hidden;
+  border-radius: 4px;
+}
+.wov-gallery-item img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: transform .4s ease;
+  display: block;
+}
+.wov-gallery-item:hover img {
+  transform: scale(1.04);
+}
+
+.wov-block-spacer {
+  display: flex;
+  align-items: center;
+}
+.wov-spacer-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+}
+
+@media (max-width: 760px) {
+  .wov-layout-50-50,
+  .wov-layout-33-33-33,
+  .wov-layout-67-33,
+  .wov-layout-33-67 {
+    grid-template-columns: 1fr;
+  }
+  .wov-gallery-cols-3,
+  .wov-gallery-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -22,6 +22,22 @@
           "endsPattern": "Admin panel:"
         }
       }
+    },
+    {
+      "label": "Women of Virtue: start local server (Node.js)",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/server.js", "5173"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Women of Virtue CMS:",
+          "endsPattern": "Admin panel:"
+        }
+      }
     }
   ]
 }
