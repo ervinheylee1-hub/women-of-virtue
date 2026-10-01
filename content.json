@@ -213,7 +213,11 @@
       "textColor": "#c9755b"
     }
   },
-  "theme": {},
+  "theme": {
+    "headerPink": "#d4967d",
+    "headingPink": "#ffc0cb",
+    "bodyTextColor": "#303636"
+  },
   "graphics": {},
   "layout": {},
   "positionOverrides": {
