@@ -82,14 +82,52 @@
                                      "id":  "block_about_heading_1",
                                      "type":  "heading",
                                      "content":  {
-                                                     "text":  "For decades, women across the globe have been fed a lie.",
+                                                     "text":  "FOR DECADES, WOMEN ACROSS THE GLOBE HAVE BEEN FED A LIE.",
                                                      "tag":  "h1"
                                                  },
                                      "style":  {
                                                    "fontSize":  "48px",
-                                                   "textAlign":  "left",
+                                                   "textAlign":  "center",
                                                    "paddingTop":  "40px"
                                                }
+                                 },
+                                 {
+                                     "type":  "text",
+                                     "content":  {
+                                                     "html":  "\u003cbr\u003e\u003ch3 data-cms-key=\"about:h3:the-lie-that-the-biblical-woman-is-an-oppressed-:0\" data-cms-default=\"The lie that the biblical woman is an oppressed woman.\" style=\"margin: 0px 0px 31px; font-style: normal; font-variant: normal; font-size-adjust: none; font-language-override: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-stretch: normal; font-size: 28.6px; line-height: 32.7px; font-family: Shrikhand, Georgia, serif; letter-spacing: normal; color: rgb(48, 54, 54); width: 356.5px; background-color: rgb(229, 227, 220);\"\u003eThe lie that the biblical woman is an oppressed woman.\u003c/h3\u003e\u003cbr\u003e"
+                                                 },
+                                     "style":  {
+                                                   "textAlign":  "center",
+                                                   "fontSize":  "32px",
+                                                   "color":  "#c9755b",
+                                                   "fontFamily":  "\u0027Shrikhand\u0027, cursive",
+                                                   "textColor":  "#c9755b"
+                                               },
+                                     "id":  "block_text_2q1i1b5"
+                                 },
+                                 {
+                                     "type":  "text",
+                                     "content":  {
+                                                     "html":  "\u003cspan style=\"background-color: rgb(229, 227, 220);\"\u003eThis lie is as old as time; there is nothing new under the sun. The first feminists fought to be equal under the law, not to erase roles altogether. However, over the years, this has changed. The enemy has convinced young women that they must abandon their God-given calling within the home and flip their priorities backwards to appease the feminist hustler culture we see today.\u003c/span\u003e"
+                                                 },
+                                     "style":  {
+                                                   "textAlign":  "left",
+                                                   "fontSize":  "16px",
+                                                   "color":  "#303636"
+                                               },
+                                     "id":  "block_text_djz8x1q"
+                                 },
+                                 {
+                                     "type":  "text",
+                                     "content":  {
+                                                     "html":  "\u003cspan style=\"font-weight: 700; background-color: rgb(229, 227, 220);\"\u003eFar too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen worldâ€™s definition of womanhood, and cling tightly to Godâ€™s truth.\u003c/span\u003e"
+                                                 },
+                                     "style":  {
+                                                   "textAlign":  "left",
+                                                   "fontSize":  "16px",
+                                                   "color":  "#303636"
+                                               },
+                                     "id":  "block_text_gptot41"
                                  },
                                  {
                                      "id":  "block_about_quote_1",
@@ -114,7 +152,7 @@
                                                                    },
                                                                    {
                                                                        "title":  "THE TRUTH",
-                                                                       "content":  "Breaking down years of unbiblical propaganda thatÃ¢â‚¬â„¢s been fed to young women. Rebuilding womenÃ¢â‚¬â„¢s true, biblical mindset."
+                                                                       "content":  "Breaking down years of unbiblical propaganda thatÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s been fed to young women. Rebuilding womenÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s true, biblical mindset."
                                                                    },
                                                                    {
                                                                        "title":  "THE LIFE",
@@ -136,19 +174,38 @@
                                          ],
                    "devotionals/defining-femininity":  [
 
-                                                       ]
+                                                       ],
+                   "contact":  [
+
+                               ]
                },
     "copyOverrides":  {
-                          "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0":  "The Prayer for the Human Family Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer"
+                          "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0":  "The Prayer for the Human Family ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œO God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
+                          "about:p:write-your-text-here-you-can-add-paragraphs-bibl:0":  "Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen worldâ€™s definition of womanhood, and cling tightly to Godâ€™s truth.",
+                          "block:block_about_heading_1:heading":  "FOR DECADES, WOMEN ACROSS THE GLOBE HAVE BEEN FED A LIE.",
+                          "block:block_text_2q1i1b5:text":  "\n\nThe lie that the biblical woman is an oppressed woman.\n\n"
                       },
     "richTextOverrides":  {
 
                           },
+    "linkOverrides":  {
+
+                      },
     "textStyles":  {
                        "devotionals:h1:devotional-courses:0":  {
                                                                    "color":  "#c9755b",
                                                                    "textColor":  "#c9755b"
-                                                               }
+                                                               },
+                       "block:block_about_heading_1:heading":  {
+                                                                   "textAlign":  "center"
+                                                               },
+                       "block:block_text_2q1i1b5:text":  {
+                                                             "fontFamily":  "\u0027Shrikhand\u0027, cursive",
+                                                             "fontSize":  "32px",
+                                                             "textAlign":  "center",
+                                                             "color":  "#c9755b",
+                                                             "textColor":  "#c9755b"
+                                                         }
                    },
     "theme":  {
 
@@ -160,20 +217,18 @@
 
                },
     "positionOverrides":  {
-                              "pos:home:img:el:0":  {
-                                                        "y":  0,
-                                                        "width":  253,
-                                                        "height":  242,
-                                                        "x":  0
-                                                    },
-                              "devotionals:h1:devotional-courses:0":  {
-                                                                          "y":  15,
-                                                                          "x":  -4
-                                                                      },
-                              "block:block_hero_1:title2":  {
-                                                                "y":  -5,
-                                                                "x":  -38
-                                                            },
+                              "about:p:write-your-text-here-you-can-add-paragraphs-bibl:0":  {
+                                                                                                 "y":  -34,
+                                                                                                 "width":  437,
+                                                                                                 "height":  72,
+                                                                                                 "x":  1
+                                                                                             },
+                              "about:span:this-lie-is-as-old-as-time-there-is-nothing-new-:0":  {
+                                                                                                    "y":  0,
+                                                                                                    "width":  424,
+                                                                                                    "height":  211,
+                                                                                                    "x":  0
+                                                                                                },
                               "photo":  {
                                             "y":  -218,
                                             "width":  613,
@@ -182,8 +237,74 @@
                                         },
                               "block:block_hero_1:button":  {
                                                                 "y":  16,
+                                                                "width":  0,
+                                                                "height":  0,
                                                                 "x":  131
-                                                            }
+                                                            },
+                              "block:block_hero_1:title2":  {
+                                                                "y":  -5,
+                                                                "width":  0,
+                                                                "height":  0,
+                                                                "x":  -38
+                                                            },
+                              "block_text_gptot41":  {
+                                                         "y":  -86,
+                                                         "width":  348,
+                                                         "height":  120,
+                                                         "x":  -354
+                                                     },
+                              "block_text_2q1i1b5":  {
+                                                         "y":  -6,
+                                                         "width":  371,
+                                                         "height":  150,
+                                                         "x":  -345
+                                                     },
+                              "block:block_text_djz8x1q:text":  {
+                                                                    "y":  -48,
+                                                                    "width":  345,
+                                                                    "height":  216,
+                                                                    "x":  3
+                                                                },
+                              "block:block_about_heading_1:heading":  {
+                                                                          "y":  33,
+                                                                          "x":  -2
+                                                                      },
+                              "block_text_djz8x1q":  {
+                                                         "y":  -38,
+                                                         "width":  341,
+                                                         "height":  185,
+                                                         "x":  -362
+                                                     },
+                              "block:block_text_gptot41:text":  {
+                                                                    "y":  0,
+                                                                    "width":  350,
+                                                                    "height":  72,
+                                                                    "x":  0
+                                                                },
+                              "pos:home:img:el:0":  {
+                                                        "y":  0,
+                                                        "width":  253,
+                                                        "height":  242,
+                                                        "x":  0
+                                                    },
+                              "devotionals:h1:devotional-courses:0":  {
+                                                                          "y":  15,
+                                                                          "width":  0,
+                                                                          "height":  0,
+                                                                          "x":  -4
+                                                                      },
+                              "block_about_accordion_1":  {
+                                                              "y":  -679,
+                                                              "width":  477,
+                                                              "height":  313,
+                                                              "x":  259
+                                                          },
+                              "block:block_text_2q1i1b5:text":  {
+                                                                    "y":  -1,
+                                                                    "width":  349,
+                                                                    "height":  126,
+                                                                    "x":  11
+                                                                }
                           },
     "devotionals":  [
                         {
@@ -198,17 +319,17 @@
                                                 "titleHtml":  "",
                                                 "publishedAt":  "2026-01-05",
                                                 "introTitle":  "What is a Woman?",
-                                                "intro":  "Contrary to the blurred lines of the fallen world, the bible defines a woman quite clearly. Follow along to learn what GodÃ¢â‚¬â„¢s word has to say about the true woman.",
+                                                "intro":  "Contrary to the blurred lines of the fallen world, the bible defines a woman quite clearly. Follow along to learn what GodÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s word has to say about the true woman.",
                                                 "body":  "",
                                                 "sections":  [
                                                                  {
                                                                      "title":  "Creation and Identity",
                                                                      "paragraphs":  [
                                                                                         "Genesis 1:27",
-                                                                                        "Ã¢â‚¬Å“So God created man in his own image, in the image of God he created him; Male and Female he created them.Ã¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œSo God created man in his own image, in the image of God he created him; Male and Female he created them.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "Both Women and Men share equal value in being created in God\u0027s image.",
                                                                                         "Genesis 2:22",
-                                                                                        "Ã¢â‚¬Å“And the rib that the Lord God had taken from the man he made into a Woman and brought her to the man.Ã¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œAnd the rib that the Lord God had taken from the man he made into a Woman and brought her to the man.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "God intentionally formed womanhood."
                                                                                     ]
                                                                  },
@@ -216,13 +337,13 @@
                                                                      "title":  "Character and Value",
                                                                      "paragraphs":  [
                                                                                         "Proverbs 31:30",
-                                                                                        "Ã¢â‚¬Å“Charm is deceitful, and beauty is vain, but a woman who fears the lord is to be praisedÃ¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œCharm is deceitful, and beauty is vain, but a woman who fears the lord is to be praisedÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "True worth comes from honoring and fearing the Lord",
                                                                                         "Proverbs 14:1",
-                                                                                        "Ã¢â‚¬Å“Every wise woman buildeth her house; but the foolish plucketh it down with her handsÃ¢â‚¬Â",
-                                                                                        "A womanÃ¢â‚¬â„¢s actions and attitude, both within the home and outside of it, have a profound impact.",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œEvery wise woman buildeth her house; but the foolish plucketh it down with her handsÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
+                                                                                        "A womanÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s actions and attitude, both within the home and outside of it, have a profound impact.",
                                                                                         "Proverbs 31:25",
-                                                                                        "Ã¢â‚¬Å“Strength and honor are her clothing; and she shall rejoice in time to come.Ã¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œStrength and honor are her clothing; and she shall rejoice in time to come.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "Character, virtue, and dignity define a powerful and capable woman."
                                                                                     ]
                                                                  },
@@ -230,17 +351,17 @@
                                                                      "title":  "Roles and Distinction",
                                                                      "paragraphs":  [
                                                                                         "Genesis 2:18",
-                                                                                        "Ã¢â‚¬Å“Then the lord God said, Ã¢â‚¬ËœIt is not good for man to be alone, I shall make a helper fit for himÃ¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œThen the lord God said, ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“It is not good for man to be alone, I shall make a helper fit for himÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "The woman was designed as a partner and strong helper. {Ezer}",
                                                                                         "Ezer was often used to refer to God himself when he was called on for help and rescue.",
                                                                                         "Deuteronomy 22:5",
-                                                                                        "Ã¢â‚¬Å“A woman shall not wear a manÃ¢â‚¬â„¢s garment, nor shall a man put on a womanÃ¢â‚¬â„¢s cloakÃ¢â‚¬Â",
+                                                                                        "ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œA woman shall not wear a manÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s garment, nor shall a man put on a womanÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s cloakÃƒÂ¢Ã¢â€šÂ¬Ã‚Â",
                                                                                         "Scripture continually affirms a clear distinction between male and female identities."
                                                                                     ]
                                                                  }
                                                              ],
                                                 "resourceTitle":  "This Weeks Prayer:",
-                                                "resource":  "The Prayer for the Human Family Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
+                                                "resource":  "The Prayer for the Human Family ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œO God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
                                                 "image":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790621013944-MPTRWXGPL1YPY8P4GTIT/unsplash-image-iA-YMIV6GoM.jpg?format=500w",
                                                 "imageAlt":  "Woman praying",
                                                 "imageHeight":  1182.5,
@@ -260,24 +381,24 @@
                                                                  {
                                                                      "title":  "Prayer Life",
                                                                      "paragraphs":  [
-                                                                                        "1 Thessalonians 5:16Ã¢â‚¬â€œ18",
-                                                                                        "\"Rejoice always, pray continually, give thanks in all circumstances; for this is GodÃ¢â‚¬â„¢s will for you in Christ Jesus.\"",
+                                                                                        "1 Thessalonians 5:16ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“18",
+                                                                                        "\"Rejoice always, pray continually, give thanks in all circumstances; for this is GodÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s will for you in Christ Jesus.\"",
                                                                                         "When you have a healthy prayer life, it is easier to feel more connected to Christ. Thus making it easier to trust that he is working in your favor.",
                                                                                         "Romans 12:12",
                                                                                         "\"Rejoice in hope, be patient in tribulation, be constant in prayer.\"",
-                                                                                        "Scripture regularly reminds us to be Ã¢â‚¬Å“constant in prayer.Ã¢â‚¬Â We ought not to forsake building a personal relationship with the Lord through prayer."
+                                                                                        "Scripture regularly reminds us to be ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œconstant in prayer.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â We ought not to forsake building a personal relationship with the Lord through prayer."
                                                                                     ]
                                                                  },
                                                                  {
                                                                      "title":  "Church Community",
                                                                      "paragraphs":  [
-                                                                                        "Romans 12:4Ã¢â‚¬â€œ5:",
+                                                                                        "Romans 12:4ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“5:",
                                                                                         "\"For as in one body we have many members, and the members do not all have the same function, so we, though many, are one body in Christ, and individually members one of another.\"",
                                                                                         "Every woman brings her own unique set of gifts into the body of Christ.",
                                                                                         "Galatians 6:2:",
                                                                                         "\"Bear one another\u0027s burdens, and so fulfill the law of Christ.\"",
-                                                                                        "When we are able to rely on each otherÃ¢â‚¬â„¢s shoulders, we lighten the load of each individual.",
-                                                                                        "Hebrews 10:24Ã¢â‚¬â€œ25:",
+                                                                                        "When we are able to rely on each otherÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢s shoulders, we lighten the load of each individual.",
+                                                                                        "Hebrews 10:24ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“25:",
                                                                                         "\"And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another.\"",
                                                                                         "It is important for sisters in Christ to keep each other not only company, but accountable."
                                                                                     ]
