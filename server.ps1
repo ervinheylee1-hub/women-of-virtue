@@ -228,6 +228,39 @@ function Save-ContentStore {
   } catch {}
 }
 
+function Invoke-GitSync {
+  param([string]$CommitMessage = "Update site content and devotionals via CMS [automated push]")
+  try {
+    $statusOutput = & git status --porcelain 2>&1
+    if ($LASTEXITCODE -ne 0) {
+      return [pscustomobject]@{ success = $false; error = "Not a git repository or git error: $statusOutput" }
+    }
+    & git add -A 2>&1 | Out-Null
+    $staged = (& git diff --cached --name-only 2>&1)
+    if ([string]::IsNullOrWhiteSpace($staged)) {
+      return [pscustomobject]@{ success = $true; message = "Up to date (no changes)"; pushed = $false }
+    }
+    $commitMsg = "$CommitMessage ($(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))"
+    $commitOutput = & git commit -m $commitMsg 2>&1 | Out-String
+    if ($LASTEXITCODE -ne 0) {
+      return [pscustomobject]@{ success = $false; error = "Git commit failed: $commitOutput" }
+    }
+    $pushOutput = & git push origin main 2>&1 | Out-String
+    if ($LASTEXITCODE -ne 0) {
+      return [pscustomobject]@{ success = $false; error = "Git push failed: $pushOutput"; committed = $true }
+    }
+    $commitHash = (& git rev-parse --short HEAD 2>&1).Trim()
+    return [pscustomobject]@{
+      success = $true
+      pushed = $true
+      commit = $commitHash
+      message = "Successfully pushed commit $commitHash to GitHub main branch."
+    }
+  } catch {
+    return [pscustomobject]@{ success = $false; error = $_.Exception.Message }
+  }
+}
+
 function New-RandomToken {
   $bytes = New-Object byte[] 32
   $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -708,9 +741,37 @@ function Handle-Request {
       $body = Read-JsonBody $request
       $content = Save-ContentRequest $body
       Save-ContentStore $content
-      Send-Json $Context @{ saved = $true; devotionals = $content.devotionals.Count }
+      
+      $gitResult = Invoke-GitSync -CommitMessage "Update site content and devotionals via CMS [automated push]"
+      Send-Json $Context @{
+        saved = $true
+        devotionals = $content.devotionals.Count
+        github = $gitResult
+      }
     } catch {
       Send-Json $Context @{ error = $_.Exception.Message } 400
+    }
+    return
+  }
+  if ($path -eq "/api/admin/github-sync" -and $method -eq "POST") {
+    $session = Require-Session $Context
+    if ($null -eq $session -or -not (Require-Csrf $Context $session)) { return }
+    $gitResult = Invoke-GitSync -CommitMessage "Manual sync from Admin CMS"
+    Send-Json $Context $gitResult
+    return
+  }
+  if ($path -eq "/api/admin/github-status" -and $method -eq "GET") {
+    $session = Require-Session $Context
+    if ($null -eq $session) { return }
+    $branch = (& git branch --show-current 2>&1).Trim()
+    $remote = (& git remote get-url origin 2>&1).Trim()
+    $lastCommit = (& git log -1 --format="%h - %s (%cr)" 2>&1).Trim()
+    $status = (& git status --porcelain 2>&1).Trim()
+    Send-Json $Context @{
+      branch = $branch
+      remote = $remote
+      lastCommit = $lastCommit
+      hasUncommitted = -not [string]::IsNullOrWhiteSpace($status)
     }
     return
   }

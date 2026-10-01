@@ -190,6 +190,47 @@
       type: "marquee",
       content: { text: "Follow the Journey ⦁ Follow the Journey" },
       style: { paddingTop: "20px", paddingBottom: "20px" }
+    },
+    video: {
+      type: "video",
+      content: {
+        url: "https://www.youtube.com/watch?v=y6120QOlsfU",
+        title: "Devotional Message & Video",
+        caption: "Watch this week's message on scripture, faith, and virtue."
+      },
+      style: { paddingTop: "20px", paddingBottom: "20px", textAlign: "center" }
+    },
+    callout: {
+      type: "callout",
+      content: {
+        icon: "📖",
+        title: "Weekly Reflection Focus",
+        text: "Charm is deceitful, and beauty is vain, but a woman who fears the Lord is to be praised. Take time today to meditate on Proverbs 31.",
+        variant: "highlight"
+      },
+      style: { paddingTop: "15px", paddingBottom: "15px" }
+    },
+    cta: {
+      type: "cta",
+      content: {
+        title: "Grow in Faith & Virtue With Us",
+        subtitle: "Join our fellowship of women seeking Christ in every season of life.",
+        buttonText: "Explore Devotionals",
+        buttonLink: "#/devotionals",
+        variant: "brand"
+      },
+      style: { paddingTop: "60px", paddingBottom: "60px" }
+    },
+    social: {
+      type: "social",
+      content: {
+        title: "Follow & Connect With Us",
+        instagram: "https://instagram.com",
+        youtube: "https://youtube.com",
+        spotify: "https://spotify.com",
+        email: "heylee@absolutionuecna.org"
+      },
+      style: { paddingTop: "30px", paddingBottom: "30px" }
     }
   };
 
@@ -1094,7 +1135,11 @@
           </div>
           <span class="wov-coords-badge" style="display:none;"></span>
           <span class="wov-size-badge"></span>
-          <button type="button" class="wov-tf-btn wov-tf-reset" title="Reset Position & Size">↺</button>
+          <button type="button" class="wov-tf-btn wov-tf-up" title="Move Block Up (▲)">▲</button>
+          <button type="button" class="wov-tf-btn wov-tf-down" title="Move Block Down (▼)">▼</button>
+          <button type="button" class="wov-tf-btn wov-tf-dup" title="Duplicate Block (⎘)">⎘</button>
+          <button type="button" class="wov-tf-btn wov-tf-reset" title="Reset Position & Size (↺)">↺</button>
+          <button type="button" class="wov-tf-btn wov-tf-del" title="Delete Block or Element (✕)">✕</button>
         </div>
         <div class="wov-handle wov-handle-nw" data-handle="nw" title="Resize Top-Left"></div>
         <div class="wov-handle wov-handle-ne" data-handle="ne" title="Resize Top-Right"></div>
@@ -1147,6 +1192,15 @@
         coordsBadge.style.display = "none";
       }
     }
+
+    // Toggle block-level quick actions based on block context
+    const hasBlock = Boolean(selectedBlockId || selectedElement?.closest("[data-wov-block-id]"));
+    const upBtn = transformer.querySelector(".wov-tf-up");
+    const downBtn = transformer.querySelector(".wov-tf-down");
+    const dupBtn = transformer.querySelector(".wov-tf-dup");
+    if (upBtn) upBtn.style.display = hasBlock ? "inline-flex" : "none";
+    if (downBtn) downBtn.style.display = hasBlock ? "inline-flex" : "none";
+    if (dupBtn) dupBtn.style.display = hasBlock ? "inline-flex" : "none";
 
     // Also update Inspector fields if active
     const posXInput = document.querySelector("#style-pos-x");
@@ -1359,6 +1413,46 @@
       setDirty(true);
       syncDraftStorage();
       pushHistory();
+    });
+
+    // 4. Quick Action Buttons: Move Up, Move Down, Duplicate, Delete
+    const upBtn = transformer.querySelector(".wov-tf-up");
+    upBtn?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bId = selectedBlockId || selectedElement?.closest("[data-wov-block-id]")?.dataset.wovBlockId;
+      if (bId) moveBlock(bId, -1);
+    });
+
+    const downBtn = transformer.querySelector(".wov-tf-down");
+    downBtn?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bId = selectedBlockId || selectedElement?.closest("[data-wov-block-id]")?.dataset.wovBlockId;
+      if (bId) moveBlock(bId, 1);
+    });
+
+    const dupBtn = transformer.querySelector(".wov-tf-dup");
+    dupBtn?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bId = selectedBlockId || selectedElement?.closest("[data-wov-block-id]")?.dataset.wovBlockId;
+      if (bId) duplicateBlock(bId);
+    });
+
+    const delBtn = transformer.querySelector(".wov-tf-del");
+    delBtn?.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const bId = selectedBlockId || selectedElement?.closest("[data-wov-block-id]")?.dataset.wovBlockId;
+      if (bId && (selectedBlockId || selectedElement?.matches("[data-wov-block-id]"))) {
+        deleteBlock(bId);
+      } else if (selectedElement) {
+        selectedElement.style.display = "none";
+        updateTransformerPosition();
+        setDirty(true);
+        pushHistory();
+      }
     });
   }
 
@@ -2060,6 +2154,81 @@
       return;
     }
 
+    // 10. Video / Media Block
+    if (block?.type === "video") {
+      const c = block.content || {};
+      const rowUrl = createField("Video or Audio URL (YouTube, Vimeo, MP4, MP3)", `<input type="url" id="field-video-url" value="${escapeHtml(c.url || '')}" placeholder="https://www.youtube.com/watch?v=..." />`);
+      const rowTitle = createField("Title (Optional)", `<input type="text" id="field-video-title" value="${escapeHtml(c.title || '')}" placeholder="e.g. Weekly Video Message" />`);
+      const rowCaption = createField("Caption / Notes", `<input type="text" id="field-video-caption" value="${escapeHtml(c.caption || '')}" placeholder="e.g. Watch this sermon excerpt on grace" />`);
+      dynamicContentFields.append(rowUrl, rowTitle, rowCaption);
+      rowUrl.querySelector("input").addEventListener("input", e => { c.url = e.target.value; updateBlockLive(block); });
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowCaption.querySelector("input").addEventListener("input", e => { c.caption = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 11. Reflection / Callout Block
+    if (block?.type === "callout") {
+      const c = block.content || {};
+      const rowIcon = createField("Icon / Emoji", `<input type="text" id="field-callout-icon" value="${escapeHtml(c.icon || '📖')}" style="max-width:80px;" />`);
+      const rowTitle = createField("Card Title", `<input type="text" id="field-callout-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowText = createField("Reflection / Scripture Note", `<textarea id="field-callout-text" rows="4">${escapeHtml(c.text || '')}</textarea>`);
+      const rowVariant = createField("Style Theme", `
+        <select id="field-callout-variant">
+          <option value="highlight" ${c.variant === 'highlight' ? 'selected' : ''}>Rose Highlight (Warm Pink Tint)</option>
+          <option value="quote" ${c.variant === 'quote' ? 'selected' : ''}>Warm Sand (Neutral Cream)</option>
+          <option value="prayer" ${c.variant === 'prayer' ? 'selected' : ''}>Sage Green (Peaceful Herbal)</option>
+          <option value="note" ${c.variant === 'note' ? 'selected' : ''}>Clean Slate (Minimal Gray)</option>
+        </select>
+      `);
+      dynamicContentFields.append(rowIcon, rowTitle, rowText, rowVariant);
+      rowIcon.querySelector("input").addEventListener("input", e => { c.icon = e.target.value; updateBlockLive(block); });
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowText.querySelector("textarea").addEventListener("input", e => { c.text = e.target.value; updateBlockLive(block); });
+      rowVariant.querySelector("select").addEventListener("change", e => { c.variant = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 12. Call to Action Banner
+    if (block?.type === "cta") {
+      const c = block.content || {};
+      const rowTitle = createField("Headline Title", `<input type="text" id="field-cta-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowSub = createField("Subtitle", `<textarea id="field-cta-sub" rows="2">${escapeHtml(c.subtitle || '')}</textarea>`);
+      const rowBtn = createField("Button Text", `<input type="text" id="field-cta-btn" value="${escapeHtml(c.buttonText || '')}" />`);
+      const rowLink = createField("Button Target URL", `<input type="text" id="field-cta-link" value="${escapeHtml(c.buttonLink || '')}" placeholder="#/devotionals" />`);
+      const rowVariant = createField("Banner Appearance", `
+        <select id="field-cta-variant">
+          <option value="brand" ${c.variant === 'brand' ? 'selected' : ''}>Terracotta Brand (Warm Clay)</option>
+          <option value="dark" ${c.variant === 'dark' ? 'selected' : ''}>Forest Ink (Deep Green)</option>
+          <option value="light" ${c.variant === 'light' ? 'selected' : ''}>Cream Soft (Light & Airy)</option>
+        </select>
+      `);
+      dynamicContentFields.append(rowTitle, rowSub, rowBtn, rowLink, rowVariant);
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowSub.querySelector("textarea").addEventListener("input", e => { c.subtitle = e.target.value; updateBlockLive(block); });
+      rowBtn.querySelector("input").addEventListener("input", e => { c.buttonText = e.target.value; updateBlockLive(block); });
+      rowLink.querySelector("input").addEventListener("input", e => { c.buttonLink = e.target.value; updateBlockLive(block); });
+      rowVariant.querySelector("select").addEventListener("change", e => { c.variant = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 13. Social Links Block
+    if (block?.type === "social") {
+      const c = block.content || {};
+      const rowTitle = createField("Section Header", `<input type="text" id="field-social-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowIg = createField("Instagram URL", `<input type="url" id="field-social-ig" value="${escapeHtml(c.instagram || '')}" placeholder="https://instagram.com/..." />`);
+      const rowYt = createField("YouTube URL", `<input type="url" id="field-social-yt" value="${escapeHtml(c.youtube || '')}" placeholder="https://youtube.com/..." />`);
+      const rowSp = createField("Spotify URL", `<input type="url" id="field-social-sp" value="${escapeHtml(c.spotify || '')}" placeholder="https://open.spotify.com/..." />`);
+      const rowEmail = createField("Email Address", `<input type="email" id="field-social-email" value="${escapeHtml(c.email || '')}" placeholder="heylee@absolutionuecna.org" />`);
+      dynamicContentFields.append(rowTitle, rowIg, rowYt, rowSp, rowEmail);
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowIg.querySelector("input").addEventListener("input", e => { c.instagram = e.target.value; updateBlockLive(block); });
+      rowYt.querySelector("input").addEventListener("input", e => { c.youtube = e.target.value; updateBlockLive(block); });
+      rowSp.querySelector("input").addEventListener("input", e => { c.spotify = e.target.value; updateBlockLive(block); });
+      rowEmail.querySelector("input").addEventListener("input", e => { c.email = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
     // Default Fallback
     if (el) {
       const row = createField("Selected Element", `<p style="font-size:12px; color:var(--text-muted); margin:0;">${escapeHtml(el.tagName)}: ${escapeHtml(el.textContent.slice(0, 80))}</p>`);
@@ -2739,17 +2908,119 @@
     });
   });
 
-  // Save & Publish
+  // GitHub Status & Auto-Push Handlers
+  function updateGithubStatusBadge(data) {
+    const badge = document.querySelector("#github-sync-badge");
+    const statusText = document.querySelector("#gh-status-text");
+    if (!badge || !statusText) return;
+
+    badge.hidden = false;
+    badge.classList.remove("is-syncing", "is-synced");
+
+    if (!data) {
+      statusText.textContent = "GitHub: Ready";
+      return;
+    }
+
+    if (data.pushed) {
+      badge.classList.add("is-synced");
+      statusText.textContent = `GitHub: Pushed (${data.commit || 'main'})`;
+      badge.title = data.message || `Changes successfully pushed to GitHub (${data.commit})`;
+    } else if (data.success && !data.error) {
+      badge.classList.add("is-synced");
+      statusText.textContent = data.commit ? `GitHub: ${data.commit}` : "GitHub: Up to date";
+      badge.title = data.message || "All commits pushed to GitHub main";
+    } else if (data.error) {
+      statusText.textContent = "GitHub: Sync Issue";
+      badge.title = `GitHub Sync Error: ${data.error}`;
+    } else if (data.branch) {
+      badge.classList.add("is-synced");
+      const shortCommit = data.lastCommit ? data.lastCommit.slice(0, 7) : "";
+      statusText.textContent = `GitHub: ${data.branch}${shortCommit ? ` (${shortCommit})` : ''}`;
+      badge.title = `Branch: ${data.branch}\nLast Commit: ${data.lastCommit}\nRemote: ${data.remote}`;
+    }
+  }
+
+  async function fetchGithubStatus() {
+    try {
+      const data = await api("./api/admin/github-status");
+      updateGithubStatusBadge(data);
+    } catch (err) {
+      console.warn("Could not fetch GitHub status:", err.message);
+    }
+  }
+
+  async function syncGitHub() {
+    const badge = document.querySelector("#github-sync-badge");
+    const btn = document.querySelector("#btn-github-sync");
+    const statusText = document.querySelector("#gh-status-text");
+    if (btn) btn.disabled = true;
+    if (badge) badge.classList.add("is-syncing");
+    if (statusText) statusText.textContent = "Pushing to GitHub…";
+
+    try {
+      const res = await api("./api/admin/github-sync", { method: "POST", body: {} });
+      updateGithubStatusBadge(res);
+      if (res.success) {
+        if (res.pushed) {
+          alert(`Successfully committed and pushed to GitHub main (${res.commit})!\nGitHub Pages will automatically rebuild and deploy the live site.`);
+        } else {
+          alert("GitHub is already up to date with the latest site files.");
+        }
+      } else {
+        alert("GitHub Push Issue: " + (res.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("GitHub Sync Error: " + err.message);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (badge) badge.classList.remove("is-syncing");
+    }
+  }
+
+  document.querySelector("#btn-github-sync")?.addEventListener("click", syncGitHub);
+
+  // Save & Publish (with automatic GitHub push)
   async function saveContent() {
     saveBtn.disabled = true;
-    saveStatus.querySelector(".status-text").textContent = "Saving…";
+    saveStatus.querySelector(".status-text").textContent = "Saving to server & GitHub…";
+    const dot = saveStatus.querySelector(".status-dot");
+    if (dot) dot.style.background = "#d4967d";
+
+    const ghBadge = document.querySelector("#github-sync-badge");
+    const ghStatusText = document.querySelector("#gh-status-text");
+    if (ghBadge) ghBadge.classList.add("is-syncing");
+    if (ghStatusText) ghStatusText.textContent = "Syncing GitHub…";
+
     try {
-      await api("./api/admin/content", { method: "PUT", body: content });
+      const res = await api("./api/admin/content", { method: "PUT", body: content });
       setDirty(false);
       updatePreviewLive();
+
+      if (res && res.github) {
+        updateGithubStatusBadge(res.github);
+        if (res.github.pushed) {
+          saveStatus.querySelector(".status-text").textContent = `Saved & Pushed to GitHub (${res.github.commit || 'main'})`;
+          if (dot) dot.style.background = "#2e7d32";
+        } else if (res.github.success) {
+          saveStatus.querySelector(".status-text").textContent = "Saved · GitHub: Up to date";
+          if (dot) dot.style.background = "#2e7d32";
+        } else {
+          saveStatus.querySelector(".status-text").textContent = "Saved locally (GitHub push pending)";
+          if (dot) dot.style.background = "#c9755b";
+          console.warn("GitHub sync issue:", res.github);
+        }
+      } else {
+        saveStatus.querySelector(".status-text").textContent = "All changes saved";
+        if (dot) dot.style.background = "#2e7d32";
+      }
     } catch (err) {
       alert("Failed to save changes: " + err.message);
       setDirty(true);
+      if (dot) dot.style.background = "#c92a2a";
+    } finally {
+      saveBtn.disabled = false;
+      if (ghBadge) ghBadge.classList.remove("is-syncing");
     }
   }
 
@@ -2863,6 +3134,8 @@
     headerCanvasControls.hidden = screen !== "dashboard";
     saveBtn.hidden = screen !== "dashboard";
     logoutBtn.hidden = screen !== "dashboard";
+    const ghBadge = document.querySelector("#github-sync-badge");
+    if (ghBadge) ghBadge.hidden = screen !== "dashboard";
   }
 
   async function enterDashboard() {
@@ -2872,6 +3145,7 @@
     setupMediaLibrary();
     setupInquiries();
     await loadContent();
+    fetchGithubStatus();
     loadMediaLibrary();
     loadInquiries();
   }
@@ -3181,22 +3455,39 @@
 
   function updatePageSelectorOptions() {
     const group = document.querySelector("#page-selector-lessons-group");
-    if (!group) return;
-    group.innerHTML = "";
-    ensureDevotionalsInitialized();
+    const customGroup = document.querySelector("#page-selector-custom-group");
+    
+    if (group) {
+      group.innerHTML = "";
+      ensureDevotionalsInitialized();
 
-    content.devotionals.forEach(dev => {
-      if (!dev || !Array.isArray(dev.lessons)) return;
-      dev.lessons.forEach(l => {
-        if (!l || !l.slug) return;
-        const opt = document.createElement("option");
-        opt.value = `devotionals/${l.slug}`;
-        opt.textContent = `${dev.title}: ${l.title || l.slug}`;
-        group.append(opt);
+      content.devotionals.forEach(dev => {
+        if (!dev || !Array.isArray(dev.lessons)) return;
+        dev.lessons.forEach(l => {
+          if (!l || !l.slug) return;
+          const opt = document.createElement("option");
+          opt.value = `devotionals/${l.slug}`;
+          opt.textContent = `${dev.title}: ${l.title || l.slug}`;
+          group.append(opt);
+        });
       });
-    });
+    }
 
-    if (currentRoute && currentRoute.startsWith("devotionals/")) {
+    if (customGroup) {
+      customGroup.innerHTML = "";
+      const standardRoutes = ["home", "about", "contact", "devotionals"];
+      const blockKeys = Object.keys(content.blocks || {});
+      const customRoutes = blockKeys.filter(k => !standardRoutes.includes(k) && !k.startsWith("devotionals/"));
+      customRoutes.forEach(slug => {
+        const opt = document.createElement("option");
+        opt.value = slug;
+        const pageTitle = slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        opt.textContent = `${pageTitle} (#/${slug})`;
+        customGroup.append(opt);
+      });
+    }
+
+    if (currentRoute) {
       pageSelector.value = currentRoute;
     }
   }
@@ -3623,6 +3914,162 @@
     } finally {
       e.target.value = "";
     }
+  });
+
+  // ==========================================
+  // Custom Page Creator Modal
+  // ==========================================
+  const modalNewPage = document.querySelector("#modal-new-page");
+  const formNewPageModal = document.querySelector("#form-new-page-modal");
+  const newPageTitleInput = document.querySelector("#new-page-title");
+  const newPageSlugInput = document.querySelector("#new-page-slug");
+  const newPageTemplateSelect = document.querySelector("#new-page-template");
+  const btnOpenNewPageModal = document.querySelector("#btn-open-new-page-modal");
+  const btnCloseNewPageModal = document.querySelector("#btn-close-new-page-modal");
+  const btnCancelNewPageModal = document.querySelector("#btn-cancel-new-page-modal");
+
+  function openNewPageModal() {
+    if (!modalNewPage) return;
+    if (newPageTitleInput) newPageTitleInput.value = "";
+    if (newPageSlugInput) newPageSlugInput.value = "";
+    if (newPageTemplateSelect) newPageTemplateSelect.value = "standard";
+    modalNewPage.hidden = false;
+    newPageTitleInput?.focus();
+  }
+
+  function closeNewPageModal() {
+    if (modalNewPage) modalNewPage.hidden = true;
+  }
+
+  btnOpenNewPageModal?.addEventListener("click", openNewPageModal);
+  btnCloseNewPageModal?.addEventListener("click", closeNewPageModal);
+  btnCancelNewPageModal?.addEventListener("click", closeNewPageModal);
+
+  newPageTitleInput?.addEventListener("input", () => {
+    if (newPageSlugInput) {
+      newPageSlugInput.value = newPageTitleInput.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+  });
+
+  formNewPageModal?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const title = (newPageTitleInput?.value || "").trim();
+    let slug = (newPageSlugInput?.value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (!slug) slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `page-${Date.now().toString(36)}`;
+    const template = newPageTemplateSelect?.value || "standard";
+
+    if (!content.blocks) content.blocks = {};
+    if (!Array.isArray(content.blocks[slug])) {
+      if (template === "standard") {
+        content.blocks[slug] = [
+          {
+            id: `block_hero_${Date.now()}`,
+            type: "hero",
+            content: {
+              eyebrow: "Women of Virtue",
+              title1: title,
+              title2: "Walk in Wisdom",
+              description: "Welcome to our new page. You can customize this layout directly with visual tools.",
+              buttonText: "Get in Touch",
+              buttonLink: "#/contact",
+              backgroundImage: PRESET_IMAGES[4].url
+            },
+            style: { paddingTop: "80px", paddingBottom: "90px" }
+          },
+          {
+            id: `block_text_${Date.now() + 1}`,
+            type: "text",
+            content: {
+              html: `<p>Welcome to <strong>${escapeHtml(title)}</strong>. We are dedicated to walking alongside women who seek godly character, modesty, and strength in the Lord.</p>`
+            },
+            style: { paddingTop: "30px", paddingBottom: "30px", fontSize: "17px" }
+          },
+          {
+            id: `block_cta_${Date.now() + 2}`,
+            type: "cta",
+            content: {
+              title: "Join Our Fellowship",
+              subtitle: "Sign up for weekly devotionals and stay connected with our community.",
+              buttonText: "Browse Devotionals",
+              buttonLink: "#/devotionals",
+              variant: "brand"
+            },
+            style: { paddingTop: "50px", paddingBottom: "50px" }
+          }
+        ];
+      } else if (template === "media-focus") {
+        content.blocks[slug] = [
+          {
+            id: `block_hero_${Date.now()}`,
+            type: "hero",
+            content: {
+              eyebrow: "Featured Media & Study",
+              title1: title,
+              title2: "Audio & Reflection",
+              description: "Listen, reflect, and meditate on this week's message.",
+              buttonText: "Contact Heylee",
+              buttonLink: "#/contact",
+              backgroundImage: PRESET_IMAGES[2].url
+            },
+            style: { paddingTop: "70px", paddingBottom: "80px" }
+          },
+          {
+            id: `block_video_${Date.now() + 1}`,
+            type: "video",
+            content: {
+              url: "https://www.youtube.com/watch?v=y6120QOlsfU",
+              title: "Featured Video Message",
+              caption: "Scripture study and reflection for the week."
+            },
+            style: { paddingTop: "30px", paddingBottom: "20px" }
+          },
+          {
+            id: `block_callout_${Date.now() + 2}`,
+            type: "callout",
+            content: {
+              icon: "🕊️",
+              title: "Scripture Focus",
+              text: "She opens her mouth with wisdom, and the teaching of kindness is on her tongue. (Proverbs 31:26)",
+              variant: "prayer"
+            },
+            style: { paddingTop: "15px", paddingBottom: "25px" }
+          },
+          {
+            id: `block_cta_${Date.now() + 3}`,
+            type: "cta",
+            content: {
+              title: "Connect With Our Group",
+              subtitle: "Share prayer requests, thoughts, or questions with our community.",
+              buttonText: "Get in Touch",
+              buttonLink: "#/contact",
+              variant: "dark"
+            },
+            style: { paddingTop: "50px", paddingBottom: "50px" }
+          }
+        ];
+      } else {
+        // Blank canvas
+        content.blocks[slug] = [
+          {
+            id: `block_heading_${Date.now()}`,
+            type: "heading",
+            content: { text: title, tag: "h1" },
+            style: { paddingTop: "60px", paddingBottom: "20px", textAlign: "center", fontSize: "36px" }
+          }
+        ];
+      }
+    }
+
+    closeNewPageModal();
+    setDirty(true);
+    updatePageSelectorOptions();
+    currentRoute = slug;
+    pageSelector.value = slug;
+    await saveContent();
+    refreshPreview();
   });
 
   // Helper

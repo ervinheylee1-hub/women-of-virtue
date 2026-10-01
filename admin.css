@@ -106,6 +106,87 @@ button, input, select, textarea {
   border-color: var(--accent-color);
 }
 
+.btn-new-page-header {
+  background: rgba(201, 117, 91, 0.15);
+  border: 1px solid rgba(201, 117, 91, 0.4);
+  color: var(--accent-color);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.btn-new-page-header:hover {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+
+/* GitHub Auto-Sync Status Badge */
+.github-sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+.github-sync-indicator:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.github-sync-indicator .gh-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.github-sync-indicator.is-synced {
+  border-color: rgba(46, 125, 50, 0.4);
+  color: #81c784;
+}
+.github-sync-indicator.is-syncing {
+  border-color: rgba(201, 117, 91, 0.5);
+  color: var(--accent-color);
+}
+.github-sync-indicator.is-syncing .gh-icon {
+  animation: gh-spin 1s linear infinite;
+}
+@keyframes gh-spin {
+  100% { transform: rotate(360deg); }
+}
+.gh-status-text {
+  font-weight: 500;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gh-sync-quick-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.gh-sync-quick-btn:hover {
+  background: var(--accent-color);
+}
+.gh-sync-quick-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Device Switcher */
 .device-switcher {
   display: flex;

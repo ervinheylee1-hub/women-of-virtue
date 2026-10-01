@@ -224,6 +224,25 @@ function saveContentStore(content) {
   } catch {}
 }
 
+function invokeGitSync(commitMessage = 'Update site content via CMS [automated push]') {
+  try {
+    const { execSync } = require('child_process');
+    execSync('git add -A', { cwd: __dirname, stdio: 'pipe' });
+    const staged = execSync('git diff --cached --name-only', { cwd: __dirname, encoding: 'utf8' }).trim();
+    if (!staged) {
+      return { success: true, message: 'Up to date (no changes)', pushed: false };
+    }
+    const fullMessage = `${commitMessage} (${new Date().toISOString()})`;
+    execSync(`git commit -m "${fullMessage.replace(/"/g, '\\"')}"`, { cwd: __dirname, stdio: 'pipe' });
+    execSync('git push origin main', { cwd: __dirname, stdio: 'pipe' });
+    const commitHash = execSync('git rev-parse --short HEAD', { cwd: __dirname, encoding: 'utf8' }).trim();
+    return { success: true, pushed: true, commit: commitHash, message: `Pushed ${commitHash} to GitHub main` };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -426,8 +445,35 @@ const server = http.createServer(async (req, res) => {
       }
 
       saveContentStore(updated);
-      return sendJson(res, { saved: true });
+      const gitResult = invokeGitSync('Update site content via Admin CMS [automated push]');
+      return sendJson(res, { saved: true, github: gitResult });
     }
+
+    // 7b. POST /api/admin/github-sync - Manual git sync
+    if (pathname === '/api/admin/github-sync' && method === 'POST') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+      const gitResult = invokeGitSync('Manual sync from Admin CMS');
+      return sendJson(res, gitResult);
+    }
+
+    // 7c. GET /api/admin/github-status
+    if (pathname === '/api/admin/github-status' && method === 'GET') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      try {
+        const { execSync } = require('child_process');
+        const branch = execSync('git branch --show-current', { cwd: __dirname, encoding: 'utf8' }).trim();
+        const remote = execSync('git remote get-url origin', { cwd: __dirname, encoding: 'utf8' }).trim();
+        const lastCommit = execSync('git log -1 --format="%h - %s (%cr)"', { cwd: __dirname, encoding: 'utf8' }).trim();
+        const status = execSync('git status --porcelain', { cwd: __dirname, encoding: 'utf8' }).trim();
+        return sendJson(res, { branch, remote, lastCommit, hasUncommitted: Boolean(status) });
+      } catch (err) {
+        return sendJson(res, { error: err.message }, 500);
+      }
+    }
+
 
     // 8. POST /api/contact - Send form inquiries to heylee@absolutionuecna.org
     if (pathname === '/api/contact' && method === 'POST') {

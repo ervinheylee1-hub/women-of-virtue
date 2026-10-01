@@ -772,6 +772,76 @@ function renderBlock(block) {
         <span>${text}</span><span aria-hidden="true">${text}</span>
       </div>`;
     }
+    case "video": {
+      const url = content.url || "";
+      const isEmbed = url.includes("youtube.com") || url.includes("youtu.be") || url.includes("vimeo.com");
+      let embedHtml = "";
+      if (isEmbed) {
+        let embedSrc = url;
+        if (url.includes("youtube.com/watch?v=")) {
+          embedSrc = url.replace("watch?v=", "embed/");
+        } else if (url.includes("youtu.be/")) {
+          embedSrc = url.replace("youtu.be/", "www.youtube.com/embed/");
+        } else if (url.includes("vimeo.com/") && !url.includes("player.vimeo.com")) {
+          embedSrc = url.replace("vimeo.com/", "player.vimeo.com/video/");
+        }
+        embedHtml = `<div class="wov-video-responsive" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15);"><iframe src="${escapeCmsText(embedSrc)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe></div>`;
+      } else if (url.endsWith(".mp3") || url.includes("audio")) {
+        embedHtml = `<div class="wov-audio-wrap" style="padding:16px; background:var(--surface, #f8f6f0); border-radius:8px;"><audio controls src="${escapeCmsText(url)}" style="width:100%;"></audio></div>`;
+      } else if (url) {
+        embedHtml = `<div class="wov-video-responsive" style="border-radius:8px; overflow:hidden;"><video controls src="${escapeCmsText(url)}" style="width:100%; height:auto; display:block;"></video></div>`;
+      } else {
+        embedHtml = `<div class="wov-video-placeholder" style="padding:48px 20px; background:rgba(0,180,216,0.06); border:2px dashed #00b4d8; border-radius:8px; text-align:center;"><span style="font-size:32px;">▶</span><p style="margin-top:8px; font-weight:600; color:var(--ink);">Add YouTube, Vimeo, or Video URL in Inspector</p></div>`;
+      }
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="video" ${styleAttr} style="padding: 24px 0;">
+        ${content.title ? `<div class="section-heading" style="margin-bottom:14px;"><h3 style="margin:0; font-size:24px;">${escapeCmsText(content.title)}</h3></div>` : ""}
+        ${embedHtml}
+        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 13px; margin-top: 8px;">${escapeCmsText(content.caption)}</p>` : ""}
+      </div>`;
+    }
+    case "callout": {
+      const icon = content.icon || "📖";
+      const title = content.title || "Weekly Reflection Focus";
+      const text = content.text || "Add your inspirational takeaway or scripture focus here.";
+      const variant = content.variant || "highlight";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="callout" ${styleAttr} style="padding: 16px 0;">
+        <div class="wov-callout-card wov-callout-${variant}">
+          <div class="wov-callout-icon">${escapeCmsText(icon)}</div>
+          <div class="wov-callout-body">
+            <h4 class="wov-callout-title">${escapeCmsText(title)}</h4>
+            <div class="wov-callout-text">${sanitizeCmsHtml(text)}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+    case "cta": {
+      const title = content.title || "Grow in Faith & Virtue";
+      const subtitle = content.subtitle || "Join our community of women walking together in dignity and truth.";
+      const btnText = content.buttonText || "Explore Devotionals";
+      const btnLink = content.buttonLink || "#/devotionals";
+      const variant = content.variant || "brand";
+      return `<section class="wov-block wov-block-cta wov-cta-${variant} page-section" data-wov-block-id="${id}" data-wov-block-type="cta" ${styleAttr}>
+        <div class="wov-cta-inner">
+          <h2>${escapeCmsText(title)}</h2>
+          <p>${escapeCmsText(subtitle)}</p>
+          <div class="wov-cta-actions">
+            <a class="button" href="${escapeCmsText(btnLink)}">${escapeCmsText(btnText)}</a>
+          </div>
+        </div>
+      </section>`;
+    }
+    case "social": {
+      const title = content.title || "Follow & Connect";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="social" ${styleAttr} style="text-align: center; padding: 30px 0;">
+        ${title ? `<h3 style="margin-bottom: 16px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);">${escapeCmsText(title)}</h3>` : ""}
+        <div class="wov-social-links" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+          ${content.instagram ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="${escapeCmsText(content.instagram)}" target="_blank" rel="noopener">📸 Instagram</a>` : ""}
+          ${content.youtube ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="${escapeCmsText(content.youtube)}" target="_blank" rel="noopener">▶ YouTube</a>` : ""}
+          ${content.spotify ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="${escapeCmsText(content.spotify)}" target="_blank" rel="noopener">🎧 Spotify</a>` : ""}
+          ${content.email ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="mailto:${escapeCmsText(content.email)}">✉ Email Us</a>` : ""}
+        </div>
+      </div>`;
+    }
     default:
       return "";
   }
