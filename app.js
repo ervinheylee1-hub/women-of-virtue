@@ -231,10 +231,11 @@ function applyCmsTheme() {
   const theme = cmsContent.theme || {};
   const colors = {
     headerPink: /^#[0-9a-f]{6}$/i.test(theme.headerPink || "") ? theme.headerPink : "#d4967d",
-    headingPink: /^#[0-9a-f]{6}$/i.test(theme.headingPink || "") ? theme.headingPink : "#ffc0cb",
+    headingPink: /^#[0-9a-f]{6}$/i.test(theme.headingPink || "") ? theme.headingPink : "#d4967d",
     bodyTextColor: /^#[0-9a-f]{6}$/i.test(theme.bodyTextColor || "") ? theme.bodyTextColor : "#303636"
   };
   document.documentElement.style.setProperty("--cms-header-pink", colors.headerPink);
+  document.documentElement.style.setProperty("--peach", colors.headerPink);
   document.documentElement.style.setProperty("--cms-heading-pink", colors.headingPink);
   document.documentElement.style.setProperty("--cms-body-text-color", colors.bodyTextColor);
   for (const name of ["hero", "course"]) {
@@ -248,7 +249,7 @@ function applyCmsTheme() {
       bodyColorRule.id = "cms-body-color-rule";
       document.head.append(bodyColorRule);
     }
-    bodyColorRule.textContent = `#main p, #main li, #main label, .site-footer p { color: ${colors.bodyTextColor}; }`;
+    bodyColorRule.textContent = `#main p, #main li, #main label { color: ${colors.bodyTextColor}; }`;
   } else {
     bodyColorRule?.remove();
   }

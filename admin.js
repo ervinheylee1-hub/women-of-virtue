@@ -3935,6 +3935,13 @@
       headingPink: document.querySelector("#setting-heading-color").value,
       bodyTextColor: document.querySelector("#setting-body-color").value
     };
+    if (preview?.contentWindow) {
+      if (typeof preview.contentWindow.setCmsContent === "function") {
+        preview.contentWindow.setCmsContent(content);
+      } else {
+        preview.contentWindow.postMessage({ type: "WOV_UPDATE_CONTENT", content }, "*");
+      }
+    }
     setDirty(true);
     await saveContent();
   });
