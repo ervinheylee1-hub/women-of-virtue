@@ -210,8 +210,21 @@ function applyCmsText(element, key) {
   if (style.lineHeight) element.style.lineHeight = style.lineHeight;
   if (style.letterSpacing) element.style.letterSpacing = style.letterSpacing;
   if (style.padding) element.style.padding = style.padding;
+  if (style.paddingTop) element.style.paddingTop = style.paddingTop;
+  if (style.paddingRight) element.style.paddingRight = style.paddingRight;
+  if (style.paddingBottom) element.style.paddingBottom = style.paddingBottom;
+  if (style.paddingLeft) element.style.paddingLeft = style.paddingLeft;
   if (style.margin) element.style.margin = style.margin;
+  if (style.marginTop) element.style.marginTop = style.marginTop;
+  if (style.marginRight) element.style.marginRight = style.marginRight;
+  if (style.marginBottom) element.style.marginBottom = style.marginBottom;
+  if (style.marginLeft) element.style.marginLeft = style.marginLeft;
+  if (style.borderStyle) element.style.borderStyle = style.borderStyle;
+  if (style.borderWidth) element.style.borderWidth = style.borderWidth;
+  if (style.borderColor) element.style.borderColor = style.borderColor;
   if (style.borderRadius) element.style.borderRadius = style.borderRadius;
+  if (style.boxShadow) element.style.boxShadow = style.boxShadow;
+  if (style.zIndex !== undefined && style.zIndex !== "") element.style.zIndex = style.zIndex;
 }
 
 function applyCmsTheme() {
@@ -271,6 +284,21 @@ function applyCmsPositionOverrides() {
     }
     if (!el && document.getElementById(key)) {
       el = document.getElementById(key);
+    }
+    if (!el && key.startsWith("pos:")) {
+      const parts = key.split(":");
+      if (parts.length >= 5) {
+        const [, , tag, rawClass, idxStr] = parts;
+        const idx = parseInt(idxStr, 10) || 0;
+        const selector = rawClass && rawClass !== "el" ? `${tag}.${rawClass.replace(/-/g, ".")}` : tag;
+        try {
+          const matches = document.querySelectorAll(selector);
+          if (matches[idx]) el = matches[idx];
+        } catch {}
+      }
+    }
+    if (!el && key === "photo") {
+      el = document.querySelector(".lesson-photo, img[data-cms-layout-key='photo'], img");
     }
     if (el) {
       if (pos.x !== undefined || pos.y !== undefined) {
@@ -365,22 +393,16 @@ async function loadCmsContent() {
       if (response.ok) data = await response.json();
     } catch {}
   }
-  if (!data && window.location.protocol !== "file:") {
+  if (!data) {
     try {
-      const saved = localStorage.getItem(cmsStorageKey);
-      if (saved) data = JSON.parse(saved);
+      const response = await fetch("./content.json", { cache: "no-store" });
+      if (response.ok) data = await response.json();
     } catch {}
   }
   if (!data) {
     try {
       const stored = localStorage.getItem(cmsStorageKey);
       if (stored) data = JSON.parse(stored);
-    } catch {}
-  }
-  if (!data) {
-    try {
-      const response = await fetch("./content.json", { cache: "no-store" });
-      if (response.ok) data = await response.json();
     } catch {}
   }
   if (!data) return;
@@ -627,7 +649,7 @@ function lessonPage(lesson) {
     <div class="lesson-grid" data-cms-layout-group="lesson-page" data-cms-layout-key="content" data-lesson="${lesson.slug}" style="--lesson-image-offset: ${lesson.imageOffset || 0}px"><div class="lesson-copy" data-cms-layout-group="lesson-columns" data-cms-layout-key="copy">
       <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2 data-cms-key="lesson:${lesson.slug}:introTitle">${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy" data-cms-key="lesson:${lesson.slug}:intro">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p data-cms-key="lesson:${lesson.slug}:intro">${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs], sIdx) => `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:sec:${sIdx}:title">${title}</summary>${(paragraphs || []).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:sec:${sIdx}:p:${pIdx}`)).join("")}</details>`).join("")}</section>
       <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:res:title">${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:res:p:${pIdx}`)).join("")}</details>` : ""}</section>
-    </div><img class="lesson-photo" data-cms-layout-group="lesson-columns" data-cms-layout-key="photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
+    </div><img class="lesson-photo" data-cms-layout-group="lesson-columns" data-cms-layout-key="photo" data-cms-key="lesson:${lesson.slug}:photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
     <div class="lesson-end" data-cms-layout-group="lesson-page" data-cms-layout-key="completion"><label><input type="checkbox" data-lesson="${lesson.slug}" ${isComplete ? "checked" : ""} /> Mark lesson complete</label><a class="button" href="${nextLink}">Complete &amp; Continue</a></div>
   </article></div>`;
 }
@@ -664,7 +686,14 @@ function renderBlock(block) {
     style.fontSize ? `font-size: ${style.fontSize};` : "",
     style.fontFamily ? `font-family: ${style.fontFamily};` : "",
     style.fontWeight ? `font-weight: ${style.fontWeight};` : "",
-    style.borderRadius ? `border-radius: ${style.borderRadius};` : ""
+    style.lineHeight ? `line-height: ${style.lineHeight};` : "",
+    style.letterSpacing ? `letter-spacing: ${style.letterSpacing};` : "",
+    style.borderStyle ? `border-style: ${style.borderStyle};` : "",
+    style.borderWidth ? `border-width: ${style.borderWidth};` : "",
+    style.borderColor ? `border-color: ${style.borderColor};` : "",
+    style.borderRadius ? `border-radius: ${style.borderRadius};` : "",
+    style.boxShadow ? `box-shadow: ${style.boxShadow};` : "",
+    style.zIndex !== undefined && style.zIndex !== "" ? `z-index: ${style.zIndex};` : ""
   ].filter(Boolean).join(" ");
 
   const styleAttr = customStyles ? `style="${customStyles}"` : "";
