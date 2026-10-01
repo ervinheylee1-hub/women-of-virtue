@@ -347,6 +347,20 @@ button, input, select, textarea {
   background: var(--paper);
 }
 
+.view-live-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--forest);
+}
+.view-live-btn:hover {
+  background: var(--paper);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
 /* ==========================================================================
    Authentication Screens
    ========================================================================== */

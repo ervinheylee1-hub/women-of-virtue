@@ -14,6 +14,7 @@
   const deviceWrapper = document.querySelector("#device-wrapper");
   const saveStatus = document.querySelector("#save-status");
   const saveBtn = document.querySelector("#btn-save-publish");
+  const viewLiveBtn = document.querySelector("#btn-view-live");
   const logoutBtn = document.querySelector("#logout-button");
   const undoBtn = document.querySelector("#btn-undo");
   const redoBtn = document.querySelector("#btn-redo");
@@ -1557,8 +1558,23 @@
     });
   }
 
-  // Keyboard Nudge
+  // Keyboard Nudge & Shortcut forwarding inside canvas
   function handleElementNudge(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      if (isDirty) saveContent();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      undo();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+      e.preventDefault();
+      redo();
+      return;
+    }
     if (!selectedElement || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
     e.preventDefault();
@@ -3343,6 +3359,15 @@
     }
   });
 
+  // Prompt before leaving if there are unsaved changes
+  window.addEventListener("beforeunload", e => {
+    if (isDirty) {
+      e.preventDefault();
+      e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      return e.returnValue;
+    }
+  });
+
   // Load Content
   async function loadContent() {
     if (isLiveStaticMode) {
@@ -3543,6 +3568,7 @@
     headerPageControl.hidden = screen !== "dashboard";
     headerCanvasControls.hidden = screen !== "dashboard";
     saveBtn.hidden = screen !== "dashboard";
+    if (viewLiveBtn) viewLiveBtn.hidden = screen !== "dashboard";
     logoutBtn.hidden = screen !== "dashboard";
     const ghBadge = document.querySelector("#github-sync-badge");
     if (ghBadge) ghBadge.hidden = screen !== "dashboard";

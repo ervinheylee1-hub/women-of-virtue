@@ -284,6 +284,7 @@ function applyCmsLayout() {
 
 function applyCmsPositionOverrides() {
   if (!cmsContent.positionOverrides || typeof cmsContent.positionOverrides !== "object") return;
+  const isMobile = window.innerWidth <= 768;
   for (const [key, pos] of Object.entries(cmsContent.positionOverrides)) {
     if (!pos) continue;
     let el = null;
@@ -312,6 +313,16 @@ function applyCmsPositionOverrides() {
       el = document.querySelector(".lesson-photo, img[data-cms-layout-key='photo'], img");
     }
     if (el) {
+      if (isMobile) {
+        el.style.position = "";
+        el.style.left = "";
+        el.style.top = "";
+        el.style.width = "";
+        el.style.maxWidth = "100%";
+        el.style.height = "";
+        el.style.minHeight = "";
+        continue;
+      }
       if (pos.x !== undefined || pos.y !== undefined) {
         el.style.position = "relative";
         if (pos.x !== undefined) el.style.left = `${pos.x}px`;
@@ -947,6 +958,7 @@ function render() {
   nav.classList.remove("is-open");
   menuToggle.setAttribute("aria-expanded", "false");
   menuToggle.setAttribute("aria-label", "Open navigation");
+  document.body.style.overflow = "";
   window.scrollTo(0, 0);
 }
 
@@ -963,7 +975,40 @@ menuToggle.addEventListener("click", () => {
   const isOpen = nav.classList.toggle("is-open");
   menuToggle.setAttribute("aria-expanded", String(isOpen));
   menuToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+  document.body.style.overflow = isOpen ? "hidden" : "";
 });
+
+nav.addEventListener("click", event => {
+  if (event.target.closest("a")) {
+    nav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation");
+    document.body.style.overflow = "";
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && nav.classList.contains("is-open")) {
+    nav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation");
+    document.body.style.overflow = "";
+    menuToggle.focus();
+  }
+});
+
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    applyCmsPositionOverrides();
+    if (window.innerWidth > 768 && nav.classList.contains("is-open")) {
+      nav.classList.remove("is-open");
+      menuToggle.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
+    }
+  }, 100);
+}, { passive: true });
 main.addEventListener("change", event => {
   if (event.target.matches("[data-lesson]")) saveLesson(event.target.dataset.lesson, event.target.checked);
 });

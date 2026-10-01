@@ -17,7 +17,7 @@
           "textAlign": "left",
           "paddingTop": "80px",
           "paddingBottom": "95px",
-          "fontSize": "115px",
+          "fontSize": "clamp(42px, 6vw, 92px)",
           "color": "#fffefa",
           "textColor": "#fffefa"
         }
@@ -205,7 +205,7 @@
       "textColor": "#d4967d"
     },
     "block:block_hero_1:title2": {
-      "fontSize": "115px"
+      "fontSize": "clamp(42px, 6vw, 92px)"
     },
     "block:block_about_heading_1:heading": {
       "textAlign": "center"
