@@ -6,10 +6,12 @@ let cmsContent = {
   blocks: {},
   copyOverrides: {},
   richTextOverrides: {},
+  linkOverrides: {},
   textStyles: {},
   theme: {},
   graphics: {},
   layout: {},
+  positionOverrides: {},
   devotionals: []
 };
 
@@ -185,6 +187,15 @@ function applyCmsText(element, key) {
   } else if (Object.hasOwn(cmsContent.copyOverrides, key)) {
     setCmsText(element, cmsContent.copyOverrides[key]);
   }
+  if (cmsContent.linkOverrides && Object.hasOwn(cmsContent.linkOverrides, key)) {
+    const url = cmsContent.linkOverrides[key];
+    if (element.tagName.toLowerCase() === "a") {
+      element.setAttribute("href", url);
+    } else {
+      const parentA = element.closest("a");
+      if (parentA) parentA.setAttribute("href", url);
+    }
+  }
   const style = cmsContent.textStyles[key];
   if (!style || typeof style !== "object") return;
   if (style.fontFamily) element.style.fontFamily = style.fontFamily;
@@ -292,15 +303,15 @@ function applyCmsPositionOverrides() {
 
 function registerCmsText() {
   const occurrences = new Map();
-  const selectors = "h1,h2,h3,h4,p,summary,button,a,label,span,.cms-rich-copy";
+  const selectors = "h1,h2,h3,h4,p,summary,button,a,label,span,.cms-rich-copy,[data-cms-key]";
   document.querySelectorAll(selectors).forEach(element => {
     if (element.closest(".journey-marquee")) return;
-    const textNodes = [...element.childNodes].filter(node => node.nodeType === Node.TEXT_NODE);
-    if (element.children.length > 0 && textNodes.length === 0) return;
     if (element.dataset.cmsKey) {
       applyCmsText(element, element.dataset.cmsKey);
       return;
     }
+    const textNodes = [...element.childNodes].filter(node => node.nodeType === Node.TEXT_NODE);
+    if (element.children.length > 0 && textNodes.length === 0) return;
     const value = (textNodes.length ? textNodes.map(node => node.nodeValue).join("") : element.textContent).trim();
     if (!value) return;
     const scope = element.closest("main")
@@ -377,6 +388,7 @@ async function loadCmsContent() {
     blocks: data.blocks && typeof data.blocks === "object" ? data.blocks : {},
     copyOverrides: data.copyOverrides || {},
     richTextOverrides: data.richTextOverrides || {},
+    linkOverrides: data.linkOverrides && typeof data.linkOverrides === "object" ? data.linkOverrides : {},
     textStyles: data.textStyles || {},
     theme: data.theme || {},
     graphics: data.graphics || {},
@@ -868,15 +880,16 @@ function render() {
   else main.innerHTML = `<section class="page-intro"><div class="page-intro-inner"><p class="eyebrow">Women of Virtue</p><h1>Page not found.</h1><a class="button" href="#/">Return home</a></div></section>`;
 
   applyCmsLayout();
+  registerCmsText();
   applyCmsPositionOverrides();
   applyCmsTheme();
   document.querySelectorAll(".site-nav a").forEach(link => {
-    const target = link.getAttribute("href").slice(1);
-    if (window.location.hash === `#${target}` || (target === "/devotionals" && path.startsWith("devotionals"))) link.setAttribute("aria-current", "page");
+    const href = link.getAttribute("href") || "";
+    const target = href.replace(/^#\/?/, "");
+    if (window.location.hash.replace(/^#\/?/, "") === target || (target === "devotionals" && path.startsWith("devotionals"))) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
   document.title = lesson ? `${lesson.title} — Women of Virtue` : `${path ? `${path[0].toUpperCase()}${path.slice(1)}` : "Women of Virtue"} | Women of Virtue`;
-  registerCmsText();
   nav.classList.remove("is-open");
   menuToggle.setAttribute("aria-expanded", "false");
   menuToggle.setAttribute("aria-label", "Open navigation");

@@ -43,6 +43,7 @@
     blocks: {},
     copyOverrides: {},
     richTextOverrides: {},
+    linkOverrides: {},
     textStyles: {},
     theme: {},
     graphics: {},
@@ -318,7 +319,9 @@
       blocks: content.blocks,
       copyOverrides: content.copyOverrides,
       richTextOverrides: content.richTextOverrides,
-      textStyles: content.textStyles
+      linkOverrides: content.linkOverrides,
+      textStyles: content.textStyles,
+      positionOverrides: content.positionOverrides
     }));
     if (historyStack.length > MAX_HISTORY) historyStack.shift();
     historyIndex = historyStack.length - 1;
@@ -339,7 +342,9 @@
       content.blocks = snapshot.blocks || {};
       content.copyOverrides = snapshot.copyOverrides || {};
       content.richTextOverrides = snapshot.richTextOverrides || {};
+      content.linkOverrides = snapshot.linkOverrides || {};
       content.textStyles = snapshot.textStyles || {};
+      content.positionOverrides = snapshot.positionOverrides || {};
       updateUndoRedoButtons();
       renderNavigator();
       updatePreviewLive();
@@ -353,7 +358,9 @@
       content.blocks = snapshot.blocks || {};
       content.copyOverrides = snapshot.copyOverrides || {};
       content.richTextOverrides = snapshot.richTextOverrides || {};
+      content.linkOverrides = snapshot.linkOverrides || {};
       content.textStyles = snapshot.textStyles || {};
+      content.positionOverrides = snapshot.positionOverrides || {};
       updateUndoRedoButtons();
       renderNavigator();
       updatePreviewLive();
@@ -535,11 +542,28 @@
     const doc = preview.contentDocument;
     if (!doc || !doc.body) return;
 
+    doc.body.classList.toggle("is-clean-preview", document.body.classList.contains("is-preview-mode"));
+
     // Inject Editor Stylesheet into Iframe
     doc.querySelector("#wov-editor-injected-styles")?.remove();
     const styleEl = doc.createElement("style");
     styleEl.id = "wov-editor-injected-styles";
     styleEl.textContent = `
+      /* Clean Preview Mode (Full native navigation & clean display) */
+      body.is-clean-preview .wov-visual-target {
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        cursor: auto !important;
+      }
+      body.is-clean-preview #wov-transformer-box,
+      body.is-clean-preview .wov-details-toggle,
+      body.is-clean-preview .wov-editor-badge,
+      body.is-clean-preview .wov-between-inserter,
+      body.is-clean-preview .wov-element-chip {
+        display: none !important;
+      }
+
       /* Block styling */
       .wov-block {
         position: relative !important;
@@ -997,7 +1021,7 @@
       }
     });
 
-    const visualSelectors = "h1, h2, h3, h4, h5, h6, p, a.button, a.wov-block-btn, button, img, blockquote, cite, summary, .hero-copy, .project-copy, .wov-block, .cms-rich-copy, details.lesson-section";
+    const visualSelectors = "h1, h2, h3, h4, h5, h6, p, a, button, img, blockquote, cite, summary, .hero-copy, .project-copy, .wov-block, .cms-rich-copy, details.lesson-section, .site-header, .site-footer, .footer-partnership, .wordmark, .site-nav, .social-links, [data-cms-key]";
     const visualElements = doc.querySelectorAll(visualSelectors);
 
     visualElements.forEach(el => {
@@ -1008,10 +1032,16 @@
 
       // Visual Click Selection
       el.addEventListener("click", e => {
+        if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) {
+          return; // Let standard link navigation & button clicks occur in clean preview mode!
+        }
         if (e.target.closest(".wov-details-toggle")) {
           return; // Handled directly by toggle button
         }
-        if (el.matches("a, button") && !el.closest(".wov-badge-btn, .wov-tf-btn, .wov-details-toggle")) {
+        if (e.ctrlKey || e.metaKey) {
+          return; // Allow Ctrl+click to follow links or buttons natively
+        }
+        if (el.matches("a, button, .menu-toggle") && !el.closest(".wov-badge-btn, .wov-tf-btn, .wov-details-toggle")) {
           e.preventDefault();
         }
         if (el.tagName.toLowerCase() === "summary") {
@@ -1024,6 +1054,39 @@
         }
         e.stopPropagation();
         selectVisualElement(el);
+      });
+
+      // Double Click: Follow Link or Toggle Menu directly on canvas
+      el.addEventListener("dblclick", e => {
+        if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) return;
+        const linkEl = el.matches("a") ? el : el.closest("a");
+        if (linkEl) {
+          const href = linkEl.getAttribute("href");
+          if (href) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (href.startsWith("#/")) {
+              preview.contentWindow.location.hash = href;
+              const route = href.replace(/^#\/?/, "").replace(/\/$/, "") || "home";
+              if (pageSelector) pageSelector.value = route;
+              currentRoute = route;
+            } else if (href.startsWith("http://") || href.startsWith("https://")) {
+              window.open(href, "_blank", "noopener,noreferrer");
+            }
+          }
+          return;
+        }
+        if (el.matches(".menu-toggle, .menu-toggle *")) {
+          e.preventDefault();
+          e.stopPropagation();
+          const navEl = doc.querySelector("#site-nav");
+          const toggleEl = doc.querySelector(".menu-toggle");
+          if (navEl && toggleEl) {
+            const isOpen = navEl.classList.toggle("is-open");
+            toggleEl.setAttribute("aria-expanded", String(isOpen));
+            toggleEl.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+          }
+        }
       });
 
       // Direct file drop from OS onto canvas images and hero banners
@@ -1109,7 +1172,8 @@
     if (el.dataset.cmsLayoutKey) return el.dataset.cmsLayoutKey;
     if (el.id) return el.id;
     const doc = el.ownerDocument;
-    const path = (preview.contentWindow?.location?.hash || "#/").replace(/^#\/?/, "").replace(/\/$/, "") || "home";
+    const isShared = Boolean(el.closest("header, footer, .site-header, .site-footer"));
+    const path = isShared ? "shared" : ((preview.contentWindow?.location?.hash || "#/").replace(/^#\/?/, "").replace(/\/$/, "") || "home");
     const tag = el.tagName.toLowerCase();
     const className = (el.className || "").replace(/wov-[^\s]+/g, "").trim().replace(/\s+/g, "-").slice(0, 30) || "el";
     const allMatches = [...doc.querySelectorAll(`${tag}.${className.replace(/-/g, ".")}`)];
@@ -1604,15 +1668,23 @@
       selectedBlockId = null;
     }
 
-    selectedCmsKey = el.dataset.cmsKey || null;
+    selectedCmsKey = el.dataset.cmsKey || getElementKey(el);
+    if (!el.dataset.cmsKey) el.dataset.cmsKey = selectedCmsKey;
 
     // Determine element type name & tag
     const tagName = el.tagName.toLowerCase();
     let displayType = "Element";
-    if (tagName.startsWith("h")) displayType = `Heading (${tagName.toUpperCase()})`;
+    if (el.classList.contains("wordmark")) displayType = "Site Logo / Brand";
+    else if (el.classList.contains("menu-toggle")) displayType = "Mobile Menu Button";
+    else if (el.closest(".site-header") && (tagName === "a" || el.classList.contains("site-nav"))) displayType = "Header Nav Link";
+    else if (el.closest(".site-footer") && tagName === "a") displayType = "Footer Link";
+    else if (tagName === "header" || el.classList.contains("site-header")) displayType = "Site Header Container";
+    else if (tagName === "footer" || el.classList.contains("site-footer")) displayType = "Site Footer Container";
+    else if (el.classList.contains("footer-partnership")) displayType = "Footer Partnership Info";
+    else if (tagName.startsWith("h")) displayType = `Heading (${tagName.toUpperCase()})`;
     else if (tagName === "p") displayType = "Text / Paragraph";
     else if (tagName === "summary") displayType = "Dropdown Section";
-    else if (tagName === "a" || tagName === "button") displayType = "Button";
+    else if (tagName === "a" || tagName === "button") displayType = "Button / Link";
     else if (tagName === "img") displayType = "Image";
     else if (tagName === "blockquote" || tagName === "cite") displayType = "Quote";
     else if (blockEl) displayType = `Block: ${(blockEl.dataset.wovBlockType || 'block').toUpperCase()}`;
@@ -1631,8 +1703,9 @@
     document.querySelector("#adv-block-id").value = selectedBlockId || selectedCmsKey || el.id || el.className || tagName;
     document.querySelector("#adv-css-classes").value = el.className.replace(/wov-visual-target|wov-element-selected/g, "").trim();
 
-    // Direct Inline Canvas Editing for Text Elements
-    const isTextElement = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "a", "button", "blockquote", "cite", "summary"].includes(tagName) || el.classList.contains("cms-rich-copy");
+    // Direct Inline Canvas Editing for Text Elements (exclude layout container wrappers)
+    const isContainer = ["header", "footer", "nav"].includes(tagName) || el.classList.contains("site-header") || el.classList.contains("site-footer") || el.classList.contains("footer-partnership") || el.classList.contains("social-links") || el.classList.contains("site-nav");
+    const isTextElement = !isContainer && (["h1", "h2", "h3", "h4", "h5", "h6", "p", "a", "button", "blockquote", "cite", "summary"].includes(tagName) || el.classList.contains("cms-rich-copy"));
     if (isTextElement) {
       el.setAttribute("contenteditable", "true");
       el.focus();
@@ -1816,6 +1889,21 @@
       return;
     }
 
+    // Container Elements: Header, Footer, Partnership
+    if (el?.classList.contains("site-header") || el?.classList.contains("site-footer") || el?.classList.contains("footer-partnership")) {
+      const isHeader = el.classList.contains("site-header");
+      const title = isHeader ? "Site Header" : (el.classList.contains("footer-partnership") ? "Footer Partnership Section" : "Site Footer");
+      const infoRow = createField(title, `
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:4px; font-size:12px; color:var(--text-muted); line-height:1.5;">
+          <p style="margin:0 0 8px 0; color:#fff; font-weight:600;">Overall ${title} Container Selected</p>
+          <p style="margin:0 0 8px 0;">Use the <strong>Style</strong> tab above to adjust background color, padding, margins, borders, or drag/resize corners Squarespace-style.</p>
+          <p style="margin:0;">To edit words, logo, or navigation links directly, click on them individually in the canvas.</p>
+        </div>
+      `);
+      dynamicContentFields.append(infoRow);
+      return;
+    }
+
     // 1. Heading Element or Block
     if (tagName.startsWith("h") || block?.type === "heading") {
       const currentTag = tagName.startsWith("h") ? tagName : (block?.content?.tag || "h2");
@@ -1884,20 +1972,48 @@
       return;
     }
 
-    // 3. Button
+    // 3. Button or Link
     if (tagName === "a" || tagName === "button" || block?.type === "button") {
-      const currentText = el ? el.textContent.trim() : (block?.content?.text || "Learn More");
-      const currentLink = el?.getAttribute("href") || block?.content?.link || "#/";
-      const rowText = createField("Button Text", `<input type="text" id="field-btn-text" value="${escapeHtml(currentText)}" />`);
-      const rowLink = createField("Link URL / Route", `<input type="text" id="field-btn-link" value="${escapeHtml(currentLink)}" />`);
-      const rowVariant = createField("Button Style", `
-        <select id="field-btn-variant">
-          <option value="primary" ${block?.content?.variant === "primary" ? "selected" : ""}>Primary (Filled)</option>
-          <option value="outline" ${block?.content?.variant === "outline" ? "selected" : ""}>Outline</option>
-          <option value="pill" ${block?.content?.variant === "pill" ? "selected" : ""}>Pill</option>
-        </select>
+      const currentText = (selectedCmsKey && content.copyOverrides?.[selectedCmsKey]) || (el ? el.textContent.trim() : (block?.content?.text || "Learn More"));
+      const currentLink = (selectedCmsKey && content.linkOverrides?.[selectedCmsKey]) || el?.getAttribute("href") || block?.content?.link || "#/";
+      const isBlockBtn = Boolean(block?.type === "button");
+      const isMenuToggle = Boolean(el?.classList.contains("menu-toggle") || el?.closest(".menu-toggle"));
+
+      const rowText = createField("Button / Link Text", `<input type="text" id="field-btn-text" value="${escapeHtml(currentText)}" />`);
+      const rowLink = createField("Destination Link / URL (href)", `
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <input type="text" id="field-btn-link" value="${escapeHtml(currentLink)}" placeholder="e.g. #/about or https://..." />
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+            <button type="button" class="action-btn" id="btn-visit-link-inspector" style="padding:6px 12px; font-size:11px; background:#00b4d8; color:#fff; border-radius:4px; border:0; cursor:pointer;">
+              🔗 Visit Link / Test
+            </button>
+            ${isMenuToggle ? `
+              <button type="button" class="action-btn" id="btn-toggle-menu-inspector" style="padding:6px 12px; font-size:11px; background:#3c4048; color:#fff; border-radius:4px; border:0; cursor:pointer;">
+                📱 Toggle Mobile Menu
+              </button>
+            ` : ""}
+          </div>
+        </div>
       `);
-      dynamicContentFields.append(rowText, rowLink, rowVariant);
+
+      dynamicContentFields.append(rowText, rowLink);
+
+      if (isBlockBtn) {
+        const rowVariant = createField("Button Style", `
+          <select id="field-btn-variant">
+            <option value="primary" ${block?.content?.variant === "primary" ? "selected" : ""}>Primary (Filled)</option>
+            <option value="outline" ${block?.content?.variant === "outline" ? "selected" : ""}>Outline</option>
+            <option value="pill" ${block?.content?.variant === "pill" ? "selected" : ""}>Pill</option>
+          </select>
+        `);
+        dynamicContentFields.append(rowVariant);
+        rowVariant.querySelector("select").addEventListener("change", e => {
+          if (block) {
+            block.content.variant = e.target.value;
+            updateBlockLive(block);
+          }
+        });
+      }
 
       rowText.querySelector("input").addEventListener("input", e => {
         const val = e.target.value;
@@ -1905,19 +2021,47 @@
         if (block) block.content.text = val;
         if (selectedCmsKey) content.copyOverrides[selectedCmsKey] = val;
         setDirty(true);
+        syncDraftStorage();
+        updateTransformerPosition();
       });
+
       rowLink.querySelector("input").addEventListener("input", e => {
-        const val = e.target.value;
+        const val = e.target.value.trim();
         if (el) el.setAttribute("href", val);
         if (block) block.content.link = val;
+        if (selectedCmsKey) {
+          if (!content.linkOverrides) content.linkOverrides = {};
+          content.linkOverrides[selectedCmsKey] = val;
+        }
         setDirty(true);
+        syncDraftStorage();
       });
-      rowVariant.querySelector("select").addEventListener("change", e => {
-        if (block) {
-          block.content.variant = e.target.value;
-          updateBlockLive(block);
+
+      rowLink.querySelector("#btn-visit-link-inspector")?.addEventListener("click", () => {
+        const url = rowLink.querySelector("input").value.trim();
+        if (!url) return;
+        if (url.startsWith("#/")) {
+          preview.contentWindow.location.hash = url;
+          const route = url.replace(/^#\/?/, "").replace(/\/$/, "") || "home";
+          if (pageSelector) pageSelector.value = route;
+          currentRoute = route;
+        } else if (url.startsWith("http://") || url.startsWith("https://")) {
+          window.open(url, "_blank", "noopener,noreferrer");
         }
       });
+
+      rowLink.querySelector("#btn-toggle-menu-inspector")?.addEventListener("click", () => {
+        const doc = preview.contentDocument;
+        const navEl = doc?.querySelector("#site-nav");
+        const toggleEl = doc?.querySelector(".menu-toggle");
+        if (navEl && toggleEl) {
+          const isOpen = navEl.classList.toggle("is-open");
+          toggleEl.setAttribute("aria-expanded", String(isOpen));
+          toggleEl.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+          setTimeout(updateTransformerPosition, 50);
+        }
+      });
+
       return;
     }
 
@@ -2868,8 +3012,17 @@
   redoBtn.addEventListener("click", redo);
 
   previewModeBtn.addEventListener("click", () => {
-    document.body.classList.toggle("is-preview-mode");
-    previewModeBtn.classList.toggle("is-active", document.body.classList.contains("is-preview-mode"));
+    const isPreview = document.body.classList.toggle("is-preview-mode");
+    previewModeBtn.classList.toggle("is-active", isPreview);
+    const iframeDoc = preview.contentDocument;
+    if (iframeDoc && iframeDoc.body) {
+      iframeDoc.body.classList.toggle("is-clean-preview", isPreview);
+      const tf = iframeDoc.querySelector("#wov-transformer-box");
+      if (tf) tf.style.display = isPreview ? "none" : "";
+      if (isPreview && selectedElement) {
+        selectedElement.removeAttribute("contenteditable");
+      }
+    }
   });
 
   navigatorBtn.addEventListener("click", () => {
@@ -3050,15 +3203,20 @@
     }
     if (!content.copyOverrides) content.copyOverrides = {};
     if (!content.richTextOverrides) content.richTextOverrides = {};
+    if (!content.linkOverrides) content.linkOverrides = {};
     if (!content.textStyles) content.textStyles = {};
     if (!content.theme) content.theme = {};
     if (!content.graphics) content.graphics = {};
+    if (!content.layout) content.layout = {};
+    if (!content.positionOverrides) content.positionOverrides = {};
 
     historyStack = [JSON.stringify({
       blocks: content.blocks,
       copyOverrides: content.copyOverrides,
       richTextOverrides: content.richTextOverrides,
-      textStyles: content.textStyles
+      linkOverrides: content.linkOverrides,
+      textStyles: content.textStyles,
+      positionOverrides: content.positionOverrides
     })];
     historyIndex = 0;
     updateUndoRedoButtons();

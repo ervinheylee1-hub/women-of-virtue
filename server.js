@@ -183,6 +183,7 @@ function readContentStore() {
     blocks: {},
     copyOverrides: {},
     richTextOverrides: {},
+    linkOverrides: {},
     textStyles: {},
     theme: {},
     graphics: {},
@@ -200,6 +201,7 @@ function readContentStore() {
       blocks: parsed.blocks && typeof parsed.blocks === 'object' ? parsed.blocks : {},
       copyOverrides: parsed.copyOverrides && typeof parsed.copyOverrides === 'object' ? parsed.copyOverrides : {},
       richTextOverrides: parsed.richTextOverrides && typeof parsed.richTextOverrides === 'object' ? parsed.richTextOverrides : {},
+      linkOverrides: parsed.linkOverrides && typeof parsed.linkOverrides === 'object' ? parsed.linkOverrides : {},
       textStyles: parsed.textStyles && typeof parsed.textStyles === 'object' ? parsed.textStyles : {},
       theme: parsed.theme && typeof parsed.theme === 'object' ? parsed.theme : {},
       graphics: parsed.graphics && typeof parsed.graphics === 'object' ? parsed.graphics : {},
@@ -420,6 +422,7 @@ const server = http.createServer(async (req, res) => {
         blocks: body.blocks && typeof body.blocks === 'object' ? body.blocks : current.blocks,
         copyOverrides: {},
         richTextOverrides: {},
+        linkOverrides: {},
         textStyles: body.textStyles && typeof body.textStyles === 'object' ? body.textStyles : current.textStyles,
         theme: body.theme && typeof body.theme === 'object' ? body.theme : current.theme,
         graphics: body.graphics && typeof body.graphics === 'object' ? body.graphics : current.graphics,
@@ -440,6 +443,14 @@ const server = http.createServer(async (req, res) => {
         for (const [k, v] of Object.entries(body.richTextOverrides)) {
           if (typeof k === 'string' && k.length <= 240) {
             updated.richTextOverrides[k] = normalizeGodCapitalization(String(v || '').slice(0, 20000));
+          }
+        }
+      }
+
+      if (body.linkOverrides && typeof body.linkOverrides === 'object') {
+        for (const [k, v] of Object.entries(body.linkOverrides)) {
+          if (typeof k === 'string' && k.length <= 240) {
+            updated.linkOverrides[k] = String(v || '').trim().slice(0, 2048);
           }
         }
       }

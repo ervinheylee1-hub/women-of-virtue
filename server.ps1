@@ -85,6 +85,7 @@ function Read-ContentStore {
         blocks = [pscustomobject]@{}
         copyOverrides = @{}
         richTextOverrides = @{}
+        linkOverrides = @{}
         textStyles = @{}
         theme = @{}
         graphics = @{}
@@ -107,6 +108,12 @@ function Read-ContentStore {
     if ($null -ne $document.richTextOverrides) {
       foreach ($property in $document.richTextOverrides.PSObject.Properties) {
         $richText[$property.Name] = [string]$property.Value
+      }
+    }
+    $linkOverrides = @{}
+    if ($null -ne $document.linkOverrides) {
+      foreach ($property in $document.linkOverrides.PSObject.Properties) {
+        $linkOverrides[$property.Name] = [string]$property.Value
       }
     }
     $textStyles = @{}
@@ -207,6 +214,7 @@ function Read-ContentStore {
     blocks = $blocks
     copyOverrides = $copy
     richTextOverrides = $richText
+    linkOverrides = $linkOverrides
     textStyles = $textStyles
     theme = $theme
     graphics = $graphics
@@ -480,6 +488,17 @@ function Save-ContentRequest {
     if ($value.Length -gt 20000) { throw "Rich text exceeds the 20,000 character limit." }
     $richText[$property.Name] = $value
   }
+  $linkOverrides = @{}
+  if ($null -ne $Body.linkOverrides) {
+    $linkProperties = $Body.linkOverrides.PSObject.Properties
+    if ($linkProperties.Count -gt 300) { throw "Too many link overrides were submitted." }
+    foreach ($property in $linkProperties) {
+      if ($property.Name -notmatch "^[a-zA-Z0-9._:%-]{1,240}$") { throw "A link key contains invalid characters." }
+      $linkVal = ([string]$property.Value).Trim()
+      if ($linkVal.Length -gt 2048) { throw "Link URL exceeds maximum length." }
+      $linkOverrides[$property.Name] = $linkVal
+    }
+  }
   $textStyles = @{}
   $styleProperties = $Body.textStyles.PSObject.Properties
   if ($styleProperties.Count -gt 300) { throw "Too many text styles were submitted." }
@@ -574,6 +593,7 @@ function Save-ContentRequest {
     blocks = $blocks
     copyOverrides = $copy
     richTextOverrides = $richText
+    linkOverrides = $linkOverrides
     textStyles = $textStyles
     theme = $theme
     graphics = $graphics
