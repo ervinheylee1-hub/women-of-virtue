@@ -1798,8 +1798,7 @@
           else if (block.content.html !== undefined) block.content.html = el.innerHTML;
           else if (block.content.quote !== undefined) block.content.quote = newText;
           else if (block.content.buttonText !== undefined) block.content.buttonText = newText;
-        }
-        if (selectedCmsKey && (selectedCmsKey.startsWith("block:") || !selectedBlockId)) {
+        } else if (selectedCmsKey) {
           content.copyOverrides[selectedCmsKey] = newText;
         }
 
@@ -1984,9 +1983,10 @@
     }
 
     // 1. Heading Element or Block
+    // 1. Heading Element or Block
     if (tagName.startsWith("h") || block?.type === "heading") {
       const currentTag = tagName.startsWith("h") ? tagName : (block?.content?.tag || "h2");
-      const currentText = el ? (el.innerText || el.textContent) : (block?.content?.text || "");
+      const currentText = block?.content?.text !== undefined ? block.content.text : (el ? (el.innerText || el.textContent) : (selectedCmsKey ? (content.copyOverrides[selectedCmsKey] || "") : ""));
 
       const rowTag = createField("HTML Tag", `
         <select id="field-heading-tag">
@@ -2020,8 +2020,11 @@
       rowText.querySelector("input").addEventListener("input", e => {
         const val = e.target.value;
         if (el) el.textContent = val;
-        if (block) block.content.text = val;
-        if (selectedCmsKey) content.copyOverrides[selectedCmsKey] = val;
+        if (block) {
+          block.content.text = val;
+        } else if (selectedCmsKey) {
+          content.copyOverrides[selectedCmsKey] = val;
+        }
         setDirty(true);
         syncDraftStorage();
       });
@@ -2030,15 +2033,16 @@
 
     // 2. Paragraph or Text Editor
     if (tagName === "p" || block?.type === "text") {
-      const currentVal = el ? (el.innerHTML || el.textContent) : (block?.content?.html || block?.content?.text || "");
+      const currentVal = block?.content?.html !== undefined ? block.content.html : (block?.content?.text !== undefined ? block.content.text : (el ? (el.innerHTML || el.textContent) : (selectedCmsKey ? (content.richTextOverrides[selectedCmsKey] || content.copyOverrides[selectedCmsKey] || "") : "")));
       const rowText = createField("Content HTML / Text", `<textarea id="field-text-html" rows="5">${escapeHtml(currentVal)}</textarea>`);
       dynamicContentFields.append(rowText);
 
       rowText.querySelector("textarea").addEventListener("input", e => {
         const val = e.target.value;
         if (el) el.innerHTML = val;
-        if (block) block.content.html = val;
-        if (selectedCmsKey && (selectedCmsKey.startsWith("block:") || !selectedBlockId)) {
+        if (block) {
+          block.content.html = val;
+        } else if (selectedCmsKey) {
           if (val.includes("<") && val.includes(">")) {
             content.richTextOverrides[selectedCmsKey] = val;
           } else {
@@ -2053,8 +2057,8 @@
 
     // 3. Button or Link
     if (tagName === "a" || tagName === "button" || block?.type === "button") {
-      const currentText = (selectedCmsKey && content.copyOverrides?.[selectedCmsKey]) || (el ? el.textContent.trim() : (block?.content?.text || "Learn More"));
-      const currentLink = (selectedCmsKey && content.linkOverrides?.[selectedCmsKey]) || el?.getAttribute("href") || block?.content?.link || "#/";
+      const currentText = block?.content?.text !== undefined ? block.content.text : ((selectedCmsKey && content.copyOverrides?.[selectedCmsKey]) || (el ? el.textContent.trim() : "Learn More"));
+      const currentLink = block?.content?.link !== undefined ? block.content.link : ((selectedCmsKey && content.linkOverrides?.[selectedCmsKey]) || el?.getAttribute("href") || "#/");
       const isBlockBtn = Boolean(block?.type === "button");
       const isMenuToggle = Boolean(el?.classList.contains("menu-toggle") || el?.closest(".menu-toggle"));
 
@@ -2097,8 +2101,11 @@
       rowText.querySelector("input").addEventListener("input", e => {
         const val = e.target.value;
         if (el) el.textContent = val;
-        if (block) block.content.text = val;
-        if (selectedCmsKey) content.copyOverrides[selectedCmsKey] = val;
+        if (block) {
+          block.content.text = val;
+        } else if (selectedCmsKey) {
+          content.copyOverrides[selectedCmsKey] = val;
+        }
         setDirty(true);
         syncDraftStorage();
         updateTransformerPosition();
@@ -2107,8 +2114,9 @@
       rowLink.querySelector("input").addEventListener("input", e => {
         const val = e.target.value.trim();
         if (el) el.setAttribute("href", val);
-        if (block) block.content.link = val;
-        if (selectedCmsKey) {
+        if (block) {
+          block.content.link = val;
+        } else if (selectedCmsKey) {
           if (!content.linkOverrides) content.linkOverrides = {};
           content.linkOverrides[selectedCmsKey] = val;
         }
@@ -2435,7 +2443,160 @@
       return;
     }
 
-    // 13. Social Links Block
+    // 14. Accordion Block Inspector
+    if (block?.type === "accordion") {
+      const c = block.content || {};
+      if (!Array.isArray(c.items)) c.items = [];
+
+      const accordionWrap = document.createElement("div");
+      accordionWrap.className = "control-row";
+      accordionWrap.innerHTML = `
+        <label>Accordion Sections (${c.items.length} items)</label>
+        <div class="accordion-items-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+          ${c.items.map((item, idx) => `
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:11px; color:#9cb2ab; font-weight:600;">Section #${idx + 1}</span>
+                <button type="button" class="wov-badge-btn" data-del-acc-idx="${idx}" title="Delete section" style="width:18px; height:18px; color:#ff8080;">✕</button>
+              </div>
+              <input type="text" class="acc-title-input" data-acc-idx="${idx}" value="${escapeHtml(item.title || '')}" placeholder="Section Title" style="width:100%; box-sizing:border-box; margin-bottom:6px;" />
+              <textarea class="acc-content-input" data-acc-idx="${idx}" rows="3" placeholder="Section Content / Reflection..." style="width:100%; box-sizing:border-box;">${escapeHtml(item.content || '')}</textarea>
+            </div>
+          `).join("")}
+          <button type="button" class="action-btn" id="btn-add-acc-item" style="margin-top:4px; padding:6px 12px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer;">
+            + Add New Accordion Section
+          </button>
+        </div>
+      `;
+
+      dynamicContentFields.append(accordionWrap);
+
+      accordionWrap.querySelectorAll(".acc-title-input").forEach(inp => {
+        inp.addEventListener("input", e => {
+          const idx = parseInt(e.target.dataset.accIdx, 10);
+          if (c.items[idx]) {
+            c.items[idx].title = e.target.value;
+            updateBlockLive(block);
+          }
+        });
+      });
+
+      accordionWrap.querySelectorAll(".acc-content-input").forEach(inp => {
+        inp.addEventListener("input", e => {
+          const idx = parseInt(e.target.dataset.accIdx, 10);
+          if (c.items[idx]) {
+            c.items[idx].content = e.target.value;
+            updateBlockLive(block);
+          }
+        });
+      });
+
+      accordionWrap.addEventListener("click", e => {
+        const delBtn = e.target.closest("[data-del-acc-idx]");
+        if (delBtn) {
+          const idx = parseInt(delBtn.dataset.delAccIdx, 10);
+          c.items.splice(idx, 1);
+          updateBlockLive(block);
+          populateInspectorContent(el, block);
+        }
+      });
+
+      accordionWrap.querySelector("#btn-add-acc-item")?.addEventListener("click", () => {
+        c.items.push({ title: "New Section", content: "Write your accordion reflection here." });
+        updateBlockLive(block);
+        populateInspectorContent(el, block);
+      });
+
+      return;
+    }
+
+    // 15. Gallery Block Inspector
+    if (block?.type === "gallery") {
+      const c = block.content || {};
+      if (!Array.isArray(c.images)) c.images = [];
+
+      const rowTitle = createField("Gallery Heading", `<input type="text" id="field-gallery-title" value="${escapeHtml(c.title || '')}" placeholder="e.g. Photo Gallery" />`);
+      const rowCols = createField("Columns", `
+        <select id="field-gallery-cols">
+          <option value="2" ${Number(c.columns) === 2 ? 'selected' : ''}>2 Columns</option>
+          <option value="3" ${Number(c.columns) === 3 ? 'selected' : ''}>3 Columns</option>
+          <option value="4" ${Number(c.columns) === 4 ? 'selected' : ''}>4 Columns</option>
+        </select>
+      `);
+
+      const imagesWrap = document.createElement("div");
+      imagesWrap.className = "control-row";
+      imagesWrap.innerHTML = `
+        <label>Gallery Photos (${c.images.length} images)</label>
+        <div class="gallery-images-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+          ${c.images.map((img, idx) => `
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:11px; color:#9cb2ab; font-weight:600;">Image #${idx + 1}</span>
+                <button type="button" class="wov-badge-btn" data-del-img-idx="${idx}" title="Delete image" style="width:18px; height:18px; color:#ff8080;">✕</button>
+              </div>
+              <input type="url" class="gallery-img-url" data-img-idx="${idx}" value="${escapeHtml(img.url || '')}" placeholder="Image URL (https://...)" style="width:100%; box-sizing:border-box; margin-bottom:6px;" />
+              <input type="text" class="gallery-img-alt" data-img-idx="${idx}" value="${escapeHtml(img.alt || '')}" placeholder="Alt description" style="width:100%; box-sizing:border-box;" />
+            </div>
+          `).join("")}
+          <button type="button" class="action-btn" id="btn-add-gallery-img" style="margin-top:4px; padding:6px 12px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer;">
+            + Add Image to Gallery
+          </button>
+        </div>
+      `;
+
+      dynamicContentFields.append(rowTitle, rowCols, imagesWrap);
+
+      rowTitle.querySelector("input").addEventListener("input", e => {
+        c.title = e.target.value;
+        updateBlockLive(block);
+      });
+
+      rowCols.querySelector("select").addEventListener("change", e => {
+        c.columns = parseInt(e.target.value, 10);
+        updateBlockLive(block);
+      });
+
+      imagesWrap.querySelectorAll(".gallery-img-url").forEach(inp => {
+        inp.addEventListener("input", e => {
+          const idx = parseInt(e.target.dataset.imgIdx, 10);
+          if (c.images[idx]) {
+            c.images[idx].url = e.target.value;
+            updateBlockLive(block);
+          }
+        });
+      });
+
+      imagesWrap.querySelectorAll(".gallery-img-alt").forEach(inp => {
+        inp.addEventListener("input", e => {
+          const idx = parseInt(e.target.dataset.imgIdx, 10);
+          if (c.images[idx]) {
+            c.images[idx].alt = e.target.value;
+            updateBlockLive(block);
+          }
+        });
+      });
+
+      imagesWrap.addEventListener("click", e => {
+        const delBtn = e.target.closest("[data-del-img-idx]");
+        if (delBtn) {
+          const idx = parseInt(delBtn.dataset.delImgIdx, 10);
+          c.images.splice(idx, 1);
+          updateBlockLive(block);
+          populateInspectorContent(el, block);
+        }
+      });
+
+      imagesWrap.querySelector("#btn-add-gallery-img")?.addEventListener("click", () => {
+        c.images.push({ url: PRESET_IMAGES[0].url, alt: "New gallery image" });
+        updateBlockLive(block);
+        populateInspectorContent(el, block);
+      });
+
+      return;
+    }
+
+    // 16. Social Links Block
     if (block?.type === "social") {
       const c = block.content || {};
       const rowTitle = createField("Section Header", `<input type="text" id="field-social-title" value="${escapeHtml(c.title || '')}" />`);
@@ -4215,7 +4376,6 @@
             <li class="dev-lesson-item" data-lesson-id="${l.id}">
               <div class="dev-lesson-info">
                 <span class="dev-lesson-title">${escapeHtml(l.title)}</span>
-                ${l.publishedAt ? `<span class="dev-lesson-date">${escapeHtml(l.publishedAt)}</span>` : ''}
               </div>
               <div class="dev-lesson-actions">
                 <button type="button" class="dev-lesson-action-btn" data-action="preview-lesson" data-dev-id="${dev.id}" data-lesson-slug="${l.slug}" title="Preview lesson on canvas">👁️</button>
@@ -4238,7 +4398,7 @@
         (dev.lessons || []).forEach(l => {
           const li = document.createElement("li");
           li.innerHTML = `
-            <span><strong>${escapeHtml(dev.title)}:</strong> ${escapeHtml(l.title)} <small style="color:var(--text-muted);">(${l.publishedAt || ''})</small></span>
+            <span><strong>${escapeHtml(dev.title)}:</strong> ${escapeHtml(l.title)}</span>
             <button type="button" data-del-lesson-pair="${dev.id}:${l.id}">Remove</button>
           `;
           legacyList.append(li);
