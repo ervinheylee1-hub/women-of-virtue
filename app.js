@@ -646,7 +646,7 @@ function coursePage() {
       <div class="course-intro"><h1>Devotional Courses</h1><p>Weekly Devotionals for Women of Virtue</p><p>Work through these continual courses on the various aspects of the Virtus woman.</p></div>
       <div class="course-head"><div class="progress-wrap"><div class="progress-track" role="progressbar" aria-label="Course Progress" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><span class="progress-count">${percent}%</span><span class="progress-label">Progress</span></div></div>
       ${devotionals.map((dev, devIndex) => `
-        <details class="course-unit" ${devIndex === 0 ? "open" : "open"}>
+        <details class="course-unit">
           <summary><strong>${dev.title}</strong><span>${dev.lessons.length} ${dev.lessons.length === 1 ? "Lesson" : "Lessons"}</span></summary>
           ${dev.description ? `<p style="font-size:13px; color:var(--muted); margin:0 0 14px;">${dev.description}</p>` : ""}
           <ul class="lesson-list">
@@ -664,7 +664,7 @@ function coursePage() {
         </details>
       `).join("")}
     </div></section>
-    <section class="course-faq-region page-section" data-cms-layout-group="course-sections" data-cms-layout-key="faq"><div class="faq"><h1>Questions? We've got answers.</h1>${faqs.map(([question, answer], index) => `<details class="disclosure" ${index === 0 ? "open" : ""}><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div></section>
+    <section class="course-faq-region page-section" data-cms-layout-group="course-sections" data-cms-layout-key="faq"><div class="faq"><h1>Questions? We've got answers.</h1>${faqs.map(([question, answer]) => `<details class="disclosure"><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div></section>
   </div>`;
 }
 
@@ -680,8 +680,8 @@ function lessonPage(lesson) {
     <nav class="lesson-crumb" aria-label="Course navigation" data-cms-layout-group="lesson-page" data-cms-layout-key="breadcrumb"><a href="#/devotionals">Devotional Courses</a><a href="${nextLink}">Complete &amp; Continue</a></nav>
     <header class="lesson-title" data-cms-layout-group="lesson-page" data-cms-layout-key="title"><p class="eyebrow">${devotionalTitle} · ${devotionalLessons.length} ${devotionalLessons.length === 1 ? "Lesson" : "Lessons"}${lesson.publishedAt ? ` · ${formatPublishedDate(lesson.publishedAt)}` : ""}</p><h1 data-cms-key="lesson:${lesson.slug}:title">${lesson.titleHtml || lesson.title}</h1></header>
     <div class="lesson-grid" data-cms-layout-group="lesson-page" data-cms-layout-key="content" data-lesson="${lesson.slug}" style="--lesson-image-offset: ${lesson.imageOffset || 0}px"><div class="lesson-copy" data-cms-layout-group="lesson-columns" data-cms-layout-key="copy">
-      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2 data-cms-key="lesson:${lesson.slug}:introTitle">${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy" data-cms-key="lesson:${lesson.slug}:intro">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p data-cms-key="lesson:${lesson.slug}:intro">${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs], sIdx) => `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:sec:${sIdx}:title">${title}</summary>${(paragraphs || []).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:sec:${sIdx}:p:${pIdx}`)).join("")}</details>`).join("")}</section>
-      <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:res:title">${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:res:p:${pIdx}`)).join("")}</details>` : ""}</section>
+      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2 data-cms-key="lesson:${lesson.slug}:introTitle">${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy" data-cms-key="lesson:${lesson.slug}:intro">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p data-cms-key="lesson:${lesson.slug}:intro">${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs], sIdx) => `<details class="lesson-section"><summary data-cms-key="lesson:${lesson.slug}:sec:${sIdx}:title">${title}</summary>${(paragraphs || []).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:sec:${sIdx}:p:${pIdx}`)).join("")}</details>`).join("")}</section>
+      <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section"><summary data-cms-key="lesson:${lesson.slug}:res:title">${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:res:p:${pIdx}`)).join("")}</details>` : ""}</section>
     </div><img class="lesson-photo" data-cms-layout-group="lesson-columns" data-cms-layout-key="photo" data-cms-key="lesson:${lesson.slug}:photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
     <div class="lesson-end" data-cms-layout-group="lesson-page" data-cms-layout-key="completion"><label><input type="checkbox" data-lesson="${lesson.slug}" ${isComplete ? "checked" : ""} /> Mark lesson complete</label><a class="button" href="${nextLink}">Complete &amp; Continue</a></div>
   </article></div>`;
@@ -781,7 +781,7 @@ function renderBlock(block) {
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="accordion" ${styleAttr}>
         <div class="wov-block-accordion">
           ${items.map((item, idx) => `
-            <details class="wov-accordion-item" ${idx === 0 ? "open" : ""}>
+            <details class="wov-accordion-item">
               <summary data-cms-key="block:${id}:acc:${idx}:title">${escapeCmsText(item.title || "Section")}</summary>
               <div class="wov-accordion-content" data-cms-key="block:${id}:acc:${idx}:content">${sanitizeCmsHtml(item.content || "")}</div>
             </details>

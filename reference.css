@@ -916,6 +916,18 @@ body[data-route] .site-header {
 .course-unit > summary span {
   color: var(--muted);
   font: 500 14px/1 var(--sans);
+  margin-left: auto;
+}
+
+.course-unit > summary::after {
+  content: "+";
+  color: var(--peach, #d4967d);
+  font: 400 24px/1 var(--serif);
+  flex-shrink: 0;
+}
+
+.course-unit[open] > summary::after {
+  content: "−";
 }
 
 .lesson-list {
@@ -1110,11 +1122,31 @@ body[data-route] .site-header {
 }
 
 .lesson-section summary {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 16px 0;
   color: var(--ink);
   font: 400 clamp(18px, 2.5vw, 22px)/1.2 var(--display);
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.lesson-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.lesson-section summary::after {
+  content: "+";
+  color: var(--peach, #d4967d);
+  font: 400 24px/1 var(--serif);
+  flex-shrink: 0;
+}
+
+.lesson-section[open] summary::after {
+  content: "−";
 }
 
 .lesson-section p {
