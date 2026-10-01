@@ -181,7 +181,8 @@
     "devotionals": [],
     "devotionals/jelly": [],
     "devotionals/defining-femininity": [],
-    "contact": []
+    "contact": [],
+    "devotionals/prayer-life-and-church-community": []
   },
   "copyOverrides": {
     "block:block_hero_1:button": "Learn More",
@@ -190,7 +191,9 @@
     "home:h2:follow-the-journey:0": "\n",
     "about:p:write-your-text-here-you-can-add-paragraphs-bibl:0": "Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen world’s definition of womanhood, and cling tightly to God’s truth.",
     "block:block_text_2q1i1b5:text": "\n\nThe lie that the biblical woman is an oppressed woman.\n\n",
-    "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0": "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer"
+    "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0": "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
+    "lesson:prayer-life-and-church-community:res:p:0": "1928 Book of Common Prayer:\n The General Thanksgiving \nAlmighty God, Father of all mercies, we thine unworthy servants do give thee most humble and hearty thanks for all thy goodness and loving-kindness to us and to all men. We bless thee for our creation, preservation, and all the blessings of this life; but above all, for thine inestimable love in the redemption of the world by our Lord Jesus Christ; for the means of grace, and for the hope of glory. And, we beseech thee, give us that due sense of all thy mercies, that our hearts may be unfeignedly thankful; and that we show forth thy praise, not only with our lips, but in our lives, by giving up ourselves to thy service, and by walking before thee in holiness and righteousness all our days; through Jesus Christ our Lord, to whom, with thee and the Holy Ghost, be all honor and glory, world without end. Amen.",
+    "lesson:prayer-life-and-church-community:res:title": "▾Todays"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -238,6 +241,28 @@
       "width": 0,
       "height": 0,
       "x": -4
+    },
+    "lesson:prayer-life-and-church-community:res:p:0": {
+      "x": 0,
+      "y": 0,
+      "width": 1119,
+      "height": 547
+    },
+    "lesson:prayer-life-and-church-community:photo": {
+      "x": 99,
+      "y": -17,
+      "width": 578,
+      "height": 374
+    },
+    "devotionals-prayer-life-and-church-community:a:complete-continue:1": {
+      "x": -455,
+      "y": 60
+    },
+    "lesson:prayer-life-and-church-community:res:title": {
+      "x": 0,
+      "y": 0,
+      "width": 413,
+      "height": 58
     }
   },
   "devotionals": [
@@ -338,11 +363,11 @@
               ]
             }
           ],
-          "resourceTitle": "Additional Resources",
-          "resource": "Add a short summary or a list of helpful resources here. 1928 Book of Common Prayer: The General Thanksgiving Almighty God, Father of all mercies, we thine unworthy servants do give thee most humble and hearty thanks for all thy goodness and loving-kindness to us and to all men. We bless thee for our creation, preservation, and all the blessings of this life; but above all, for thine inestimable love in the redemption of the world by our Lord Jesus Christ; for the means of grace, and for the hope of glory. And, we beseech thee, give us that due sense of all thy mercies, that our hearts may be unfeignedly thankful; and that we show forth thy praise, not only with our lips, but in our lives, by giving up ourselves to thy service, and by walking before thee in holiness and righteousness all our days; through Jesus Christ our Lord, to whom, with thee and the Holy Ghost, be all honor and glory, world without end. Amen.",
+          "resourceTitle": "Todays Prayer",
+          "resource": "New scripture passage or lesson reflection…",
           "image": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790624992327-BEGE1WTS3E9WQ4ULYJGH/unsplash-image-mn5sKCN4eFs.jpg?format=500w",
           "imageAlt": "Church fellowship",
-          "imageHeight": 1072.9,
+          "imageHeight": 374,
           "imageOffset": -4.6,
           "pdfUrl": ""
         }
