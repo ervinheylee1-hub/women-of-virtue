@@ -186,6 +186,15 @@ details[open] > summary::after { content: "−"; }
   .social-links:not(.footer-social) { display: none; }
   .menu-toggle { display: flex; width: 44px; height: 44px; min-width: 44px; min-height: 44px; flex-direction: column; justify-content: center; gap: 6px; align-items: center; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
   .menu-toggle span { width: 22px; height: 2px; background: currentColor; border-radius: 2px; transition: transform 0.25s ease, opacity 0.25s ease; }
+  .site-nav a,
+  .site-nav.is-open a,
+  .site-nav.is-open a:hover,
+  .site-nav.is-open a:focus,
+  .site-nav.is-open a:active,
+  .site-nav.is-open a[aria-current="page"] {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
   
   .hero { min-height: min(640px, calc(100svh - 60px)); }
   .hero::before { background-position: 58% center; }
