@@ -17,7 +17,7 @@
           "textAlign": "left",
           "paddingTop": "80px",
           "paddingBottom": "95px",
-          "fontSize": "clamp(42px, 6vw, 92px)",
+          "fontSize": "120px",
           "color": "#fffefa",
           "textColor": "#fffefa"
         }
@@ -195,7 +195,11 @@
     "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0": "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
     "lesson:prayer-life-and-church-community:res:p:0": "1928 Book of Common Prayer:\n The General Thanksgiving \nAlmighty God, Father of all mercies, we thine unworthy servants do give thee most humble and hearty thanks for all thy goodness and loving-kindness to us and to all men. We bless thee for our creation, preservation, and all the blessings of this life; but above all, for thine inestimable love in the redemption of the world by our Lord Jesus Christ; for the means of grace, and for the hope of glory. And, we beseech thee, give us that due sense of all thy mercies, that our hearts may be unfeignedly thankful; and that we show forth thy praise, not only with our lips, but in our lives, by giving up ourselves to thy service, and by walking before thee in holiness and righteousness all our days; through Jesus Christ our Lord, to whom, with thee and the Holy Ghost, be all honor and glory, world without end. Amen.",
     "lesson:prayer-life-and-church-community:res:title": "▾Todays",
-    "block:block_gallery_1:title": "\n"
+    "block:block_gallery_1:title": "\n",
+    "devotionals:summary:what-if-i-don-t-attend-a-church-:0": "What if I don't attend a Church?",
+    "lesson:defining-femininity:res:title": "▾Prayer:",
+    "devotionals-defining-femininity:p:firm-foundations-2-lessons-january-5-2026:0": "FIRM FOUNDATIONS · 2 LESSONS · ",
+    "devotionals-prayer-life-and-church-community:p:firm-foundations-2-lessons-january-12-2026:0": "FIRM FOUNDATIONS · 2 LESSONS ·"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -205,7 +209,7 @@
       "textColor": "#d4967d"
     },
     "block:block_hero_1:title2": {
-      "fontSize": "clamp(42px, 6vw, 92px)"
+      "fontSize": "120px"
     },
     "block:block_about_heading_1:heading": {
       "textAlign": "center"
@@ -224,6 +228,16 @@
     "block:block_hero_1:description": {
       "color": "#fffefa",
       "textColor": "#fffefa"
+    },
+    "shared:site-header": {
+      "color": "#ffffff",
+      "textColor": "#ffffff"
+    },
+    "shared:header:wordmark": {
+      "color": "#fffefa",
+      "textColor": "#fffefa",
+      "borderColor": "#ffffff",
+      "accentColor": "#ffffff"
     }
   },
   "theme": {
@@ -235,9 +249,9 @@
   "layout": {},
   "positionOverrides": {
     "photo": {
-      "y": -218,
-      "width": 613,
-      "height": 818,
+      "y": 0,
+      "width": 468,
+      "height": 566,
       "x": 0
     },
     "pos:home:img:el:0": {
@@ -262,7 +276,7 @@
       "x": 94,
       "y": -260,
       "width": 578,
-      "height": 374
+      "height": 669
     },
     "devotionals-prayer-life-and-church-community:a:complete-continue:1": {
       "x": -455,
@@ -285,18 +299,28 @@
       "y": 45
     },
     "block:block_hero_1:title2": {
-      "x": 123,
-      "y": 0
+      "x": 250,
+      "y": 13
     },
     "block:block_hero_1:description": {
-      "x": 345,
-      "y": -52,
+      "x": -2,
+      "y": -24,
       "width": 442,
       "height": 26
     },
     "block:block_hero_1:button": {
-      "x": 472,
-      "y": -79
+      "x": 434,
+      "y": -98
+    },
+    "lesson:defining-femininity:res:title": {
+      "x": 0,
+      "y": 32
+    },
+    "lesson:defining-femininity:photo": {
+      "x": 0,
+      "y": 0,
+      "width": 746,
+      "height": 564
     }
   },
   "devotionals": [
@@ -353,11 +377,11 @@
               ]
             }
           ],
-          "resourceTitle": "This Weeks Prayer:",
+          "resourceTitle": "Prayer:",
           "resource": "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
           "image": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790621013944-MPTRWXGPL1YPY8P4GTIT/unsplash-image-iA-YMIV6GoM.jpg?format=500w",
           "imageAlt": "Woman praying",
-          "imageHeight": 1182.5,
+          "imageHeight": 564,
           "imageOffset": 0,
           "pdfUrl": ""
         },
@@ -397,11 +421,11 @@
               ]
             }
           ],
-          "resourceTitle": "Prayer",
+          "resourceTitle": "Prayer:",
           "resource": "New scripture passage or lesson reflection…",
           "image": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790624992327-BEGE1WTS3E9WQ4ULYJGH/unsplash-image-mn5sKCN4eFs.jpg?format=500w",
           "imageAlt": "Church fellowship",
-          "imageHeight": 374,
+          "imageHeight": 669,
           "imageOffset": -4.6,
           "pdfUrl": ""
         }
