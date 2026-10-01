@@ -348,37 +348,7 @@
       "id": "test-file",
       "title": "test file",
       "description": "peanut butter",
-      "lessons": [
-        {
-          "id": "lesson-jelly",
-          "slug": "jelly",
-          "title": "jelly",
-          "titleHtml": "",
-          "publishedAt": "2026-10-01",
-          "introTitle": "jelly",
-          "intro": "jelly is good",
-          "body": "",
-          "sections": [
-            {
-              "title": "Biblical Foundation",
-              "paragraphs": [
-                "amen amen"
-              ]
-            },
-            {
-              "title": "hdhudwuidwdv",
-              "paragraphs": []
-            }
-          ],
-          "resourceTitle": "This Week's Prayer:",
-          "resource": "uiwhfiwubuwfhwi",
-          "image": "",
-          "imageAlt": "",
-          "imageHeight": 818,
-          "imageOffset": 0,
-          "pdfUrl": ""
-        }
-      ]
+      "lessons": []
     }
   ]
 }
