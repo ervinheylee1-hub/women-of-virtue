@@ -6,9 +6,14 @@ A modern, block-based visual front-end editor and authenticated CMS for **Women 
 
 ## Quick Start
 
-You can run the backend server using either **Node.js** or **PowerShell**:
+### 1-Click Launcher (Windows)
+Double-click:
+```cmd
+start-server.bat
+```
+This automatically launches `node server.js` and opens the Visual Admin Editor in Google Chrome.
 
-### Option A: Node.js (Recommended)
+### Manual Command Line
 Open a terminal in `women-of-virtue-main` and run:
 ```bash
 node server.js
@@ -16,11 +21,6 @@ node server.js
 or
 ```bash
 npm start
-```
-
-### Option B: PowerShell
-```powershell
-.\server.ps1 -Port 5173
 ```
 
 Once running:
