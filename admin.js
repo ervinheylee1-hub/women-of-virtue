@@ -577,12 +577,13 @@
       }
 
       /* Block styling */
+      /* Elementor-style hovering & selection */
       .wov-block {
         position: relative !important;
         transition: outline 0.15s ease, box-shadow 0.15s ease !important;
       }
       .wov-block:hover {
-        outline: 2px dashed rgba(0, 180, 216, 0.4) !important;
+        outline: 2px dashed rgba(201, 117, 91, 0.45) !important;
         outline-offset: 2px !important;
         cursor: pointer !important;
       }
@@ -597,7 +598,7 @@
         transition: outline 0.12s ease !important;
       }
       .wov-visual-target:hover {
-        outline: 1px dashed rgba(0, 180, 216, 0.5) !important;
+        outline: 1.5px dashed rgba(201, 117, 91, 0.6) !important;
         outline-offset: 1px !important;
       }
       .wov-visual-target.wov-element-selected {
@@ -605,9 +606,9 @@
         box-shadow: none !important;
       }
       .wov-visual-target[contenteditable="true"] {
-        outline: 2px solid #00b4d8 !important;
+        outline: 2px solid #c9755b !important;
         outline-offset: 2px !important;
-        background: rgba(0, 180, 216, 0.05) !important;
+        background: rgba(201, 117, 91, 0.06) !important;
         cursor: text !important;
       }
 
@@ -615,8 +616,9 @@
       .wov-transformer {
         position: absolute !important;
         pointer-events: none !important;
-        border: 2px solid #00b4d8 !important;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.8), 0 4px 14px rgba(0,0,0,0.3) !important;
+        border: 2px solid #c9755b !important;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 4px 14px rgba(37, 43, 41, 0.18) !important;
+        border-radius: 6px !important;
         z-index: 999990 !important;
         box-sizing: border-box !important;
       }
@@ -627,14 +629,14 @@
         display: flex !important;
         align-items: center !important;
         gap: 6px !important;
-        background: #1e2528 !important;
+        background: #26352f !important;
         color: #fff !important;
-        border-radius: 6px !important;
-        padding: 4px 8px !important;
+        border-radius: 16px !important;
+        padding: 3px 8px !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         font-size: 11px !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.35) !important;
+        box-shadow: 0 3px 10px rgba(37, 43, 41, 0.25) !important;
         pointer-events: auto !important;
         white-space: nowrap !important;
         user-select: none !important;
@@ -643,29 +645,29 @@
         display: flex !important;
         align-items: center !important;
         gap: 4px !important;
-        background: #00b4d8 !important;
+        background: #c9755b !important;
         color: #fff !important;
         padding: 2px 8px !important;
-        border-radius: 4px !important;
+        border-radius: 12px !important;
         cursor: grab !important;
         font-weight: 700 !important;
         letter-spacing: 0.03em !important;
       }
       .wov-drag-grip:active {
         cursor: grabbing !important;
-        background: #0096b7 !important;
+        background: #b3634b !important;
       }
       .wov-drag-icon {
         font-size: 13px !important;
       }
       .wov-coords-badge {
-        color: #00e5ff !important;
+        color: #fbeee8 !important;
         font-family: monospace !important;
         font-size: 10px !important;
         font-weight: bold !important;
       }
       .wov-size-badge {
-        color: #9cb2ab !important;
+        color: #c2c9c5 !important;
         font-family: monospace !important;
         font-size: 10px !important;
       }
@@ -675,7 +677,7 @@
         color: #fff !important;
         width: 18px !important;
         height: 18px !important;
-        border-radius: 3px !important;
+        border-radius: 50% !important;
         cursor: pointer !important;
         display: inline-flex !important;
         align-items: center !important;
@@ -683,22 +685,22 @@
         font-size: 11px !important;
       }
       .wov-tf-btn:hover {
-        background: #e06c75 !important;
+        background: #c94a4a !important;
       }
       .wov-handle {
         position: absolute !important;
         width: 10px !important;
         height: 10px !important;
         background: #fff !important;
-        border: 2px solid #00b4d8 !important;
-        border-radius: 2px !important;
+        border: 2px solid #c9755b !important;
+        border-radius: 50% !important;
         pointer-events: auto !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 1px 4px rgba(37, 43, 41, 0.25) !important;
         z-index: 999995 !important;
         box-sizing: border-box !important;
       }
       .wov-handle:hover {
-        background: #00b4d8 !important;
+        background: #c9755b !important;
         border-color: #fff !important;
         transform: scale(1.25) !important;
       }
@@ -716,11 +718,11 @@
         justify-content: center !important;
         width: 22px !important;
         height: 22px !important;
-        border-radius: 4px !important;
-        background: rgba(0, 180, 216, 0.15) !important;
-        color: #00b4d8 !important;
-        border: 1px solid #00b4d8 !important;
-        font-size: 12px !important;
+        border-radius: 11px !important;
+        background: #fbeee8 !important;
+        color: #c9755b !important;
+        border: 1px solid #c9755b !important;
+        font-size: 11px !important;
         font-weight: bold !important;
         cursor: pointer !important;
         margin-right: 8px !important;
@@ -729,7 +731,7 @@
         transition: background 0.15s ease, transform 0.15s ease !important;
       }
       .wov-details-toggle:hover {
-        background: #00b4d8 !important;
+        background: #c9755b !important;
         color: #fff !important;
         transform: scale(1.1) !important;
       }
@@ -739,28 +741,28 @@
         position: absolute;
         top: -24px;
         left: 0;
-        background: #252b29;
+        background: #26352f;
         color: #fff;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 3px 8px;
-        border-radius: 4px;
+        padding: 3px 9px;
+        border-radius: 12px;
         pointer-events: none;
         z-index: 999999;
         white-space: nowrap;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 6px rgba(37, 43, 41, 0.2);
       }
 
       /* Drop Zone Indicator Bar */
       .wov-drop-zone-indicator {
-        height: 6px;
-        background: #00b4d8;
+        height: 4px;
+        background: #c9755b;
         margin: 10px 0;
-        border-radius: 3px;
-        box-shadow: 0 0 12px #00b4d8, 0 0 4px #4078f2;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(201, 117, 91, 0.4);
         position: relative;
         pointer-events: none;
         z-index: 999999;
@@ -775,16 +777,16 @@
         left: 50%;
         top: -12px;
         transform: translateX(-50%);
-        background: #00b4d8;
+        background: #c9755b;
         color: #fff;
         font-family: sans-serif;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
-        padding: 2px 12px;
+        padding: 2px 14px;
         border-radius: 12px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        box-shadow: 0 2px 6px rgba(37, 43, 41, 0.15);
       }
 
       /* Elementor-style block action badge */
@@ -792,18 +794,18 @@
         position: absolute;
         top: 6px;
         left: 6px;
-        background: #21252b;
+        background: #26352f;
         color: #fff;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 11px;
         font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 3px 8px;
+        border-radius: 14px;
         display: none;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         z-index: 99999;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(37, 43, 41, 0.2);
       }
       .wov-block:hover > .wov-editor-badge,
       .wov-block.wov-selected > .wov-editor-badge {
@@ -813,14 +815,14 @@
         background: rgba(255,255,255,0.15);
         border: 0;
         color: #fff;
-        width: 20px;
-        height: 20px;
-        border-radius: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
+        font-size: 10px;
       }
       .wov-badge-btn:hover {
         background: #c9755b;
@@ -831,7 +833,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 28px;
+        height: 24px;
         margin: 4px 0;
         opacity: 0;
         transition: opacity 0.2s ease;
@@ -842,22 +844,23 @@
       .wov-inserter-line {
         flex: 1;
         height: 1px;
-        background: #4078f2;
+        background: #c9755b;
+        opacity: 0.5;
       }
       .wov-inserter-plus {
-        background: #4078f2;
+        background: #c9755b;
         color: #fff;
         border: 0;
         border-radius: 50%;
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: bold;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        box-shadow: 0 2px 6px rgba(201, 117, 91, 0.3);
       }
     `;
     doc.head.append(styleEl);
