@@ -215,7 +215,7 @@
   },
   "theme": {
     "headerPink": "#d4967d",
-    "headingPink": "#ffc0cb",
+    "headingPink": "#d4967d",
     "bodyTextColor": "#303636"
   },
   "graphics": {},
