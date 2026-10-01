@@ -723,6 +723,8 @@ button, input, select, textarea {
 }
 
 .control-row input[type="text"],
+.control-row input[type="email"],
+.control-row input[type="password"],
 .control-row input[type="url"],
 .control-row input[type="number"],
 .control-row select,

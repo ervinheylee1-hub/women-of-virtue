@@ -568,6 +568,40 @@
                 </div>
               </details>
 
+              <details class="settings-group" id="settings-email">
+                <summary>Email Notifications (Resend)</summary>
+                <div class="settings-body">
+                  <p class="settings-note" style="margin-bottom:12px;">Forward website form submissions directly to your email inbox via <a href="https://resend.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color); font-weight:600; text-decoration:underline;">Resend</a>.</p>
+                  
+                  <div class="control-row">
+                    <label for="setting-resend-key">Resend API Key</label>
+                    <div style="display:flex; gap:6px;">
+                      <input type="password" id="setting-resend-key" placeholder="re_123456789..." autocomplete="off" style="flex:1;" />
+                      <button class="chip-action-btn" id="btn-toggle-resend-key" type="button" title="Show/Hide Key" style="padding:0 8px; font-size:12px;">👁</button>
+                    </div>
+                    <span style="font-size:10px; color:var(--text-muted); margin-top:2px;">Get your free API key at <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color); text-decoration:underline;">resend.com/api-keys</a></span>
+                  </div>
+
+                  <div class="control-row">
+                    <label for="setting-recipient-email">Deliver Inquiries To (Your Email)</label>
+                    <input type="email" id="setting-recipient-email" placeholder="heylee@absolutionuecna.org" />
+                    <span style="font-size:10px; color:var(--text-muted); margin-top:2px;">The inbox where visitor messages will be sent.</span>
+                  </div>
+
+                  <div class="control-row">
+                    <label for="setting-from-email">Sender Email (From)</label>
+                    <input type="text" id="setting-from-email" placeholder="Women of Virtue &lt;onboarding@resend.dev&gt;" />
+                    <span style="font-size:10px; color:var(--text-muted); margin-top:2px;">Use <code>Women of Virtue &lt;onboarding@resend.dev&gt;</code> for testing, or your verified domain.</span>
+                  </div>
+
+                  <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                    <button class="small-primary-btn" id="btn-save-email-settings" type="button">Save Settings</button>
+                    <button class="small-quiet-btn" id="btn-test-email" type="button">Send Test Email</button>
+                  </div>
+                  <div id="email-settings-status" style="font-size:11px; margin-top:8px; line-height:1.4;" hidden></div>
+                </div>
+              </details>
+
               <details class="settings-group" id="settings-messages">
                 <summary>Form Inquiries (heylee@absolutionuecna.org)</summary>
                 <div class="settings-body">

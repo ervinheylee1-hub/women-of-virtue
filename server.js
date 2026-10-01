@@ -12,8 +12,185 @@ const CONTENT_FILE = path.join(DATA_DIR, 'content.json');
 const ROOT_CONTENT_FILE = path.join(ROOT_DIR, 'content.json');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+const EMAIL_SETTINGS_FILE = path.join(DATA_DIR, 'email-settings.json');
 const TARGET_EMAIL = 'heylee@absolutionuecna.org';
 const ITERATIONS = 210000;
+
+// Load optional .env file if present
+function loadEnvFile() {
+  const envPath = path.join(ROOT_DIR, '.env');
+  if (!fs.existsSync(envPath)) return;
+  try {
+    const raw = fs.readFileSync(envPath, 'utf8');
+    for (const rawLine of raw.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) continue;
+      const eqIdx = line.indexOf('=');
+      if (eqIdx === -1) continue;
+      const k = line.slice(0, eqIdx).trim();
+      let v = line.slice(eqIdx + 1).trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      if (process.env[k] === undefined) {
+        process.env[k] = v;
+      }
+    }
+  } catch (err) {
+    console.warn('[ENV] Warning reading .env:', err.message);
+  }
+}
+loadEnvFile();
+
+function readEmailSettings() {
+  let fileSettings = {};
+  if (fs.existsSync(EMAIL_SETTINGS_FILE)) {
+    try {
+      fileSettings = JSON.parse(fs.readFileSync(EMAIL_SETTINGS_FILE, 'utf8'));
+    } catch {}
+  }
+  return {
+    resendApiKey: process.env.RESEND_API_KEY || fileSettings.resendApiKey || '',
+    targetEmail: process.env.TARGET_EMAIL || process.env.RESEND_TO_EMAIL || fileSettings.targetEmail || TARGET_EMAIL,
+    resendFromEmail: process.env.RESEND_FROM_EMAIL || fileSettings.resendFromEmail || 'Women of Virtue <onboarding@resend.dev>'
+  };
+}
+
+function saveEmailSettings(settings) {
+  const current = readEmailSettings();
+  let apiKeyToSave = current.resendApiKey;
+  if (typeof settings.resendApiKey === 'string') {
+    const trimmed = settings.resendApiKey.trim();
+    if (!trimmed.includes('••••')) {
+      apiKeyToSave = trimmed;
+    }
+  }
+  const updated = {
+    resendApiKey: apiKeyToSave,
+    targetEmail: typeof settings.targetEmail === 'string' && settings.targetEmail.trim() !== '' ? settings.targetEmail.trim() : current.targetEmail,
+    resendFromEmail: typeof settings.resendFromEmail === 'string' && settings.resendFromEmail.trim() !== '' ? settings.resendFromEmail.trim() : current.resendFromEmail,
+    updatedAt: new Date().toISOString()
+  };
+  fs.writeFileSync(EMAIL_SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf8');
+  return updated;
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function sendResendEmail({ apiKey, to, from, replyTo, subject, text, html }) {
+  if (!apiKey) {
+    throw new Error('Resend API key is not configured.');
+  }
+
+  const payload = {
+    from: from || 'Women of Virtue <onboarding@resend.dev>',
+    to: Array.isArray(to) ? to : [to],
+    subject: subject || 'New Form Submission',
+    text: text || '',
+    html: html || `<p>${escapeHtml(text)}</p>`
+  };
+  if (replyTo) {
+    payload.reply_to = replyTo;
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey.trim()}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const errorMsg = data.message || data.error?.message || data.error || `HTTP ${response.status} from Resend`;
+    throw new Error(errorMsg);
+  }
+  return data;
+}
+
+function buildEmailHtml({ senderName, senderEmail, phone, formType, message, createdAt }) {
+  const isProject = formType === 'project';
+  const typeLabel = isProject ? 'Start a Project Inquiry' : 'General Contact Inquiry';
+  const formattedDate = new Date(createdAt || Date.now()).toLocaleString('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'short'
+  });
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Website Inquiry - Women of Virtue</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f3ed; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #252b29; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f3ed; padding: 36px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 580px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(37,43,41,0.08); border: 1px solid rgba(37,43,41,0.1);">
+          <tr>
+            <td style="background-color: #26352f; padding: 28px 36px; text-align: center;">
+              <h1 style="margin: 0; color: #fffefa; font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;">Women of Virtue</h1>
+              <p style="margin: 6px 0 0; color: #d4967d; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">${escapeHtml(typeLabel)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 36px 24px;">
+              <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #303636;">
+                You received a new message from the <strong>Women of Virtue</strong> website on <em>${escapeHtml(formattedDate)}</em>.
+              </p>
+              <table role="presentation" width="100%" style="background-color: #faf8f5; border: 1px solid #e8e4da; border-radius: 6px; padding: 16px 20px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #777c75; width: 90px; vertical-align: top;"><strong>From:</strong></td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #252b29; font-weight: 600;">${escapeHtml(senderName)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #777c75; vertical-align: top;"><strong>Email:</strong></td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #252b29;"><a href="mailto:${escapeHtml(senderEmail)}" style="color: #c9755b; text-decoration: none; font-weight: 600;">${escapeHtml(senderEmail)}</a></td>
+                </tr>
+                ${phone ? `
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #777c75; vertical-align: top;"><strong>Phone:</strong></td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #252b29;">${escapeHtml(phone)}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #777c75; vertical-align: top;"><strong>Type:</strong></td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #252b29;">${escapeHtml(typeLabel)}</td>
+                </tr>
+              </table>
+              <h3 style="margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #777c75;">Message:</h3>
+              <div style="background-color: #f0ede4; border-left: 4px solid #c9755b; border-radius: 4px; padding: 18px 20px; font-size: 15px; line-height: 1.6; color: #252b29; white-space: pre-wrap;">${escapeHtml(message)}</div>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="mailto:${escapeHtml(senderEmail)}?subject=Re:%20Women%20of%20Virtue%20Inquiry" style="display: inline-block; background-color: #c9755b; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: 300px; box-shadow: 0 2px 6px rgba(201,117,91,0.3);">Reply to ${escapeHtml(senderName)}</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f7f5f0; padding: 18px 36px; border-top: 1px solid rgba(37,43,41,0.08); text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #777c75; line-height: 1.5;">
+                Sent via Women of Virtue CMS engine and Resend.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -513,17 +690,20 @@ const server = http.createServer(async (req, res) => {
       contactLimit.count += 1;
       contactFailures.set(remoteIp, contactLimit);
 
+      const emailSettings = readEmailSettings();
+      const effectiveRecipient = emailSettings.targetEmail || TARGET_EMAIL;
+
       const submission = {
         id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         createdAt: new Date().toISOString(),
-        recipient: TARGET_EMAIL,
+        recipient: effectiveRecipient,
         senderName: `${fname} ${lname}`.trim() || 'Website Visitor',
         senderEmail: email,
         phone,
         formType,
         message: message || '(No message content provided)',
         ip: remoteIp,
-        status: 'delivered'
+        status: 'saved_locally'
       };
 
       const messages = readMessagesStore();
@@ -531,17 +711,56 @@ const server = http.createServer(async (req, res) => {
       if (messages.length > 500) messages.pop();
       saveMessagesStore(messages);
 
+      let resendDispatched = false;
+      let resendId = null;
+      let resendError = null;
+
+      if (emailSettings.resendApiKey) {
+        try {
+          const subject = `[Women of Virtue] New ${formType === 'project' ? 'Project' : 'Contact'} Inquiry from ${submission.senderName}`;
+          const html = buildEmailHtml(submission);
+          const text = `New inquiry from ${submission.senderName} (${submission.senderEmail}):\nPhone: ${phone || 'N/A'}\nType: ${formType}\n\nMessage:\n${submission.message}\n\nSent: ${submission.createdAt}`;
+
+          const resendResult = await sendResendEmail({
+            apiKey: emailSettings.resendApiKey,
+            to: effectiveRecipient,
+            from: emailSettings.resendFromEmail,
+            replyTo: `${submission.senderName} <${submission.senderEmail}>`,
+            subject,
+            text,
+            html
+          });
+
+          resendDispatched = true;
+          resendId = resendResult?.id;
+          submission.status = 'delivered_via_resend';
+          submission.resendId = resendId;
+          saveMessagesStore(messages);
+          console.log(`[RESEND SUCCESS] Dispatched to ${effectiveRecipient} (Resend ID: ${resendId})`);
+        } catch (err) {
+          resendError = err.message;
+          submission.status = 'resend_error';
+          submission.error = resendError;
+          saveMessagesStore(messages);
+          console.error(`[RESEND ERROR] Failed to send email via Resend:`, err.message);
+        }
+      } else {
+        console.log(`[RESEND SKIPPED] No RESEND_API_KEY configured. Inquiry saved locally.`);
+      }
+
       console.log(`\n======================================================`);
-      console.log(`[EMAIL DISPATCH] Sent to: ${TARGET_EMAIL}`);
+      console.log(`[EMAIL DISPATCH] Sent to: ${effectiveRecipient}`);
       console.log(`[EMAIL DISPATCH] From: "${submission.senderName}" <${email}>`);
       console.log(`[EMAIL DISPATCH] Type: ${formType} | Phone: ${phone || 'N/A'}`);
-      console.log(`[EMAIL DISPATCH] Message:\n${submission.message}`);
+      console.log(`[EMAIL DISPATCH] Resend Status: ${resendDispatched ? `Sent (${resendId})` : (resendError ? `Error (${resendError})` : 'Saved locally (API Key not set)')}`);
       console.log(`======================================================\n`);
 
       return sendJson(res, {
         ok: true,
-        recipient: TARGET_EMAIL,
-        message: `Thank you! Your message has been sent to Heylee at ${TARGET_EMAIL}.`
+        recipient: effectiveRecipient,
+        resendSent: resendDispatched,
+        resendId,
+        message: `Thank you, ${fname || 'friend'}! Your message has been received and sent to our team at ${effectiveRecipient}.`
       });
     }
 
@@ -639,7 +858,83 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, { ok: true });
     }
 
-    // 13. 404 for unknown /api/ routes
+    // 13. GET /api/admin/email-settings - View Resend configuration
+    if (pathname === '/api/admin/email-settings' && method === 'GET') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      const settings = readEmailSettings();
+      const maskedKey = settings.resendApiKey ? `${settings.resendApiKey.slice(0, 5)}••••••••${settings.resendApiKey.slice(-4)}` : '';
+      return sendJson(res, {
+        configured: Boolean(settings.resendApiKey),
+        hasKey: Boolean(settings.resendApiKey),
+        resendApiKeyMasked: maskedKey,
+        targetEmail: settings.targetEmail,
+        resendFromEmail: settings.resendFromEmail
+      });
+    }
+
+    // 14. POST /api/admin/email-settings - Update Resend configuration
+    if (pathname === '/api/admin/email-settings' && method === 'POST') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+      const body = await readJsonBody(req);
+      const saved = saveEmailSettings(body);
+      const maskedKey = saved.resendApiKey ? `${saved.resendApiKey.slice(0, 5)}••••••••${saved.resendApiKey.slice(-4)}` : '';
+      return sendJson(res, {
+        ok: true,
+        message: 'Email settings saved successfully.',
+        configured: Boolean(saved.resendApiKey),
+        resendApiKeyMasked: maskedKey,
+        targetEmail: saved.targetEmail,
+        resendFromEmail: saved.resendFromEmail
+      });
+    }
+
+    // 15. POST /api/admin/email-test - Dispatch a real test email via Resend
+    if (pathname === '/api/admin/email-test' && method === 'POST') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+      const settings = readEmailSettings();
+      if (!settings.resendApiKey) {
+        return sendJson(res, { error: 'Please enter and save your Resend API key before sending a test email.' }, 400);
+      }
+      try {
+        const testResult = await sendResendEmail({
+          apiKey: settings.resendApiKey,
+          to: settings.targetEmail,
+          from: settings.resendFromEmail,
+          subject: '[Women of Virtue] Resend Test Email',
+          text: `Success! Your Resend email integration is working properly.\nRecipient: ${settings.targetEmail}\nSender: ${settings.resendFromEmail}\nSent at: ${new Date().toISOString()}`,
+          html: `
+            <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e3dc; border-radius: 8px; padding: 32px 36px; color: #252b29;">
+              <h2 style="color: #26352f; margin-top: 0; font-size: 22px;">Women of Virtue · Resend Test</h2>
+              <p style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #303636;">
+                Congratulations! Your Resend integration is connected and functioning properly.
+              </p>
+              <div style="background: #f0ede4; border-left: 4px solid #c9755b; padding: 12px 16px; font-family: monospace; font-size: 13px; margin: 16px 0;">
+                Delivered to: <strong>${escapeHtml(settings.targetEmail)}</strong><br>
+                From: <strong>${escapeHtml(settings.resendFromEmail)}</strong>
+              </div>
+              <p style="font-family: sans-serif; font-size: 13px; color: #777c75; margin-bottom: 0;">
+                All website visitor inquiries submitted via the Contact and Start a Project forms will now arrive directly in this inbox.
+              </p>
+            </div>
+          `
+        });
+        return sendJson(res, {
+          ok: true,
+          id: testResult?.id,
+          recipient: settings.targetEmail,
+          message: `Test email successfully sent to ${settings.targetEmail}!`
+        });
+      } catch (err) {
+        return sendJson(res, { error: `Resend dispatch failed: ${err.message}` }, 400);
+      }
+    }
+
+    // 16. 404 for unknown /api/ routes
     if (pathname.startsWith('/api/')) {
       return sendJson(res, { error: 'Not found.' }, 404);
     }

@@ -3349,10 +3349,12 @@
     setupSidebarDrag();
     setupMediaLibrary();
     setupInquiries();
+    setupEmailSettings();
     await loadContent();
     fetchGithubStatus();
     loadMediaLibrary();
     loadInquiries();
+    loadEmailSettings();
   }
 
   // Media Library (Site Settings)
@@ -3484,6 +3486,106 @@
       `).join("");
     } catch (err) {
       container.innerHTML = `<p style="font-size:11px; color:var(--text-muted);">Unable to load messages: ${escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  // Email Notifications (Resend) Settings
+  function setupEmailSettings() {
+    const toggleKeyBtn = document.querySelector("#btn-toggle-resend-key");
+    const keyInput = document.querySelector("#setting-resend-key");
+    const saveBtn = document.querySelector("#btn-save-email-settings");
+    const testBtn = document.querySelector("#btn-test-email");
+
+    toggleKeyBtn?.addEventListener("click", () => {
+      if (!keyInput) return;
+      if (keyInput.type === "password") {
+        keyInput.type = "text";
+        toggleKeyBtn.textContent = "🔒";
+      } else {
+        keyInput.type = "password";
+        toggleKeyBtn.textContent = "👁";
+      }
+    });
+
+    saveBtn?.addEventListener("click", async () => {
+      const statusEl = document.querySelector("#email-settings-status");
+      const resendApiKey = keyInput?.value.trim() || "";
+      const targetEmail = document.querySelector("#setting-recipient-email")?.value.trim() || "";
+      const resendFromEmail = document.querySelector("#setting-from-email")?.value.trim() || "";
+
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.style.color = "var(--text-muted)";
+        statusEl.textContent = "Saving email settings…";
+      }
+
+      try {
+        const res = await api("./api/admin/email-settings", {
+          method: "POST",
+          body: { resendApiKey, targetEmail, resendFromEmail }
+        });
+        if (statusEl) {
+          statusEl.style.color = "#2e7d32";
+          statusEl.textContent = "✅ " + (res.message || "Email settings saved successfully!");
+        }
+        await loadEmailSettings();
+      } catch (err) {
+        if (statusEl) {
+          statusEl.style.color = "#c94a4a";
+          statusEl.textContent = "❌ Error: " + err.message;
+        }
+      }
+    });
+
+    testBtn?.addEventListener("click", async () => {
+      const statusEl = document.querySelector("#email-settings-status");
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.style.color = "var(--text-muted)";
+        statusEl.textContent = "Sending test email via Resend…";
+      }
+
+      try {
+        const res = await api("./api/admin/email-test", {
+          method: "POST",
+          body: {}
+        });
+        if (statusEl) {
+          statusEl.style.color = "#2e7d32";
+          statusEl.textContent = `✅ Test email successfully sent to ${res.recipient}! Check your inbox.`;
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.style.color = "#c94a4a";
+          statusEl.textContent = "❌ " + err.message;
+        }
+      }
+    });
+
+    document.querySelector("#settings-email")?.addEventListener("toggle", e => {
+      if (e.target.open) loadEmailSettings();
+    });
+  }
+
+  async function loadEmailSettings() {
+    const keyInput = document.querySelector("#setting-resend-key");
+    const recipientInput = document.querySelector("#setting-recipient-email");
+    const fromInput = document.querySelector("#setting-from-email");
+    if (!keyInput || !recipientInput) return;
+
+    try {
+      const data = await api("./api/admin/email-settings");
+      if (data.configured) {
+        keyInput.placeholder = data.resendApiKeyMasked || "re_••••••••••••";
+      }
+      if (data.targetEmail) {
+        recipientInput.value = data.targetEmail;
+      }
+      if (fromInput && data.resendFromEmail) {
+        fromInput.value = data.resendFromEmail;
+      }
+    } catch (err) {
+      console.warn("Could not load email settings:", err.message);
     }
   }
 

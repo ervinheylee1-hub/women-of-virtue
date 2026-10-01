@@ -990,7 +990,7 @@ main.addEventListener("submit", async event => {
     if (res.ok) {
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
-        statusEl.textContent = `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee at heylee@absolutionuecna.org.`;
+        statusEl.textContent = data.message || `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee at heylee@absolutionuecna.org.`;
       }
       form.reset();
     } else {
