@@ -574,7 +574,7 @@ const faqs = [
 function homePage() {
   return `<div class="page-fade home-page">
     <section class="hero page-section" aria-label="Welcome" data-cms-layout-group="home-sections" data-cms-layout-key="hero">
-      <div class="hero-copy"><h1 data-cms-key="home:hero-title-one">Reject Culture</h1><h1 data-cms-key="home:hero-title-two">Follow Christ</h1><p data-cms-key="home:hero-description">Join the movement to bring back traditional Femininity.</p><a class="button" data-cms-key="home:hero-button-text" href="#/about">Learn More</a></div>
+      <div class="hero-copy"><h1 class="hero-title1" data-cms-key="home:hero-title-one">Reject Culture</h1><h1 class="hero-title2" data-cms-key="home:hero-title-two">Follow Christ</h1><p class="hero-desc" data-cms-key="home:hero-description">Join the movement to bring back traditional Femininity.</p><a class="button hero-btn" data-cms-key="home:hero-button-text" href="#/about">Learn More</a></div>
     </section>
     <section class="journey page-section" data-cms-layout-group="home-sections" data-cms-layout-key="journey">
       <h1 class="journey-marquee" aria-label="Follow the Journey"><span>Follow the Journey ⦁ Follow the Journey</span><span aria-hidden="true">Follow the Journey ⦁ Follow the Journey</span></h1>
@@ -738,10 +738,10 @@ function renderBlock(block) {
         <div class="hero-overlay"></div>
         <div class="hero-content" ${styleAttr}>
           ${content.eyebrow ? `<p class="eyebrow" data-cms-key="block:${id}:eyebrow">${escapeCmsText(content.eyebrow)}</p>` : ""}
-          ${content.title1 ? `<h1 data-cms-key="block:${id}:title1">${escapeCmsText(content.title1)}</h1>` : ""}
-          ${content.title2 ? `<h1 data-cms-key="block:${id}:title2">${escapeCmsText(content.title2)}</h1>` : ""}
-          ${content.description ? `<p data-cms-key="block:${id}:description">${escapeCmsText(content.description)}</p>` : ""}
-          ${content.buttonText ? `<a class="button" data-cms-key="block:${id}:button" href="${escapeCmsText(content.buttonLink || '#/about')}">${escapeCmsText(content.buttonText)}</a>` : ""}
+          ${content.title1 ? `<h1 class="hero-title1" data-cms-key="block:${id}:title1">${escapeCmsText(content.title1)}</h1>` : ""}
+          ${content.title2 ? `<h1 class="hero-title2" data-cms-key="block:${id}:title2">${escapeCmsText(content.title2)}</h1>` : ""}
+          ${content.description ? `<p class="hero-desc" data-cms-key="block:${id}:description">${escapeCmsText(content.description)}</p>` : ""}
+          ${content.buttonText ? `<a class="button hero-btn" data-cms-key="block:${id}:button" href="${escapeCmsText(content.buttonLink || '#/about')}">${escapeCmsText(content.buttonText)}</a>` : ""}
         </div>
       </section>`;
     }

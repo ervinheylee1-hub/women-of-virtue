@@ -198,21 +198,55 @@ details[open] > summary::after { content: "−"; }
   
   .hero { min-height: min(640px, calc(100svh - 60px)); }
   .hero::before { background-position: 58% center; }
-  .hero-copy { width: 92%; padding: 60px 0 80px; }
-  .hero h1,
-  .hero-copy h1,
-  .wov-block-hero h1,
-  .wov-block-hero h2 {
-    font-size: clamp(32px, 8.5vw, 54px) !important;
-    line-height: 1.15 !important;
-    overflow-wrap: break-word !important;
-    word-break: normal !important;
+  .hero-copy,
+  .wov-block-hero .hero-content {
+    width: 92%;
+    padding: 60px 0 80px;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .hero-copy h1:first-of-type,
+  .hero-copy .hero-title1,
+  .wov-block-hero .hero-content h1:first-of-type,
+  .wov-block-hero .hero-content .hero-title1,
+  [data-cms-key$=":title1"],
+  [data-cms-key="home:hero-title-one"] {
+    font-size: clamp(26px, 7vw, 38px) !important;
+    line-height: 1.16 !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+  .hero-copy h1:nth-of-type(2),
+  .hero-copy .hero-title2,
+  .wov-block-hero .hero-content h1:nth-of-type(2),
+  .wov-block-hero .hero-content .hero-title2,
+  [data-cms-key$=":title2"],
+  [data-cms-key="home:hero-title-two"] {
+    font-size: clamp(32px, 8.5vw, 48px) !important;
+    line-height: 1.12 !important;
+    text-align: center !important;
+    margin: 0.16em auto 0 auto !important;
   }
   .hero p,
   .hero-copy p,
   .wov-block-hero p {
     font-size: clamp(14px, 4vw, 17px) !important;
     max-width: 100% !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .hero .button,
+  .hero-copy .button,
+  .wov-block-hero .button,
+  .wov-block-hero .hero-content .button {
+    margin: 24px auto 0 auto !important;
+    align-self: center !important;
+    width: auto !important;
+    min-width: 140px;
   }
 
   .journey { padding: 56px 5vw 64px; }
@@ -433,6 +467,11 @@ details[open] > summary::after { content: "−"; }
   width: min(1050px, 88%);
   margin: 0 auto;
   padding: 80px 0 95px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .wov-block-columns {
