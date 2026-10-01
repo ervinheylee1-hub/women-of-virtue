@@ -302,14 +302,14 @@
       "height": 95
     },
     "block:block_hero_1:description": {
-      "x": 216,
-      "y": -10,
+      "x": 180,
+      "y": -7,
       "width": 795,
       "height": 35
     },
     "block:block_hero_1:button": {
       "x": 434,
-      "y": -98
+      "y": -116
     },
     "lesson:defining-femininity:res:title": {
       "x": 0,
