@@ -249,8 +249,8 @@
       "height": 547
     },
     "lesson:prayer-life-and-church-community:photo": {
-      "x": 99,
-      "y": -17,
+      "x": 94,
+      "y": -260,
       "width": 578,
       "height": 374
     },
@@ -259,10 +259,16 @@
       "y": 60
     },
     "lesson:prayer-life-and-church-community:res:title": {
-      "x": 0,
-      "y": 0,
+      "x": 645,
+      "y": -1492,
       "width": 413,
       "height": 58
+    },
+    "lesson:prayer-life-and-church-community:title": {
+      "x": 0,
+      "y": 0,
+      "width": 524,
+      "height": 105
     }
   },
   "devotionals": [
@@ -363,7 +369,7 @@
               ]
             }
           ],
-          "resourceTitle": "Todays Prayer",
+          "resourceTitle": "Prayer",
           "resource": "New scripture passage or lesson reflection…",
           "image": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790624992327-BEGE1WTS3E9WQ4ULYJGH/unsplash-image-mn5sKCN4eFs.jpg?format=500w",
           "imageAlt": "Church fellowship",
@@ -372,12 +378,6 @@
           "pdfUrl": ""
         }
       ]
-    },
-    {
-      "id": "test-file",
-      "title": "test file",
-      "description": "peanut butter",
-      "lessons": []
     }
   ]
 }
