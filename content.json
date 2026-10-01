@@ -238,6 +238,9 @@
       "textColor": "#fffefa",
       "borderColor": "#ffffff",
       "accentColor": "#ffffff"
+    },
+    "photo": {
+      "fontSize": "26px"
     }
   },
   "theme": {
@@ -248,12 +251,6 @@
   "graphics": {},
   "layout": {},
   "positionOverrides": {
-    "photo": {
-      "y": -9,
-      "width": 584,
-      "height": 558,
-      "x": -10
-    },
     "pos:home:img:el:0": {
       "y": 0,
       "width": 253,
@@ -321,6 +318,12 @@
       "y": 0,
       "width": 746,
       "height": 564
+    },
+    "photo": {
+      "x": 0,
+      "y": 0,
+      "width": 564,
+      "height": 615
     }
   },
   "devotionals": [
