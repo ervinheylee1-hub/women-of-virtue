@@ -35,7 +35,7 @@
                                 {
                                     "type":  "marquee",
                                     "content":  {
-                                                    "text":  "Follow the Journey â¦ Follow the Journey"
+                                                    "text":  "Follow the Journey • Follow the Journey"
                                                 },
                                     "style":  {
                                                   "paddingTop":  "20px",
@@ -52,7 +52,7 @@
                                                     "images":  [
                                                                    {
                                                                        "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790632930773-RF3V2JYFYIYKVQQI0EEO/unsplash-image-fKRGi5AnR3Y.jpg?format=1500w",
-                                                                       "alt":  "Brunch \u0026 Fellowship"
+                                                                       "alt":  "Brunch & Fellowship"
                                                                    },
                                                                    {
                                                                        "url":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633053455-M9PKGDBGT7X31AK2HVEM/unsplash-image-w15nu-WJLNs.jpg?format=1500w",
@@ -78,7 +78,7 @@
                                     "type":  "form",
                                     "content":  {
                                                     "title":  "Start a Project",
-                                                    "subtitle":  "Tell us your vision and let\u0027s transform it into reality. From Bible Studies to Brunches, we\u0027ll help you start a community near you!",
+                                                    "subtitle":  "Tell us your vision and let's transform it into reality. From Bible Studies to Brunches, we'll help you start a community near you!",
                                                     "submitText":  "Send Message"
                                                 },
                                     "style":  {
@@ -106,13 +106,13 @@
                                  {
                                      "type":  "text",
                                      "content":  {
-                                                     "html":  "\u003cbr\u003e\u003ch3 data-cms-key=\"about:h3:the-lie-that-the-biblical-woman-is-an-oppressed-:0\" data-cms-default=\"The lie that the biblical woman is an oppressed woman.\" style=\"margin: 0px 0px 31px; font-style: normal; font-variant: normal; font-size-adjust: none; font-language-override: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-stretch: normal; font-size: 28.6px; line-height: 32.7px; font-family: Shrikhand, Georgia, serif; letter-spacing: normal; color: rgb(48, 54, 54); width: 356.5px; background-color: rgb(229, 227, 220);\"\u003eThe lie that the biblical woman is an oppressed woman.\u003c/h3\u003e\u003cbr\u003e"
+                                                     "html":  "<br><h3 data-cms-key=\"about:h3:the-lie-that-the-biblical-woman-is-an-oppressed-:0\" data-cms-default=\"The lie that the biblical woman is an oppressed woman.\" style=\"margin: 0px 0px 31px; font-style: normal; font-variant: normal; font-size-adjust: none; font-language-override: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-stretch: normal; font-size: 28.6px; line-height: 32.7px; font-family: Shrikhand, Georgia, serif; letter-spacing: normal; color: rgb(48, 54, 54); width: 356.5px; background-color: rgb(229, 227, 220);\">The lie that the biblical woman is an oppressed woman.</h3><br>"
                                                  },
                                      "style":  {
                                                    "textAlign":  "center",
                                                    "fontSize":  "32px",
                                                    "color":  "#c9755b",
-                                                   "fontFamily":  "\u0027Shrikhand\u0027, cursive",
+                                                   "fontFamily":  "'Shrikhand', cursive",
                                                    "textColor":  "#c9755b"
                                                },
                                      "id":  "block_text_2q1i1b5"
@@ -120,7 +120,7 @@
                                  {
                                      "type":  "text",
                                      "content":  {
-                                                     "html":  "\u003cspan style=\"background-color: rgb(229, 227, 220);\"\u003eThis lie is as old as time; there is nothing new under the sun. The first feminists fought to be equal under the law, not to erase roles altogether. However, over the years, this has changed. The enemy has convinced young women that they must abandon their God-given calling within the home and flip their priorities backwards to appease the feminist hustler culture we see today.\u003c/span\u003e"
+                                                     "html":  "<span style=\"background-color: rgb(229, 227, 220);\">This lie is as old as time; there is nothing new under the sun. The first feminists fought to be equal under the law, not to erase roles altogether. However, over the years, this has changed. The enemy has convinced young women that they must abandon their God-given calling within the home and flip their priorities backwards to appease the feminist hustler culture we see today.</span>"
                                                  },
                                      "style":  {
                                                    "textAlign":  "left",
@@ -132,7 +132,7 @@
                                  {
                                      "type":  "text",
                                      "content":  {
-                                                     "html":  "\u003cspan style=\"font-weight: 700; background-color: rgb(229, 227, 220);\"\u003eFar too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen worldÃ¢â‚¬â„¢s definition of womanhood, and cling tightly to GodÃ¢â‚¬â„¢s truth.\u003c/span\u003e"
+                                                     "html":  "<span style=\"font-weight: 700; background-color: rgb(229, 227, 220);\">Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen world’s definition of womanhood, and cling tightly to God’s truth.</span>"
                                                  },
                                      "style":  {
                                                    "textAlign":  "left",
@@ -164,7 +164,7 @@
                                                                    },
                                                                    {
                                                                        "title":  "THE TRUTH",
-                                                                       "content":  "Breaking down years of unbiblical propaganda thatÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s been fed to young women. Rebuilding womenÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s true, biblical mindset."
+                                                                       "content":  "Breaking down years of unbiblical propaganda that's been fed to young women. Rebuilding women’s true, biblical mindset."
                                                                    },
                                                                    {
                                                                        "title":  "THE LIFE",
@@ -196,9 +196,9 @@
                           "block:block_about_heading_1:heading":  "FOR DECADES, WOMEN ACROSS THE GLOBE HAVE BEEN FED A LIE.",
                           "block:block_hero_1:eyebrow":  "WELCOME TO THE WOMEN OF VIRTUE MOVEMENT",
                           "home:h2:follow-the-journey:0":  "\n",
-                          "about:p:write-your-text-here-you-can-add-paragraphs-bibl:0":  "Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen worldÃ¢â‚¬â„¢s definition of womanhood, and cling tightly to GodÃ¢â‚¬â„¢s truth.",
+                          "about:p:write-your-text-here-you-can-add-paragraphs-bibl:0":  "Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen world’s definition of womanhood, and cling tightly to God’s truth.",
                           "block:block_text_2q1i1b5:text":  "\n\nThe lie that the biblical woman is an oppressed woman.\n\n",
-                          "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0":  "The Prayer for the Human Family ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer"
+                          "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0":  "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer"
                       },
     "richTextOverrides":  {
 
@@ -218,7 +218,7 @@
                                                                    "textAlign":  "center"
                                                                },
                        "block:block_text_2q1i1b5:text":  {
-                                                             "fontFamily":  "\u0027Shrikhand\u0027, cursive",
+                                                             "fontFamily":  "'Shrikhand', cursive",
                                                              "fontSize":  "32px",
                                                              "textAlign":  "center",
                                                              "color":  "#c9755b",
@@ -355,17 +355,17 @@
                                                 "titleHtml":  "",
                                                 "publishedAt":  "2026-01-05",
                                                 "introTitle":  "What is a Woman?",
-                                                "intro":  "Contrary to the blurred lines of the fallen world, the bible defines a woman quite clearly. Follow along to learn what GodÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s word has to say about the true woman.",
+                                                "intro":  "Contrary to the blurred lines of the fallen world, the bible defines a woman quite clearly. Follow along to learn what God’s word has to say about the true woman.",
                                                 "body":  "",
                                                 "sections":  [
                                                                  {
                                                                      "title":  "Creation and Identity",
                                                                      "paragraphs":  [
                                                                                         "Genesis 1:27",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“So God created man in his own image, in the image of God he created him; Male and Female he created them.ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
-                                                                                        "Both Women and Men share equal value in being created in God\u0027s image.",
+                                                                                        "— “So God created man in his own image, in the image of God he created him; Male and Female he created them.”",
+                                                                                        "Both Women and Men share equal value in being created in God's image.",
                                                                                         "Genesis 2:22",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“And the rib that the Lord God had taken from the man he made into a Woman and brought her to the man.ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
+                                                                                        "— “And the rib that the Lord God had taken from the man he made into a Woman and brought her to the man.”",
                                                                                         "God intentionally formed womanhood."
                                                                                     ]
                                                                  },
@@ -373,13 +373,13 @@
                                                                      "title":  "Character and Value",
                                                                      "paragraphs":  [
                                                                                         "Proverbs 31:30",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“Charm is deceitful, and beauty is vain, but a woman who fears the lord is to be praisedÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
+                                                                                        "— “Charm is deceitful, and beauty is vain, but a woman who fears the lord is to be praised.”",
                                                                                         "True worth comes from honoring and fearing the Lord",
                                                                                         "Proverbs 14:1",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“Every wise woman buildeth her house; but the foolish plucketh it down with her handsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
-                                                                                        "A womanÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s actions and attitude, both within the home and outside of it, have a profound impact.",
+                                                                                        "— “Every wise woman buildeth her house; but the foolish plucketh it down with her hands.”",
+                                                                                        "A woman’s actions and attitude, both within the home and outside of it, have a profound impact.",
                                                                                         "Proverbs 31:25",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“Strength and honor are her clothing; and she shall rejoice in time to come.ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
+                                                                                        "— “Strength and honor are her clothing; and she shall rejoice in time to come.”",
                                                                                         "Character, virtue, and dignity define a powerful and capable woman."
                                                                                     ]
                                                                  },
@@ -387,17 +387,17 @@
                                                                      "title":  "Roles and Distinction",
                                                                      "paragraphs":  [
                                                                                         "Genesis 2:18",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“Then the lord God said, ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¹Ã…â€œIt is not good for man to be alone, I shall make a helper fit for himÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
+                                                                                        "— “Then the lord God said, ‘It is not good for man to be alone, I shall make a helper fit for him.’”",
                                                                                         "The woman was designed as a partner and strong helper. {Ezer}",
                                                                                         "Ezer was often used to refer to God himself when he was called on for help and rescue.",
                                                                                         "Deuteronomy 22:5",
-                                                                                        "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“A woman shall not wear a manÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s garment, nor shall a man put on a womanÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s cloakÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â",
+                                                                                        "— “A woman shall not wear a man’s garment, nor shall a man put on a woman’s cloak.”",
                                                                                         "Scripture continually affirms a clear distinction between male and female identities."
                                                                                     ]
                                                                  }
                                                              ],
                                                 "resourceTitle":  "This Weeks Prayer:",
-                                                "resource":  "The Prayer for the Human Family ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
+                                                "resource":  "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
                                                 "image":  "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790621013944-MPTRWXGPL1YPY8P4GTIT/unsplash-image-iA-YMIV6GoM.jpg?format=500w",
                                                 "imageAlt":  "Woman praying",
                                                 "imageHeight":  1182.5,
@@ -417,25 +417,25 @@
                                                                  {
                                                                      "title":  "Prayer Life",
                                                                      "paragraphs":  [
-                                                                                        "1 Thessalonians 5:16ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ18",
-                                                                                        "\"Rejoice always, pray continually, give thanks in all circumstances; for this is GodÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s will for you in Christ Jesus.\"",
+                                                                                        "1 Thessalonians 5:16–18",
+                                                                                        "“Rejoice always, pray continually, give thanks in all circumstances; for this is God’s will for you in Christ Jesus.”",
                                                                                         "When you have a healthy prayer life, it is easier to feel more connected to Christ. Thus making it easier to trust that he is working in your favor.",
                                                                                         "Romans 12:12",
-                                                                                        "\"Rejoice in hope, be patient in tribulation, be constant in prayer.\"",
-                                                                                        "Scripture regularly reminds us to be ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“constant in prayer.ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â We ought not to forsake building a personal relationship with the Lord through prayer."
+                                                                                        "“Rejoice in hope, be patient in tribulation, be constant in prayer.”",
+                                                                                        "Scripture regularly reminds us to be — “constant in prayer.” We ought not to forsake building a personal relationship with the Lord through prayer."
                                                                                     ]
                                                                  },
                                                                  {
                                                                      "title":  "Church Community",
                                                                      "paragraphs":  [
-                                                                                        "Romans 12:4ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ5:",
-                                                                                        "\"For as in one body we have many members, and the members do not all have the same function, so we, though many, are one body in Christ, and individually members one of another.\"",
+                                                                                        "Romans 12:4–5:",
+                                                                                        "“For as in one body we have many members, and the members do not all have the same function, so we, though many, are one body in Christ, and individually members one of another.”",
                                                                                         "Every woman brings her own unique set of gifts into the body of Christ.",
                                                                                         "Galatians 6:2:",
-                                                                                        "\"Bear one another\u0027s burdens, and so fulfill the law of Christ.\"",
-                                                                                        "When we are able to rely on each otherÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢s shoulders, we lighten the load of each individual.",
-                                                                                        "Hebrews 10:24ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ25:",
-                                                                                        "\"And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another.\"",
+                                                                                        "“Bear one another's burdens, and so fulfill the law of Christ.”",
+                                                                                        "When we are able to rely on each other’s shoulders, we lighten the load of each individual.",
+                                                                                        "Hebrews 10:24–25:",
+                                                                                        "“And let us consider how to stir up one another to love and good works, not neglecting to meet together, as is the habit of some, but encouraging one another.”",
                                                                                         "It is important for sisters in Christ to keep each other not only company, but accountable."
                                                                                     ]
                                                                  }
@@ -478,7 +478,7 @@
                                                                                     ]
                                                                  }
                                                              ],
-                                                "resourceTitle":  "This Week\u0027s Prayer:",
+                                                "resourceTitle":  "This Week's Prayer:",
                                                 "resource":  "uiwhfiwubuwfhwi",
                                                 "image":  "",
                                                 "imageAlt":  "",
