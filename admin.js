@@ -480,10 +480,14 @@
   }
 
   // Setup Sidebar Drag Sources
+  let isDraggingWidgetCard = false;
+  let lastWidgetCardAddedTime = 0;
+
   function setupSidebarDrag() {
     document.querySelectorAll(".widget-card").forEach(card => {
       card.setAttribute("draggable", "true");
       card.addEventListener("dragstart", e => {
+        isDraggingWidgetCard = true;
         const type = card.dataset.widgetType;
         const layout = card.dataset.layout;
         activeDraggedWidget = { type, layout };
@@ -494,12 +498,20 @@
 
       card.addEventListener("dragend", () => {
         card.classList.remove("is-dragging");
-        activeDraggedWidget = null;
+        setTimeout(() => {
+          isDraggingWidgetCard = false;
+          activeDraggedWidget = null;
+        }, 150);
         removeDropIndicator();
       });
 
-      // Also support single click to add block
-      card.addEventListener("click", () => {
+      // Also support single click to add block (ignore if just dragged or double-triggered)
+      card.addEventListener("click", e => {
+        if (isDraggingWidgetCard) return;
+        const now = Date.now();
+        if (now - lastWidgetCardAddedTime < 350) return;
+        lastWidgetCardAddedTime = now;
+
         const type = card.dataset.widgetType;
         const layout = card.dataset.layout;
         const newBlock = createBlock(type, layout);
@@ -570,14 +582,13 @@
         transition: outline 0.15s ease, box-shadow 0.15s ease !important;
       }
       .wov-block:hover {
-        outline: 2px dashed #00b4d8 !important;
+        outline: 2px dashed rgba(0, 180, 216, 0.4) !important;
         outline-offset: 2px !important;
         cursor: pointer !important;
       }
       .wov-block.wov-selected {
-        outline: 2px solid #e06c75 !important;
-        outline-offset: 2px !important;
-        box-shadow: 0 0 0 3px rgba(224, 108, 117, 0.25) !important;
+        outline: none !important;
+        box-shadow: none !important;
       }
 
       /* Universal Visual Editable Element */
@@ -586,18 +597,17 @@
         transition: outline 0.12s ease !important;
       }
       .wov-visual-target:hover {
-        outline: 2px dashed #00b4d8 !important;
-        outline-offset: 2px !important;
+        outline: 1px dashed rgba(0, 180, 216, 0.5) !important;
+        outline-offset: 1px !important;
       }
       .wov-visual-target.wov-element-selected {
-        outline: 2px solid #e06c75 !important;
-        outline-offset: 2px !important;
-        box-shadow: 0 0 0 3px rgba(224, 108, 117, 0.3) !important;
+        outline: none !important;
+        box-shadow: none !important;
       }
       .wov-visual-target[contenteditable="true"] {
-        outline: 2px solid #4078f2 !important;
+        outline: 2px solid #00b4d8 !important;
         outline-offset: 2px !important;
-        background: rgba(64, 120, 242, 0.06) !important;
+        background: rgba(0, 180, 216, 0.05) !important;
         cursor: text !important;
       }
 
@@ -935,6 +945,7 @@
       }
 
       const newBlock = createBlock(type, layout);
+      activeDraggedWidget = null;
       list.splice(dropIndex, 0, newBlock);
       pushHistory();
       updatePreviewLive();
@@ -1570,21 +1581,39 @@
         }
       }
     }
+    if (!targetLesson && Array.isArray(content.devotionals)) {
+      // If content.devotionals does not yet have units or lessons, copy from default lessons
+      const defLesson = lessons.find(l => l.slug === lessonSlug);
+      if (defLesson) {
+        let firmUnit = content.devotionals.find(d => d.id === "firm-foundations" || d.title === "Firm Foundations");
+        if (!firmUnit) {
+          firmUnit = {
+            id: "firm-foundations",
+            title: "Firm Foundations",
+            description: "Weekly Devotionals for Women of Virtue",
+            lessons: JSON.parse(JSON.stringify(lessons))
+          };
+          content.devotionals.unshift(firmUnit);
+        }
+        targetLesson = firmUnit.lessons?.find(l => l.slug === lessonSlug);
+      }
+    }
     if (!targetLesson) return;
 
-    const cleanText = newText.replace(/^[▾▸]\s*/, "");
+    const cleanText = newText.replace(/^[▾▸]\s*/, "").trim();
     const tagName = el.tagName.toLowerCase();
     const sectionDetails = el.closest("details.lesson-section");
 
     if (sectionDetails) {
       const isResource = sectionDetails.querySelector("summary")?.textContent?.includes("Resource") ||
+                         sectionDetails.querySelector("summary")?.textContent?.includes("Prayer") ||
                          Boolean(sectionDetails.closest("section")?.querySelector(".download-link"));
 
       if (tagName === "summary") {
         if (isResource) {
           targetLesson.resourceTitle = cleanText;
         } else {
-          const allSections = [...doc.querySelectorAll(".lesson-copy details.lesson-section")].filter(d => !d.closest("section")?.querySelector(".download-link"));
+          const allSections = [...doc.querySelectorAll(".lesson-copy details.lesson-section")].filter(d => !d.closest("section")?.querySelector(".download-link") && !d.querySelector("summary")?.textContent?.includes("Prayer") && !d.querySelector("summary")?.textContent?.includes("Resource"));
           const secIdx = allSections.indexOf(sectionDetails);
           if (secIdx !== -1 && Array.isArray(targetLesson.sections) && targetLesson.sections[secIdx]) {
             const sec = targetLesson.sections[secIdx];
@@ -1607,7 +1636,7 @@
             targetLesson.resource = cleanText;
           }
         } else {
-          const allSections = [...doc.querySelectorAll(".lesson-copy details.lesson-section")].filter(d => !d.closest("section")?.querySelector(".download-link"));
+          const allSections = [...doc.querySelectorAll(".lesson-copy details.lesson-section")].filter(d => !d.closest("section")?.querySelector(".download-link") && !d.querySelector("summary")?.textContent?.includes("Prayer") && !d.querySelector("summary")?.textContent?.includes("Resource"));
           const secIdx = allSections.indexOf(sectionDetails);
           if (secIdx !== -1 && Array.isArray(targetLesson.sections) && targetLesson.sections[secIdx]) {
             const sec = targetLesson.sections[secIdx];
@@ -1634,6 +1663,8 @@
         targetLesson.intro = cleanText;
       }
     }
+    setDirty(true);
+    syncDraftStorage();
   }
 
   // Universal Selection Function

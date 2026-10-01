@@ -625,18 +625,19 @@ function lessonPage(lesson) {
     <nav class="lesson-crumb" aria-label="Course navigation" data-cms-layout-group="lesson-page" data-cms-layout-key="breadcrumb"><a href="#/devotionals">Devotional Courses</a><a href="${nextLink}">Complete &amp; Continue</a></nav>
     <header class="lesson-title" data-cms-layout-group="lesson-page" data-cms-layout-key="title"><p class="eyebrow">${devotionalTitle} · ${devotionalLessons.length} ${devotionalLessons.length === 1 ? "Lesson" : "Lessons"}${lesson.publishedAt ? ` · ${formatPublishedDate(lesson.publishedAt)}` : ""}</p><h1>${lesson.titleHtml || lesson.title}</h1></header>
     <div class="lesson-grid" data-cms-layout-group="lesson-page" data-cms-layout-key="content" data-lesson="${lesson.slug}" style="--lesson-image-offset: ${lesson.imageOffset || 0}px"><div class="lesson-copy" data-cms-layout-group="lesson-columns" data-cms-layout-key="copy">
-      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs]) => `<details class="lesson-section" open><summary>${title}</summary>${(paragraphs || []).map(renderLessonParagraph).join("")}</details>`).join("")}</section>
-      <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section" open><summary>${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map(renderLessonParagraph).join("")}</details>` : ""}</section>
+      <section class="lesson-content"><p class="eyebrow">${lesson.slug === "defining-femininity" ? "IN THIS DEVOTIONAL:" : "IN THIS LESSON"}</p><h2>${lesson.introTitle}</h2>${lesson.introHtml ? `<div class="cms-rich-copy">${sanitizeCmsHtml(lesson.introHtml)}</div>` : lesson.intro ? `<p>${escapeCmsText(lesson.intro)}</p>` : ""}${(lesson.sections || []).map(([title, paragraphs], sIdx) => `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:sec:${sIdx}:title">${title}</summary>${(paragraphs || []).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:sec:${sIdx}:p:${pIdx}`)).join("")}</details>`).join("")}</section>
+      <section class="lesson-content">${lesson.pdfUrl ? `<a class="download-link" href="${escapeCmsText(lesson.pdfUrl)}" target="_blank" rel="noopener">Download PDF</a>` : `<a class="download-link" href="#">Download PDF</a>`}${(lesson.resource && (Array.isArray(lesson.resource) ? lesson.resource.length > 0 : lesson.resource)) ? `<details class="lesson-section" open><summary data-cms-key="lesson:${lesson.slug}:res:title">${lesson.resourceTitle}</summary>${(Array.isArray(lesson.resource) ? lesson.resource : [lesson.resource]).map((p, pIdx) => renderLessonParagraph(p, `lesson:${lesson.slug}:res:p:${pIdx}`)).join("")}</details>` : ""}</section>
     </div><img class="lesson-photo" data-cms-layout-group="lesson-columns" data-cms-layout-key="photo" src="${escapeCmsText(lesson.image)}" alt="${lesson.imageAlt || ""}" style="--lesson-image-height: ${lesson.imageHeight}px" /></div>
     <div class="lesson-end" data-cms-layout-group="lesson-page" data-cms-layout-key="completion"><label><input type="checkbox" data-lesson="${lesson.slug}" ${isComplete ? "checked" : ""} /> Mark lesson complete</label><a class="button" href="${nextLink}">Complete &amp; Continue</a></div>
   </article></div>`;
 }
 
-function renderLessonParagraph(paragraph) {
+function renderLessonParagraph(paragraph, key = "") {
+  const keyAttr = key ? ` data-cms-key="${key}"` : "";
   if (paragraph && typeof paragraph === "object" && Object.hasOwn(paragraph, "html")) {
-    return `<div class="cms-rich-copy">${sanitizeCmsHtml(paragraph.html)}</div>`;
+    return `<div class="cms-rich-copy"${keyAttr}>${sanitizeCmsHtml(paragraph.html)}</div>`;
   }
-  return `<p>${escapeCmsText(paragraph)}</p>`;
+  return `<p${keyAttr}>${escapeCmsText(paragraph)}</p>`;
 }
 
 function formatPublishedDate(value) {
@@ -701,15 +702,15 @@ function renderBlock(block) {
     }
     case "image": {
       return `<div class="wov-block wov-block-container" style="text-align: ${style.textAlign || 'center'}; padding: 20px 0;" data-wov-block-id="${id}" data-wov-block-type="image">
-        <img src="${escapeCmsText(content.url || '')}" alt="${escapeCmsText(content.alt || '')}" ${styleAttr} style="max-width: 100%; height: auto;" />
-        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 12px; margin-top: 6px;">${escapeCmsText(content.caption)}</p>` : ""}
+        <img src="${escapeCmsText(content.url || '')}" alt="${escapeCmsText(content.alt || '')}" ${styleAttr} style="max-width: 100%; height: auto;" data-cms-key="block:${id}:image" />
+        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 12px; margin-top: 6px;" data-cms-key="block:${id}:caption">${escapeCmsText(content.caption)}</p>` : ""}
       </div>`;
     }
     case "quote": {
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="quote">
         <div class="wov-block-quote" ${styleAttr}>
-          <blockquote>“${escapeCmsText(content.quote || "Your scripture quote here")}”</blockquote>
-          ${content.reference ? `<cite>— ${escapeCmsText(content.reference)}</cite>` : ""}
+          <blockquote data-cms-key="block:${id}:quote">“${escapeCmsText(content.quote || "Your scripture quote here")}”</blockquote>
+          ${content.reference ? `<cite data-cms-key="block:${id}:cite">— ${escapeCmsText(content.reference)}</cite>` : ""}
         </div>
       </div>`;
     }
@@ -719,8 +720,8 @@ function renderBlock(block) {
         <div class="wov-block-accordion">
           ${items.map((item, idx) => `
             <details class="wov-accordion-item" ${idx === 0 ? "open" : ""}>
-              <summary>${escapeCmsText(item.title || "Section")}</summary>
-              <div class="wov-accordion-content">${sanitizeCmsHtml(item.content || "")}</div>
+              <summary data-cms-key="block:${id}:acc:${idx}:title">${escapeCmsText(item.title || "Section")}</summary>
+              <div class="wov-accordion-content" data-cms-key="block:${id}:acc:${idx}:content">${sanitizeCmsHtml(item.content || "")}</div>
             </details>
           `).join("")}
         </div>
@@ -730,11 +731,11 @@ function renderBlock(block) {
       const cols = Number(content.columns) || 4;
       const images = Array.isArray(content.images) ? content.images : [];
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="gallery" ${styleAttr}>
-        ${content.title ? `<div class="section-heading"><h2>${escapeCmsText(content.title)}</h2></div>` : ""}
+        ${content.title ? `<div class="section-heading"><h2 data-cms-key="block:${id}:title">${escapeCmsText(content.title)}</h2></div>` : ""}
         <div class="wov-block-gallery-grid wov-gallery-cols-${cols}">
-          ${images.map(img => `
+          ${images.map((img, idx) => `
             <div class="wov-gallery-item">
-              <img src="${escapeCmsText(img.url || '')}" alt="${escapeCmsText(img.alt || '')}" loading="lazy" />
+              <img src="${escapeCmsText(img.url || '')}" alt="${escapeCmsText(img.alt || '')}" loading="lazy" data-cms-key="block:${id}:img:${idx}" />
             </div>
           `).join("")}
         </div>
@@ -757,15 +758,15 @@ function renderBlock(block) {
       return `<div class="wov-block page-section" data-wov-block-id="${id}" data-wov-block-type="form" ${styleAttr}>
         <div class="project" style="background: transparent; color: inherit; padding: 60px 8vw;">
           <div class="project-copy">
-            <h2>${escapeCmsText(content.title || "Get in Touch")}</h2>
-            <p>${escapeCmsText(content.subtitle || "")}</p>
+            <h2 data-cms-key="block:${id}:title">${escapeCmsText(content.title || "Get in Touch")}</h2>
+            <p data-cms-key="block:${id}:subtitle">${escapeCmsText(content.subtitle || "")}</p>
           </div>
           <form class="form" data-form="contact">
             <div class="field"><label for="f-first-${id}">First Name <span>(required)</span></label><input id="f-first-${id}" name="fname" required /></div>
             <div class="field"><label for="f-last-${id}">Last Name <span>(required)</span></label><input id="f-last-${id}" name="lname" required /></div>
             <div class="field full"><label for="f-email-${id}">Email <span>(required)</span></label><input id="f-email-${id}" name="email" type="email" required /></div>
             <div class="field full"><label for="f-msg-${id}">Message <span>(required)</span></label><textarea id="f-msg-${id}" name="message" rows="3" required></textarea></div>
-            <button class="button" type="submit">${escapeCmsText(content.submitText || "Send")}</button>
+            <button class="button" type="submit" data-cms-key="block:${id}:submit">${escapeCmsText(content.submitText || "Send")}</button>
             <p class="form-status" aria-live="polite"></p>
           </form>
         </div>
@@ -781,7 +782,7 @@ function renderBlock(block) {
     case "marquee": {
       const text = escapeCmsText(content.text || "Follow the Journey ⦁ Follow the Journey");
       return `<div class="wov-block journey-marquee" data-wov-block-id="${id}" data-wov-block-type="marquee" ${styleAttr}>
-        <span>${text}</span><span aria-hidden="true">${text}</span>
+        <span data-cms-key="block:${id}:text1">${text}</span><span aria-hidden="true" data-cms-key="block:${id}:text2">${text}</span>
       </div>`;
     }
     case "video": {
@@ -806,9 +807,9 @@ function renderBlock(block) {
         embedHtml = `<div class="wov-video-placeholder" style="padding:48px 20px; background:rgba(0,180,216,0.06); border:2px dashed #00b4d8; border-radius:8px; text-align:center;"><span style="font-size:32px;">▶</span><p style="margin-top:8px; font-weight:600; color:var(--ink);">Add YouTube, Vimeo, or Video URL in Inspector</p></div>`;
       }
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="video" ${styleAttr} style="padding: 24px 0;">
-        ${content.title ? `<div class="section-heading" style="margin-bottom:14px;"><h3 style="margin:0; font-size:24px;">${escapeCmsText(content.title)}</h3></div>` : ""}
+        ${content.title ? `<div class="section-heading" style="margin-bottom:14px;"><h3 style="margin:0; font-size:24px;" data-cms-key="block:${id}:title">${escapeCmsText(content.title)}</h3></div>` : ""}
         ${embedHtml}
-        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 13px; margin-top: 8px;">${escapeCmsText(content.caption)}</p>` : ""}
+        ${content.caption ? `<p class="image-caption" style="color: var(--muted); font-size: 13px; margin-top: 8px;" data-cms-key="block:${id}:caption">${escapeCmsText(content.caption)}</p>` : ""}
       </div>`;
     }
     case "callout": {
@@ -820,8 +821,8 @@ function renderBlock(block) {
         <div class="wov-callout-card wov-callout-${variant}">
           <div class="wov-callout-icon">${escapeCmsText(icon)}</div>
           <div class="wov-callout-body">
-            <h4 class="wov-callout-title">${escapeCmsText(title)}</h4>
-            <div class="wov-callout-text">${sanitizeCmsHtml(text)}</div>
+            <h4 class="wov-callout-title" data-cms-key="block:${id}:title">${escapeCmsText(title)}</h4>
+            <div class="wov-callout-text" data-cms-key="block:${id}:text">${sanitizeCmsHtml(text)}</div>
           </div>
         </div>
       </div>`;
@@ -834,10 +835,10 @@ function renderBlock(block) {
       const variant = content.variant || "brand";
       return `<section class="wov-block wov-block-cta wov-cta-${variant} page-section" data-wov-block-id="${id}" data-wov-block-type="cta" ${styleAttr}>
         <div class="wov-cta-inner">
-          <h2>${escapeCmsText(title)}</h2>
-          <p>${escapeCmsText(subtitle)}</p>
+          <h2 data-cms-key="block:${id}:title">${escapeCmsText(title)}</h2>
+          <p data-cms-key="block:${id}:subtitle">${escapeCmsText(subtitle)}</p>
           <div class="wov-cta-actions">
-            <a class="button" href="${escapeCmsText(btnLink)}">${escapeCmsText(btnText)}</a>
+            <a class="button" href="${escapeCmsText(btnLink)}" data-cms-key="block:${id}:button">${escapeCmsText(btnText)}</a>
           </div>
         </div>
       </section>`;
@@ -845,7 +846,7 @@ function renderBlock(block) {
     case "social": {
       const title = content.title || "Follow & Connect";
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="social" ${styleAttr} style="text-align: center; padding: 30px 0;">
-        ${title ? `<h3 style="margin-bottom: 16px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);">${escapeCmsText(title)}</h3>` : ""}
+        ${title ? `<h3 style="margin-bottom: 16px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);" data-cms-key="block:${id}:title">${escapeCmsText(title)}</h3>` : ""}
         <div class="wov-social-links" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
           ${content.instagram ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="${escapeCmsText(content.instagram)}" target="_blank" rel="noopener">📸 Instagram</a>` : ""}
           ${content.youtube ? `<a class="button" style="padding: 8px 18px; font-size: 12px;" href="${escapeCmsText(content.youtube)}" target="_blank" rel="noopener">▶ YouTube</a>` : ""}

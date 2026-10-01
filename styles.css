@@ -199,6 +199,14 @@ details[open] > summary::after { content: "−"; }
   .progress-count { text-align: right; }
   .lesson-page { padding: 42px 7vw 75px; }
   .lesson-crumb { align-items: start; }
+  .lesson-grid { display: flex; flex-direction: column; gap: 0; margin-top: 25px; }
+  .lesson-copy { width: 100%; }
+  .lesson-copy .lesson-content,
+  .lesson-copy .lesson-content > .eyebrow,
+  .lesson-copy .lesson-content > h2,
+  .lesson-copy .lesson-content > p,
+  .lesson-copy .lesson-section { width: 100%; max-width: none; }
+  .lesson-photo { width: 100%; max-width: 480px; height: auto; aspect-ratio: 1.25; margin: 30px auto 0; object-fit: cover; }
 }
 @media (max-width: 420px) {
   .form { grid-template-columns: 1fr; }
@@ -206,6 +214,7 @@ details[open] > summary::after { content: "−"; }
   .form-status { grid-column: auto; }
   .lesson-crumb { flex-direction: column; }
   .lesson-end { align-items: start; flex-direction: column; }
+  .lesson-photo { width: 100%; max-width: 100%; }
 }
 
 /* ==========================================================================
