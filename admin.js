@@ -580,7 +580,20 @@
       /* Elementor-style hovering & selection */
       .wov-block {
         position: relative !important;
+        box-sizing: border-box !important;
+        max-width: 100% !important;
         transition: outline 0.15s ease, box-shadow 0.15s ease !important;
+      }
+      .wov-block-container {
+        box-sizing: border-box !important;
+      }
+      .wov-block-text, .wov-block-heading {
+        height: auto !important;
+        min-height: fit-content !important;
+        overflow-wrap: break-word !important;
+      }
+      .wov-block h1, .wov-block h2, .wov-block h3, .wov-block h4 {
+        line-height: 1.25 !important;
       }
       .wov-block:hover {
         outline: 2px dashed rgba(201, 117, 91, 0.45) !important;

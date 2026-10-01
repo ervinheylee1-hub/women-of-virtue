@@ -310,16 +310,21 @@ function applyCmsPositionOverrides() {
         el.style.width = `${pos.width}px`;
         if (el.tagName.toLowerCase() === "img") {
           el.style.maxWidth = "none";
-        } else if (window.getComputedStyle(el).display === "inline") {
-          el.style.display = "inline-block";
+        } else {
+          el.style.maxWidth = "100%";
+          el.style.boxSizing = "border-box";
+          if (window.getComputedStyle(el).display === "inline") {
+            el.style.display = "inline-block";
+          }
         }
       }
       if (pos.height !== undefined && pos.height > 0) {
-        el.style.height = `${pos.height}px`;
         if (el.tagName.toLowerCase() === "img") {
+          el.style.height = `${pos.height}px`;
           el.style.objectFit = "cover";
         } else {
           el.style.minHeight = `${pos.height}px`;
+          el.style.height = "auto";
         }
         if (el.classList.contains("lesson-photo")) {
           el.style.setProperty("--lesson-image-height", `${pos.height}px`);

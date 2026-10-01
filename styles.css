@@ -229,6 +229,7 @@ details[open] > summary::after { content: "−"; }
 .wov-block {
   position: relative;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -236,6 +237,31 @@ details[open] > summary::after { content: "−"; }
   width: min(1180px, 90vw);
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
+}
+
+.wov-block h1,
+.wov-block h2,
+.wov-block h3,
+.wov-block h4 {
+  line-height: 1.25;
+  margin-top: 0;
+  overflow-wrap: break-word;
+}
+
+.wov-block p,
+.wov-block span {
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+.wov-block-text,
+.wov-block-heading {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: fit-content;
+  box-sizing: border-box;
 }
 
 .wov-block-hero {
@@ -267,6 +293,8 @@ details[open] > summary::after { content: "−"; }
 .wov-block-columns {
   display: grid;
   gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .wov-layout-50-50 { grid-template-columns: 1fr 1fr; }
 .wov-layout-33-33-33 { grid-template-columns: 1fr 1fr 1fr; }
@@ -276,6 +304,8 @@ details[open] > summary::after { content: "−"; }
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .wov-block-quote {
