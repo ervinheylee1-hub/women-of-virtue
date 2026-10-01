@@ -339,6 +339,12 @@ function registerCmsText() {
   const selectors = "h1,h2,h3,h4,p,summary,button,a,label,span,.cms-rich-copy,[data-cms-key]";
   document.querySelectorAll(selectors).forEach(element => {
     if (element.closest(".journey-marquee")) return;
+    if (element.closest("[data-wov-block-id]")) {
+      if (element.dataset.cmsKey) {
+        applyCmsText(element, element.dataset.cmsKey);
+      }
+      return;
+    }
     if (element.dataset.cmsKey) {
       applyCmsText(element, element.dataset.cmsKey);
       return;

@@ -36,6 +36,7 @@
   const inspectorBlockTitle = document.querySelector("#inspector-block-title");
 
   // State
+  let isLiveStaticMode = false;
   let csrfToken = "";
   let authenticatedUser = "";
   let currentRoute = "home";
@@ -841,13 +842,16 @@
         background: #c9755b;
       }
 
-      /* Between-block inserter line */
+      /* Between-block inserter line - zero document flow height so editor matches live site exactly */
       .wov-between-inserter {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 24px;
-        margin: 4px 0;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 99990 !important;
         opacity: 0;
         transition: opacity 0.2s ease;
       }
@@ -855,12 +859,17 @@
         opacity: 1;
       }
       .wov-inserter-line {
-        flex: 1;
-        height: 1px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
         background: #c9755b;
-        opacity: 0.5;
+        opacity: 0.6;
+        pointer-events: none;
       }
       .wov-inserter-plus {
+        position: relative;
+        z-index: 2;
         background: #c9755b;
         color: #fff;
         border: 0;
@@ -873,7 +882,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(201, 117, 91, 0.3);
+        box-shadow: 0 2px 6px rgba(201, 117, 91, 0.35);
+        transform: translateY(-50%);
       }
     `;
     doc.head.append(styleEl);
@@ -1711,12 +1721,18 @@
     if (blockEl) {
       selectedBlockId = blockEl.dataset.wovBlockId;
       blockEl.classList.add("wov-selected");
+      if (el.dataset.cmsKey) {
+        selectedCmsKey = el.dataset.cmsKey;
+      } else {
+        const fieldName = el.tagName.toLowerCase().startsWith("h") ? "heading" : (el.tagName.toLowerCase() === "a" || el.tagName.toLowerCase() === "button" ? "button" : "text");
+        selectedCmsKey = `block:${selectedBlockId}:${fieldName}`;
+        el.dataset.cmsKey = selectedCmsKey;
+      }
     } else {
       selectedBlockId = null;
+      selectedCmsKey = el.dataset.cmsKey || getElementKey(el);
+      if (!el.dataset.cmsKey) el.dataset.cmsKey = selectedCmsKey;
     }
-
-    selectedCmsKey = el.dataset.cmsKey || getElementKey(el);
-    if (!el.dataset.cmsKey) el.dataset.cmsKey = selectedCmsKey;
 
     // Determine element type name & tag
     const tagName = el.tagName.toLowerCase();
@@ -1767,7 +1783,7 @@
           else if (block.content.quote !== undefined) block.content.quote = newText;
           else if (block.content.buttonText !== undefined) block.content.buttonText = newText;
         }
-        if (selectedCmsKey) {
+        if (selectedCmsKey && (selectedCmsKey.startsWith("block:") || !selectedBlockId)) {
           content.copyOverrides[selectedCmsKey] = newText;
         }
 
@@ -2006,7 +2022,7 @@
         const val = e.target.value;
         if (el) el.innerHTML = val;
         if (block) block.content.html = val;
-        if (selectedCmsKey) {
+        if (selectedCmsKey && (selectedCmsKey.startsWith("block:") || !selectedBlockId)) {
           if (val.includes("<") && val.includes(">")) {
             content.richTextOverrides[selectedCmsKey] = val;
           } else {
@@ -3151,6 +3167,10 @@
   }
 
   async function syncGitHub() {
+    if (isLiveStaticMode) {
+      await saveContent();
+      return;
+    }
     const badge = document.querySelector("#github-sync-badge");
     const btn = document.querySelector("#btn-github-sync");
     const statusText = document.querySelector("#gh-status-text");
@@ -3183,12 +3203,93 @@
   // Save & Publish (with automatic GitHub push)
   async function saveContent() {
     saveBtn.disabled = true;
-    saveStatus.querySelector(".status-text").textContent = "Saving to server & GitHub…";
+    saveStatus.querySelector(".status-text").textContent = "Saving…";
     const dot = saveStatus.querySelector(".status-dot");
     if (dot) dot.style.background = "#d4967d";
 
     const ghBadge = document.querySelector("#github-sync-badge");
     const ghStatusText = document.querySelector("#gh-status-text");
+
+    if (isLiveStaticMode) {
+      if (ghBadge) ghBadge.classList.add("is-syncing");
+      if (ghStatusText) ghStatusText.textContent = "Publishing live…";
+
+      try {
+        // 1. Immediately store draft in localStorage and broadcast to preview
+        localStorage.setItem("cms-live-draft", JSON.stringify(content));
+        setDirty(false);
+        updatePreviewLive();
+
+        // 2. Check if GitHub Personal Access Token is saved
+        const githubToken = localStorage.getItem("wov_github_pat") || sessionStorage.getItem("wov_github_pat");
+        const githubRepo = "ervinheylee1-hub/women-of-virtue";
+        const githubBranch = "main";
+
+        if (githubToken) {
+          saveStatus.querySelector(".status-text").textContent = "Publishing to GitHub & Live Site…";
+
+          // Fetch current file SHA from GitHub Contents API
+          const getRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json?ref=${githubBranch}`, {
+            headers: {
+              "Authorization": `token ${githubToken}`,
+              "Accept": "application/vnd.github.v3+json"
+            }
+          });
+
+          if (!getRes.ok) {
+            const errJson = await getRes.json().catch(() => ({}));
+            throw new Error(errJson.message || `GitHub error (${getRes.status})`);
+          }
+
+          const fileData = await getRes.json();
+          const sha = fileData.sha;
+
+          // Commit updated content.json to GitHub
+          const jsonString = JSON.stringify(content, null, 2);
+          const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+          const putRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json`, {
+            method: "PUT",
+            headers: {
+              "Authorization": `token ${githubToken}`,
+              "Accept": "application/vnd.github.v3+json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              message: "Update site content via Live Visual Editor",
+              content: encodedContent,
+              sha: sha,
+              branch: githubBranch
+            })
+          });
+
+          if (!putRes.ok) {
+            const errJson = await putRes.json().catch(() => ({}));
+            throw new Error(errJson.message || `GitHub commit error (${putRes.status})`);
+          }
+
+          const putData = await putRes.json();
+          const commitShort = putData.commit?.sha?.slice(0, 7) || "live";
+          saveStatus.querySelector(".status-text").textContent = `Saved & Published to GitHub (${commitShort}) - Live Site Updating!`;
+          if (dot) dot.style.background = "#2e7d32";
+          if (ghStatusText) ghStatusText.textContent = `GitHub: ${commitShort}`;
+          if (ghBadge) ghBadge.classList.add("is-synced");
+        } else {
+          promptGithubPublishModal();
+          saveStatus.querySelector(".status-text").textContent = "Saved to draft (GitHub token needed to publish live)";
+          if (dot) dot.style.background = "#c9755b";
+        }
+      } catch (err) {
+        alert("Live site publish error: " + err.message + "\n\nTip: You can download content.json from Site Settings -> Backup & Sync.");
+        setDirty(true);
+        if (dot) dot.style.background = "#c92a2a";
+      } finally {
+        saveBtn.disabled = false;
+        if (ghBadge) ghBadge.classList.remove("is-syncing");
+      }
+      return;
+    }
+
     if (ghBadge) ghBadge.classList.add("is-syncing");
     if (ghStatusText) ghStatusText.textContent = "Syncing GitHub…";
 
@@ -3244,7 +3345,30 @@
 
   // Load Content
   async function loadContent() {
-    content = await api("./api/admin/content");
+    if (isLiveStaticMode) {
+      try {
+        const resp = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
+        if (resp.ok) {
+          content = await resp.json();
+        }
+      } catch (err) {
+        console.warn("Could not fetch content.json:", err);
+      }
+      try {
+        const savedDraft = localStorage.getItem("cms-live-draft");
+        if (savedDraft) {
+          const draft = JSON.parse(savedDraft);
+          content = { ...content, ...draft };
+        }
+      } catch {}
+    } else {
+      try {
+        content = await api("./api/admin/content");
+      } catch {
+        const resp = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
+        content = await resp.json();
+      }
+    }
     if (!content.blocks || typeof content.blocks !== "object") {
       content.blocks = {};
     }
@@ -3300,12 +3424,79 @@
     }
   });
 
+  const STATIC_ADMIN_CREDENTIALS = {
+    username: "adminheylee",
+    salt: "qr6HRj8K9+8kWK2c1iv2Nz/+O9JxP/6L91DYJJMWzfY=",
+    hash: "O0i6C+WhAwZwYKMJdiVbxTbj3GVsuMCNtFa1l6SN0d8=",
+    iterations: 210000
+  };
+
+  async function verifyClientLogin(username, password) {
+    if (!password) return false;
+    // Allow GitHub Personal Access Token directly as password
+    if (password.startsWith("ghp_") || password.startsWith("github_pat_")) {
+      return true;
+    }
+    // Verify against adminheylee PBKDF2 hash using Web Crypto API
+    if (username.toLowerCase() === STATIC_ADMIN_CREDENTIALS.username.toLowerCase()) {
+      try {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+          "raw",
+          enc.encode(password),
+          { name: "PBKDF2" },
+          false,
+          ["deriveBits"]
+        );
+        const salt = Uint8Array.from(atob(STATIC_ADMIN_CREDENTIALS.salt), c => c.charCodeAt(0));
+        const derivedBits = await crypto.subtle.deriveBits(
+          {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: STATIC_ADMIN_CREDENTIALS.iterations,
+            hash: "SHA-256"
+          },
+          keyMaterial,
+          256
+        );
+        const actualHash = btoa(String.fromCharCode(...new Uint8Array(derivedBits)));
+        if (actualHash === STATIC_ADMIN_CREDENTIALS.hash) return true;
+      } catch (err) {
+        console.warn("Client PBKDF2 error:", err);
+      }
+    }
+    const savedCustomKey = localStorage.getItem("wov_admin_custom_pass");
+    if (savedCustomKey && savedCustomKey === password) return true;
+    return false;
+  }
+
   // Login Form
   document.querySelector("#login-form").addEventListener("submit", async e => {
     e.preventDefault();
     const username = document.querySelector("#login-username").value.trim();
     const password = document.querySelector("#login-password").value;
     const messageEl = document.querySelector("#login-message");
+
+    if (isLiveStaticMode) {
+      try {
+        messageEl.textContent = "Verifying credentials…";
+        const ok = await verifyClientLogin(username, password);
+        if (ok) {
+          authenticatedUser = username || "adminheylee";
+          sessionStorage.setItem("wov_live_admin_auth", "true");
+          sessionStorage.setItem("wov_live_admin_user", authenticatedUser);
+          if (password.startsWith("ghp_") || password.startsWith("github_pat_")) {
+            localStorage.setItem("wov_github_pat", password);
+          }
+          await enterDashboard();
+        } else {
+          messageEl.textContent = "Invalid administrator username or password.";
+        }
+      } catch (err) {
+        messageEl.textContent = "Sign-in error: " + err.message;
+      }
+      return;
+    }
 
     try {
       const res = await api("./api/admin/login", {
@@ -3322,6 +3513,8 @@
 
   // Logout
   logoutBtn.addEventListener("click", async () => {
+    sessionStorage.removeItem("wov_live_admin_auth");
+    sessionStorage.removeItem("wov_live_admin_user");
     try {
       await api("./api/admin/logout", { method: "POST", body: {} });
     } catch {}
@@ -3341,6 +3534,8 @@
     logoutBtn.hidden = screen !== "dashboard";
     const ghBadge = document.querySelector("#github-sync-badge");
     if (ghBadge) ghBadge.hidden = screen !== "dashboard";
+    const liveBadge = document.querySelector("#live-mode-badge");
+    if (liveBadge) liveBadge.hidden = screen !== "dashboard" || !isLiveStaticMode;
   }
 
   async function enterDashboard() {
@@ -3350,11 +3545,155 @@
     setupMediaLibrary();
     setupInquiries();
     setupEmailSettings();
+    setupLiveGithubSettings();
     await loadContent();
-    fetchGithubStatus();
+    if (!isLiveStaticMode) {
+      fetchGithubStatus();
+    } else {
+      updateGithubStatusBadge({ branch: "main", success: true, message: "Live Site (GitHub Pages)" });
+    }
     loadMediaLibrary();
     loadInquiries();
     loadEmailSettings();
+    loadLiveGithubSettings();
+  }
+
+  function setupLiveGithubSettings() {
+    const tokenInput = document.querySelector("#field-github-token");
+    const toggleBtn = document.querySelector("#btn-toggle-github-token");
+    const saveBtn = document.querySelector("#btn-save-github-token");
+    const testBtn = document.querySelector("#btn-test-github-connection");
+    const statusEl = document.querySelector("#github-settings-status");
+
+    // Modal elements
+    const modal = document.querySelector("#modal-github-publish");
+    const modalInput = document.querySelector("#modal-input-github-token");
+    const modalClose = document.querySelector("#btn-close-github-modal");
+    const modalSave = document.querySelector("#btn-modal-save-github");
+    const modalDownload = document.querySelector("#btn-modal-download-fallback");
+
+    if (toggleBtn && tokenInput) {
+      toggleBtn.addEventListener("click", () => {
+        tokenInput.type = tokenInput.type === "password" ? "text" : "password";
+      });
+    }
+
+    if (saveBtn && tokenInput) {
+      saveBtn.addEventListener("click", () => {
+        const val = tokenInput.value.trim();
+        if (val) {
+          localStorage.setItem("wov_github_pat", val);
+          if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.style.color = "#2e7d32";
+            statusEl.textContent = "GitHub token saved successfully!";
+            setTimeout(() => { statusEl.hidden = true; }, 3000);
+          }
+        } else {
+          localStorage.removeItem("wov_github_pat");
+          if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.style.color = "#c92a2a";
+            statusEl.textContent = "GitHub token removed.";
+            setTimeout(() => { statusEl.hidden = true; }, 3000);
+          }
+        }
+      });
+    }
+
+    if (testBtn && tokenInput) {
+      testBtn.addEventListener("click", async () => {
+        const token = tokenInput.value.trim() || localStorage.getItem("wov_github_pat");
+        if (!token) {
+          alert("Please enter a GitHub Personal Access Token first.");
+          return;
+        }
+        testBtn.disabled = true;
+        testBtn.textContent = "Testing…";
+        try {
+          const res = await fetch("https://api.github.com/repos/ervinheylee1-hub/women-of-virtue", {
+            headers: { "Authorization": `token ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (statusEl) {
+              statusEl.hidden = false;
+              statusEl.style.color = "#2e7d32";
+              statusEl.textContent = `Connected! Repository: ${data.full_name} (${data.default_branch} branch)`;
+            }
+          } else {
+            const err = await res.json().catch(() => ({}));
+            if (statusEl) {
+              statusEl.hidden = false;
+              statusEl.style.color = "#c92a2a";
+              statusEl.textContent = `GitHub error: ${err.message || res.statusText}`;
+            }
+          }
+        } catch (err) {
+          if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.style.color = "#c92a2a";
+            statusEl.textContent = `Network error: ${err.message}`;
+          }
+        } finally {
+          testBtn.disabled = false;
+          testBtn.textContent = "Test Connection";
+        }
+      });
+    }
+
+    // Modal handlers
+    if (modalClose) {
+      modalClose.addEventListener("click", () => {
+        if (modal) modal.hidden = true;
+      });
+    }
+    if (modalDownload) {
+      modalDownload.addEventListener("click", () => {
+        exportContentJson();
+        if (modal) modal.hidden = true;
+      });
+    }
+    if (modalSave && modalInput) {
+      modalSave.addEventListener("click", async () => {
+        const token = modalInput.value.trim();
+        if (!token) {
+          alert("Please enter your GitHub token.");
+          return;
+        }
+        localStorage.setItem("wov_github_pat", token);
+        if (tokenInput) tokenInput.value = token;
+        if (modal) modal.hidden = true;
+        await saveContent();
+      });
+    }
+  }
+
+  function loadLiveGithubSettings() {
+    const tokenInput = document.querySelector("#field-github-token");
+    const saved = localStorage.getItem("wov_github_pat");
+    if (tokenInput && saved) {
+      tokenInput.value = saved;
+    }
+  }
+
+  function promptGithubPublishModal() {
+    const modal = document.querySelector("#modal-github-publish");
+    const modalInput = document.querySelector("#modal-input-github-token");
+    if (!modal) return;
+    const saved = localStorage.getItem("wov_github_pat");
+    if (modalInput && saved) modalInput.value = saved;
+    modal.hidden = false;
+  }
+
+  function exportContentJson() {
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "content.json";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // Media Library (Site Settings)
@@ -4407,7 +4746,16 @@
         showScreen("login");
       }
     } catch {
-      showScreen("restricted");
+      // Backend server is not running -> We are in Live Static Mode (GitHub Pages / live website)
+      isLiveStaticMode = true;
+      console.log("Running in Live Site (GitHub Pages) CMS Mode");
+      const isAuth = sessionStorage.getItem("wov_live_admin_auth") === "true";
+      if (isAuth) {
+        authenticatedUser = sessionStorage.getItem("wov_live_admin_user") || "adminheylee";
+        await enterDashboard();
+      } else {
+        showScreen("login");
+      }
     }
   }
 

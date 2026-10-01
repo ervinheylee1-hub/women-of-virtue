@@ -246,13 +246,25 @@ details[open] > summary::after { content: "−"; }
 .wov-block h4 {
   line-height: 1.25;
   margin-top: 0;
+  margin-bottom: 0.35em;
   overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .wov-block p,
-.wov-block span {
-  line-height: 1.55;
+.wov-block span,
+.cms-rich-copy {
+  line-height: 1.6;
   overflow-wrap: break-word;
+  word-break: break-word;
+}
+.cms-rich-copy p {
+  margin-top: 0;
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+.cms-rich-copy p:last-child {
+  margin-bottom: 0;
 }
 
 .wov-block-text,
