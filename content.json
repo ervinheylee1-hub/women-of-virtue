@@ -249,10 +249,10 @@
   "layout": {},
   "positionOverrides": {
     "photo": {
-      "y": 0,
-      "width": 468,
-      "height": 566,
-      "x": 0
+      "y": -9,
+      "width": 584,
+      "height": 558,
+      "x": -10
     },
     "pos:home:img:el:0": {
       "y": 0,
