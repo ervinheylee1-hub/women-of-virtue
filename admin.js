@@ -3377,6 +3377,18 @@
     if (!content.linkOverrides) content.linkOverrides = {};
     if (!content.textStyles) content.textStyles = {};
     if (!content.theme) content.theme = {};
+    if (content.theme.headerPink) {
+      const el = document.querySelector("#setting-header-color");
+      if (el) el.value = content.theme.headerPink;
+    }
+    if (content.theme.headingPink) {
+      const el = document.querySelector("#setting-heading-color");
+      if (el) el.value = content.theme.headingPink;
+    }
+    if (content.theme.bodyTextColor) {
+      const el = document.querySelector("#setting-body-color");
+      if (el) el.value = content.theme.bodyTextColor;
+    }
     if (!content.graphics) content.graphics = {};
     if (!content.layout) content.layout = {};
     if (!content.positionOverrides) content.positionOverrides = {};

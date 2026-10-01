@@ -242,6 +242,16 @@ function applyCmsTheme() {
     const imageUrl = cmsImage(name).replace(/["\\]/g, "\\$&");
     document.documentElement.style.setProperty(`--cms-${name}-image`, `url("${imageUrl}")`);
   }
+  const headerEl = document.querySelector(".site-header");
+  if (headerEl) {
+    headerEl.style.setProperty("background-color", colors.headerPink, "important");
+    headerEl.style.setProperty("color", "#303636", "important");
+  }
+  const footerEl = document.querySelector(".site-footer");
+  if (footerEl) {
+    footerEl.style.setProperty("background-color", colors.headerPink, "important");
+    footerEl.style.setProperty("color", "#ffffff", "important");
+  }
   let bodyColorRule = document.querySelector("#cms-body-color-rule");
   if (theme.bodyTextColor) {
     if (!bodyColorRule) {
@@ -407,7 +417,7 @@ async function loadCmsContent() {
   }
   if (!data) {
     try {
-      const response = await fetch("./content.json", { cache: "no-store" });
+      const response = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
       if (response.ok) data = await response.json();
     } catch {}
   }

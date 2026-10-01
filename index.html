@@ -12,13 +12,60 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <link rel="stylesheet" href="styles.css?v=20261001c" />
-    <link rel="stylesheet" href="reference.css?v=20261001c" />
-    <script src="app.js?v=20261001c" defer></script>
+    <style id="wov-critical-theme">
+      :root {
+        --peach: #d4967d !important;
+        --cms-header-pink: #d4967d !important;
+        --cms-heading-pink: #d4967d !important;
+        --cms-body-text-color: #303636 !important;
+      }
+      header.site-header,
+      .site-header,
+      body .site-header,
+      body[data-route] .site-header,
+      [data-cms-key="shared:site-header"] {
+        background: #d4967d !important;
+        background-color: #d4967d !important;
+        color: #303636 !important;
+      }
+      header.site-header .wordmark,
+      header.site-header .site-nav a,
+      header.site-header .social-links a,
+      header.site-header .social-links svg {
+        color: #303636 !important;
+      }
+      footer.site-footer,
+      .site-footer,
+      body .site-footer,
+      body[data-route] .site-footer,
+      [data-cms-key="shared:site-footer"] {
+        background: #d4967d !important;
+        background-color: #d4967d !important;
+        color: #ffffff !important;
+      }
+      footer.site-footer h2,
+      footer.site-footer h4,
+      footer.site-footer p,
+      footer.site-footer a,
+      footer.site-footer .footer-social a,
+      footer.site-footer .footer-partnership h4,
+      footer.site-footer .footer-partnership p {
+        color: #ffffff !important;
+      }
+      footer.site-footer .footer-social svg,
+      footer.site-footer .footer-social svg path,
+      footer.site-footer .footer-social .social-dot {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+      }
+    </style>
+    <link rel="stylesheet" href="styles.css?v=20261001e" />
+    <link rel="stylesheet" href="reference.css?v=20261001e" />
+    <script src="app.js?v=20261001e" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header" id="top" data-cms-key="shared:site-header">
+    <header class="site-header" id="top" data-cms-key="shared:site-header" style="background-color: #d4967d !important; color: #303636 !important;">
       <a class="wordmark" href="#/" aria-label="Women of Virtue home" data-cms-layout-group="site-header" data-cms-layout-key="brand" data-cms-key="shared:header:wordmark">Women of Virtue</a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation" data-cms-layout-group="site-header" data-cms-layout-key="menu" data-cms-key="shared:header:menu-toggle">
         <span></span><span></span>
@@ -34,7 +81,7 @@
       </nav>
     </header>
     <main id="main" tabindex="-1"></main>
-    <footer class="site-footer" data-cms-key="shared:site-footer">
+    <footer class="site-footer" data-cms-key="shared:site-footer" style="background-color: #d4967d !important; color: #ffffff !important;">
       <h2 data-cms-key="shared:footer:title">Women of Virtue</h2>
       <div class="footer-partnership" data-cms-key="shared:footer:partnership">
         <h4 data-cms-key="shared:footer:est">Est. 2026.</h4>
