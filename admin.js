@@ -375,6 +375,15 @@
     saveStatus.classList.toggle("is-saved", !dirty);
     saveStatus.querySelector(".status-text").textContent = dirty ? "Unsaved Changes" : "Saved";
     saveBtn.disabled = !dirty;
+    try {
+      if (dirty) {
+        localStorage.setItem("cms-has-unsaved-draft", "true");
+        localStorage.setItem("cms-live-draft", JSON.stringify(content));
+      } else {
+        localStorage.removeItem("cms-has-unsaved-draft");
+        localStorage.removeItem("cms-live-draft");
+      }
+    } catch {}
   }
 
   function syncDraftStorage() {
@@ -593,9 +602,6 @@
         height: auto !important;
         min-height: fit-content !important;
         overflow-wrap: break-word !important;
-      }
-      .wov-block h1, .wov-block h2, .wov-block h3, .wov-block h4 {
-        line-height: 1.25 !important;
       }
       .wov-block:hover {
         outline: 2px dashed rgba(201, 117, 91, 0.45) !important;
@@ -3530,23 +3536,30 @@
   });
 
   // Load Content
-  async function loadContent() {
-    if (isLiveStaticMode) {
+  async function loadContent(forceLive = false) {
+    let loadedFromLive = false;
+    if (isLiveStaticMode || forceLive) {
       try {
         const resp = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
         if (resp.ok) {
           content = await resp.json();
+          loadedFromLive = true;
         }
       } catch (err) {
         console.warn("Could not fetch content.json:", err);
       }
-      try {
-        const savedDraft = localStorage.getItem("cms-live-draft");
-        if (savedDraft) {
-          const draft = JSON.parse(savedDraft);
-          content = { ...content, ...draft };
-        }
-      } catch {}
+      if (!forceLive) {
+        try {
+          const savedDraft = localStorage.getItem("cms-live-draft");
+          // Only offer or retain draft if it's explicitly marked as dirty/unsaved
+          const hasUnsavedDraft = localStorage.getItem("cms-has-unsaved-draft") === "true";
+          if (savedDraft && hasUnsavedDraft) {
+            const draft = JSON.parse(savedDraft);
+            content = { ...content, ...draft };
+            setDirty(true);
+          }
+        } catch {}
+      }
     } else {
       try {
         content = await api("./api/admin/content");
@@ -4767,6 +4780,22 @@
     }
   });
 
+  document.querySelector("#btn-reset-to-live")?.addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to discard local drafts and reset the editor to match the live site perfectly?")) {
+      return;
+    }
+    try {
+      localStorage.removeItem("cms-has-unsaved-draft");
+      localStorage.removeItem("cms-live-draft");
+      localStorage.removeItem("women-of-virtue-content-v1");
+      setDirty(false);
+      await loadContent(true);
+      alert("Editor successfully reset to match the live published website!");
+    } catch (err) {
+      alert("Failed to reset: " + err.message);
+    }
+  });
+
   // ==========================================
   // Custom Page Creator Modal
   // ==========================================
@@ -4935,7 +4964,17 @@
   }
 
   // Preview load event
-  preview.addEventListener("load", bindPreviewCanvas);
+  preview.addEventListener("load", () => {
+    // Immediately synchronize the authoritative content into iframe preview window
+    if (preview.contentWindow && content && content.blocks) {
+      if (typeof preview.contentWindow.setCmsContent === "function") {
+        preview.contentWindow.setCmsContent(content);
+      } else {
+        preview.contentWindow.postMessage({ type: "WOV_UPDATE_CONTENT", content }, "*");
+      }
+    }
+    bindPreviewCanvas();
+  });
 
   // Initialize
   async function init() {
