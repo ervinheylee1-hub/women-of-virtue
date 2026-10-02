@@ -198,7 +198,8 @@
     "devotionals:summary:what-if-i-don-t-attend-a-church-:0": "What if I don't attend a Church?",
     "lesson:defining-femininity:res:title": "▾Prayer:",
     "devotionals-defining-femininity:p:firm-foundations-2-lessons-january-5-2026:0": "FIRM FOUNDATIONS · 2 LESSONS · ",
-    "devotionals-prayer-life-and-church-community:p:firm-foundations-2-lessons-january-12-2026:0": "FIRM FOUNDATIONS · 2 LESSONS ·"
+    "devotionals-prayer-life-and-church-community:p:firm-foundations-2-lessons-january-12-2026:0": "FIRM FOUNDATIONS · 2 LESSONS ·",
+    "shared:footer:partnership-orgs": "The Anglican Renaissance"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -314,6 +315,10 @@
       "y": 0,
       "width": 564,
       "height": 239
+    },
+    "block:block_hero_1:title1": {
+      "x": 0,
+      "y": 16
     }
   },
   "devotionals": [
@@ -423,6 +428,12 @@
           "pdfUrl": ""
         }
       ]
+    },
+    {
+      "id": "iahcudc",
+      "title": "iahcudc",
+      "description": "ahscaoudchad",
+      "lessons": []
     }
   ]
 }
