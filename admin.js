@@ -3311,10 +3311,12 @@
   function updateGithubStatusBadge(data) {
     const badge = document.querySelector("#github-sync-badge");
     const statusText = document.querySelector("#gh-status-text");
+    const btn = document.querySelector("#btn-github-sync");
     if (!badge || !statusText) return;
 
     badge.hidden = false;
-    badge.classList.remove("is-syncing", "is-synced");
+    badge.classList.remove("is-syncing", "is-synced", "has-pending-sync");
+    if (btn) btn.classList.remove("has-pending-sync");
 
     if (!data) {
       statusText.textContent = "GitHub: Ready";
@@ -3325,6 +3327,11 @@
       badge.classList.add("is-synced");
       statusText.textContent = `GitHub: Pushed (${data.commit || 'main'})`;
       badge.title = data.message || `Changes successfully pushed to GitHub (${data.commit})`;
+    } else if (data.hasUncommitted) {
+      badge.classList.add("has-pending-sync");
+      if (btn) btn.classList.add("has-pending-sync");
+      statusText.textContent = "Sync Pending";
+      badge.title = "Uncommitted or unsynced changes exist. Click Sync to push them to the live site.";
     } else if (data.success && !data.error) {
       badge.classList.add("is-synced");
       statusText.textContent = data.commit ? `GitHub: ${data.commit}` : "GitHub: Up to date";
@@ -3340,6 +3347,26 @@
     }
   }
 
+  function markSyncPending(isPending) {
+    const badge = document.querySelector("#github-sync-badge");
+    const btn = document.querySelector("#btn-github-sync");
+    const statusText = document.querySelector("#gh-status-text");
+    if (!badge || !statusText) return;
+
+    if (isPending) {
+      badge.classList.remove("is-synced");
+      badge.classList.add("has-pending-sync");
+      if (btn) btn.classList.add("has-pending-sync");
+      statusText.textContent = "Sync Pending";
+      badge.title = "You have local saved changes that are not published yet. Click Sync to publish to the live site.";
+      try { localStorage.setItem("cms-sync-pending", "true"); } catch {}
+    } else {
+      badge.classList.remove("has-pending-sync");
+      if (btn) btn.classList.remove("has-pending-sync");
+      try { localStorage.removeItem("cms-sync-pending"); } catch {}
+    }
+  }
+
   async function fetchGithubStatus() {
     try {
       const data = await api("./api/admin/github-status");
@@ -3349,22 +3376,126 @@
     }
   }
 
+  // Live Sync trigger: commits and publishes to GitHub Pages ONLY when explicitly clicked
   async function syncGitHub() {
-    if (isLiveStaticMode) {
+    // If there are unsaved pending edits in inputs, save them locally first
+    if (isDirty) {
       await saveContent();
-      return;
     }
+
     const badge = document.querySelector("#github-sync-badge");
     const btn = document.querySelector("#btn-github-sync");
     const statusText = document.querySelector("#gh-status-text");
-    if (btn) btn.disabled = true;
-    if (badge) badge.classList.add("is-syncing");
-    if (statusText) statusText.textContent = "Pushing to GitHub…";
+    const dot = saveStatus.querySelector(".status-dot");
 
+    if (btn) btn.disabled = true;
+    if (badge) {
+      badge.classList.remove("has-pending-sync");
+      badge.classList.add("is-syncing");
+    }
+    if (btn) btn.classList.remove("has-pending-sync");
+    if (statusText) statusText.textContent = "Pushing to GitHub…";
+    if (saveStatus) saveStatus.querySelector(".status-text").textContent = "Publishing live to GitHub Pages…";
+    if (dot) dot.style.background = "#d4967d";
+
+    if (isLiveStaticMode) {
+      try {
+        const githubToken = localStorage.getItem("wov_github_pat") || sessionStorage.getItem("wov_github_pat");
+        const githubRepo = "ervinheylee1-hub/women-of-virtue";
+        const githubBranch = "main";
+
+        if (!githubToken) {
+          if (btn) btn.disabled = false;
+          if (badge) badge.classList.remove("is-syncing");
+          if (statusText) statusText.textContent = "Token Needed";
+          promptGithubPublishModal();
+          return;
+        }
+
+        // 1. Fetch current file SHA from GitHub Contents API
+        const getRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json?ref=${githubBranch}`, {
+          headers: {
+            "Authorization": `token ${githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+
+        if (!getRes.ok) {
+          const errJson = await getRes.json().catch(() => ({}));
+          throw new Error(errJson.message || `GitHub error (${getRes.status})`);
+        }
+
+        const fileData = await getRes.json();
+        const sha = fileData.sha;
+
+        // 2. Commit updated content.json to GitHub
+        const jsonString = JSON.stringify(content, null, 2);
+        const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+        const putRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${githubToken}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Update site content via Live Visual Editor [Sync]",
+            content: encodedContent,
+            sha: sha,
+            branch: githubBranch
+          })
+        });
+
+        if (!putRes.ok) {
+          const errJson = await putRes.json().catch(() => ({}));
+          throw new Error(errJson.message || `GitHub commit error (${putRes.status})`);
+        }
+
+        const putData = await putRes.json();
+        const commitShort = putData.commit?.sha?.slice(0, 7) || "live";
+
+        // Successfully synced to GitHub
+        markSyncPending(false);
+        try {
+          localStorage.removeItem("cms-has-unsaved-draft");
+          localStorage.removeItem("cms-sync-pending");
+        } catch {}
+
+        if (dot) dot.style.background = "#2e7d32";
+        saveStatus.querySelector(".status-text").textContent = `Published & Synced (${commitShort}) - Live Site Updating!`;
+        if (statusText) statusText.textContent = `GitHub: ${commitShort}`;
+        if (badge) {
+          badge.classList.remove("is-syncing");
+          badge.classList.add("is-synced");
+          badge.title = `Synced commit ${commitShort}. GitHub Pages will rebuild and deploy to women-of-virtue.com.`;
+        }
+
+        alert(`Successfully synced and pushed to GitHub main (${commitShort})!\n\nGitHub Pages is rebuilding and your changes will be live on women-of-virtue.com shortly.`);
+      } catch (err) {
+        alert("Live site sync error: " + err.message + "\n\nTip: You can download content.json from Site Settings -> Backup & Sync.");
+        if (dot) dot.style.background = "#c92a2a";
+        saveStatus.querySelector(".status-text").textContent = "Sync failed";
+        if (statusText) statusText.textContent = "Sync Error";
+      } finally {
+        if (btn) btn.disabled = false;
+        if (badge) badge.classList.remove("is-syncing");
+      }
+      return;
+    }
+
+    // Backend server mode
     try {
       const res = await api("./api/admin/github-sync", { method: "POST", body: {} });
       updateGithubStatusBadge(res);
       if (res.success) {
+        markSyncPending(false);
+        try {
+          localStorage.removeItem("cms-has-unsaved-draft");
+          localStorage.removeItem("cms-sync-pending");
+        } catch {}
+        if (dot) dot.style.background = "#2e7d32";
+        saveStatus.querySelector(".status-text").textContent = `Published & Synced (${res.commit || 'main'})`;
         if (res.pushed) {
           alert(`Successfully committed and pushed to GitHub main (${res.commit})!\nGitHub Pages will automatically rebuild and deploy the live site.`);
         } else {
@@ -3372,9 +3503,13 @@
         }
       } else {
         alert("GitHub Push Issue: " + (res.error || "Unknown error"));
+        if (dot) dot.style.background = "#c92a2a";
+        saveStatus.querySelector(".status-text").textContent = "Sync issue";
       }
     } catch (err) {
       alert("GitHub Sync Error: " + err.message);
+      if (dot) dot.style.background = "#c92a2a";
+      saveStatus.querySelector(".status-text").textContent = "Sync failed";
     } finally {
       if (btn) btn.disabled = false;
       if (badge) badge.classList.remove("is-syncing");
@@ -3383,128 +3518,49 @@
 
   document.querySelector("#btn-github-sync")?.addEventListener("click", syncGitHub);
 
-  // Save & Publish (with automatic GitHub push)
+  // Save changes locally as a draft (does NOT push to live site until Sync is clicked)
   async function saveContent() {
     saveBtn.disabled = true;
-    saveStatus.querySelector(".status-text").textContent = "Saving…";
+    saveStatus.querySelector(".status-text").textContent = "Saving draft…";
     const dot = saveStatus.querySelector(".status-dot");
     if (dot) dot.style.background = "#d4967d";
 
-    const ghBadge = document.querySelector("#github-sync-badge");
-    const ghStatusText = document.querySelector("#gh-status-text");
-
     if (isLiveStaticMode) {
-      if (ghBadge) ghBadge.classList.add("is-syncing");
-      if (ghStatusText) ghStatusText.textContent = "Publishing live…";
-
       try {
-        // 1. Immediately store draft in localStorage and broadcast to preview
+        // Store draft in localStorage and broadcast to preview canvas
         localStorage.setItem("cms-live-draft", JSON.stringify(content));
+        localStorage.setItem("cms-has-unsaved-draft", "true");
         setDirty(false);
         updatePreviewLive();
+        markSyncPending(true);
 
-        // 2. Check if GitHub Personal Access Token is saved
-        const githubToken = localStorage.getItem("wov_github_pat") || sessionStorage.getItem("wov_github_pat");
-        const githubRepo = "ervinheylee1-hub/women-of-virtue";
-        const githubBranch = "main";
-
-        if (githubToken) {
-          saveStatus.querySelector(".status-text").textContent = "Publishing to GitHub & Live Site…";
-
-          // Fetch current file SHA from GitHub Contents API
-          const getRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json?ref=${githubBranch}`, {
-            headers: {
-              "Authorization": `token ${githubToken}`,
-              "Accept": "application/vnd.github.v3+json"
-            }
-          });
-
-          if (!getRes.ok) {
-            const errJson = await getRes.json().catch(() => ({}));
-            throw new Error(errJson.message || `GitHub error (${getRes.status})`);
-          }
-
-          const fileData = await getRes.json();
-          const sha = fileData.sha;
-
-          // Commit updated content.json to GitHub
-          const jsonString = JSON.stringify(content, null, 2);
-          const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
-
-          const putRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json`, {
-            method: "PUT",
-            headers: {
-              "Authorization": `token ${githubToken}`,
-              "Accept": "application/vnd.github.v3+json",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: "Update site content via Live Visual Editor",
-              content: encodedContent,
-              sha: sha,
-              branch: githubBranch
-            })
-          });
-
-          if (!putRes.ok) {
-            const errJson = await putRes.json().catch(() => ({}));
-            throw new Error(errJson.message || `GitHub commit error (${putRes.status})`);
-          }
-
-          const putData = await putRes.json();
-          const commitShort = putData.commit?.sha?.slice(0, 7) || "live";
-          saveStatus.querySelector(".status-text").textContent = `Saved & Published to GitHub (${commitShort}) - Live Site Updating!`;
-          if (dot) dot.style.background = "#2e7d32";
-          if (ghStatusText) ghStatusText.textContent = `GitHub: ${commitShort}`;
-          if (ghBadge) ghBadge.classList.add("is-synced");
-        } else {
-          promptGithubPublishModal();
-          saveStatus.querySelector(".status-text").textContent = "Saved to draft (GitHub token needed to publish live)";
-          if (dot) dot.style.background = "#c9755b";
-        }
+        saveStatus.querySelector(".status-text").textContent = "Draft saved locally · Click Sync to publish";
+        if (dot) dot.style.background = "#d4967d";
       } catch (err) {
-        alert("Live site publish error: " + err.message + "\n\nTip: You can download content.json from Site Settings -> Backup & Sync.");
+        alert("Failed to save draft locally: " + err.message);
         setDirty(true);
         if (dot) dot.style.background = "#c92a2a";
       } finally {
         saveBtn.disabled = false;
-        if (ghBadge) ghBadge.classList.remove("is-syncing");
       }
       return;
     }
 
-    if (ghBadge) ghBadge.classList.add("is-syncing");
-    if (ghStatusText) ghStatusText.textContent = "Syncing GitHub…";
-
+    // Backend server mode
     try {
       const res = await api("./api/admin/content", { method: "PUT", body: content });
       setDirty(false);
       updatePreviewLive();
+      markSyncPending(true);
 
-      if (res && res.github) {
-        updateGithubStatusBadge(res.github);
-        if (res.github.pushed) {
-          saveStatus.querySelector(".status-text").textContent = `Saved & Pushed to GitHub (${res.github.commit || 'main'})`;
-          if (dot) dot.style.background = "#2e7d32";
-        } else if (res.github.success) {
-          saveStatus.querySelector(".status-text").textContent = "Saved · GitHub: Up to date";
-          if (dot) dot.style.background = "#2e7d32";
-        } else {
-          saveStatus.querySelector(".status-text").textContent = "Saved locally (GitHub push pending)";
-          if (dot) dot.style.background = "#c9755b";
-          console.warn("GitHub sync issue:", res.github);
-        }
-      } else {
-        saveStatus.querySelector(".status-text").textContent = "All changes saved";
-        if (dot) dot.style.background = "#2e7d32";
-      }
+      saveStatus.querySelector(".status-text").textContent = "Draft saved on server · Click Sync to publish";
+      if (dot) dot.style.background = "#d4967d";
     } catch (err) {
       alert("Failed to save changes: " + err.message);
       setDirty(true);
       if (dot) dot.style.background = "#c92a2a";
     } finally {
       saveBtn.disabled = false;
-      if (ghBadge) ghBadge.classList.remove("is-syncing");
     }
   }
 
@@ -3551,14 +3607,23 @@
       if (!forceLive) {
         try {
           const savedDraft = localStorage.getItem("cms-live-draft");
-          // Only offer or retain draft if it's explicitly marked as dirty/unsaved
           const hasUnsavedDraft = localStorage.getItem("cms-has-unsaved-draft") === "true";
-          if (savedDraft && hasUnsavedDraft) {
+          const hasPendingSync = localStorage.getItem("cms-sync-pending") === "true";
+          if (savedDraft && (hasUnsavedDraft || hasPendingSync)) {
             const draft = JSON.parse(savedDraft);
             content = { ...content, ...draft };
-            setDirty(true);
+            if (hasUnsavedDraft) setDirty(true);
+            if (hasPendingSync) {
+              markSyncPending(true);
+              const saveStatusEl = saveStatus?.querySelector(".status-text");
+              if (saveStatusEl) saveStatusEl.textContent = "Draft loaded · Click Sync to publish";
+            }
+          } else {
+            markSyncPending(false);
           }
         } catch {}
+      } else {
+        markSyncPending(false);
       }
     } else {
       try {
@@ -3762,7 +3827,12 @@
     if (!isLiveStaticMode) {
       fetchGithubStatus();
     } else {
-      updateGithubStatusBadge({ branch: "main", success: true, message: "Live Site (GitHub Pages)" });
+      const hasPendingSync = localStorage.getItem("cms-sync-pending") === "true";
+      if (hasPendingSync) {
+        markSyncPending(true);
+      } else {
+        updateGithubStatusBadge({ branch: "main", success: true, message: "Live Site (GitHub Pages)" });
+      }
     }
     loadMediaLibrary();
     loadInquiries();
@@ -3876,7 +3946,7 @@
         localStorage.setItem("wov_github_pat", token);
         if (tokenInput) tokenInput.value = token;
         if (modal) modal.hidden = true;
-        await saveContent();
+        await syncGitHub();
       });
     }
   }
@@ -4787,8 +4857,10 @@
     try {
       localStorage.removeItem("cms-has-unsaved-draft");
       localStorage.removeItem("cms-live-draft");
+      localStorage.removeItem("cms-sync-pending");
       localStorage.removeItem("women-of-virtue-content-v1");
       setDirty(false);
+      markSyncPending(false);
       await loadContent(true);
       alert("Editor successfully reset to match the live published website!");
     } catch (err) {

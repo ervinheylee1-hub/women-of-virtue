@@ -633,8 +633,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       saveContentStore(updated);
-      const gitResult = invokeGitSync('Update site content via Admin CMS [automated push]');
-      return sendJson(res, { saved: true, github: gitResult });
+      return sendJson(res, { saved: true, syncPending: true });
     }
 
     // 7b. POST /api/admin/github-sync - Manual git sync

@@ -432,7 +432,7 @@ async function loadCmsContent() {
       if (response.ok) data = await response.json();
     } catch {}
   }
-  if (!data) {
+  if (!data && isCmsPreview) {
     try {
       const stored = localStorage.getItem(cmsStorageKey);
       if (stored) data = JSON.parse(stored);

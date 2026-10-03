@@ -194,6 +194,11 @@ button, input, select, textarea {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.github-sync-indicator.has-pending-sync {
+  border-color: rgba(201, 117, 91, 0.55);
+  background: #fff8f5;
+  color: var(--accent-color);
+}
 .gh-sync-quick-btn {
   background: var(--accent-light);
   border: 1px solid rgba(201, 117, 91, 0.25);
@@ -210,6 +215,21 @@ button, input, select, textarea {
 .gh-sync-quick-btn:hover {
   background: var(--accent-color);
   color: #fff;
+}
+.gh-sync-quick-btn.has-pending-sync {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(201, 117, 91, 0.25);
+  animation: pulse-sync 2.5s infinite ease-in-out;
+}
+.gh-sync-quick-btn.has-pending-sync:hover {
+  background: #b05c43;
+  color: #ffffff;
+}
+@keyframes pulse-sync {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(201, 117, 91, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(201, 117, 91, 0.45); }
 }
 .gh-sync-quick-btn:disabled {
   opacity: 0.4;
