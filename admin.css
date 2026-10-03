@@ -1742,3 +1742,176 @@ body.is-preview-mode .canvas-device-wrapper.is-desktop {
 .dev-lesson-action-btn.is-delete:hover {
   color: var(--danger-color);
 }
+
+/* ==========================================================================
+   Stock Photos Modal & Card Styling
+   ========================================================================== */
+.stock-search-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.stock-chip {
+  background: #f4f1ea;
+  border: 1px solid var(--panel-border);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.stock-chip:hover {
+  background: rgba(201, 117, 91, 0.15);
+  border-color: rgba(201, 117, 91, 0.35);
+  color: var(--accent-color);
+}
+.stock-chip.is-active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.stock-photo-card {
+  position: relative;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0ece3;
+  border: 1px solid rgba(37, 43, 41, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stock-photo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+.stock-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.stock-photo-card:hover img {
+  transform: scale(1.05);
+}
+.stock-photo-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8px 10px;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+.stock-photo-card:hover .stock-photo-card-overlay {
+  opacity: 1;
+}
+.stock-photo-title {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px 0;
+}
+.stock-photo-author {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 10px;
+  margin: 0 0 6px 0;
+}
+.stock-photo-actions {
+  display: flex;
+  gap: 4px;
+}
+.stock-btn-insert {
+  flex: 1;
+  background: var(--accent-color);
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.stock-btn-insert:hover {
+  background: #b05c43;
+}
+.stock-btn-copy {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.stock-btn-copy:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================================================
+   Toast Notification System
+   ========================================================================== */
+.admin-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.admin-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #26352f;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: toast-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.admin-toast.is-success {
+  border-left: 4px solid #3b7e56;
+}
+.admin-toast.is-info {
+  border-left: 4px solid var(--accent-color);
+}
+.admin-toast.is-warning {
+  border-left: 4px solid #e67e22;
+}
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.admin-toast.is-hiding {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}

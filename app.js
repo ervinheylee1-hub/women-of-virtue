@@ -918,6 +918,123 @@ function renderBlock(block) {
         </div>
       </div>`;
     }
+    case "verseCard":
+    case "verse-card": {
+      const theme = content.theme || "peach";
+      const verse = content.verse || "She is clothed with strength and dignity; she can laugh at the days to come.";
+      const reference = content.reference || "Proverbs 31:25";
+      const version = content.version || "ESV";
+      const reflection = content.reflection || "";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="verseCard" ${styleAttr} style="padding: 24px 0;">
+        <div class="wov-verse-card wov-verse-theme-${escapeCmsText(theme)}">
+          <div class="wov-verse-quote-mark">“</div>
+          <blockquote class="wov-verse-text" data-cms-key="block:${id}:verse">${escapeCmsText(verse)}</blockquote>
+          <div class="wov-verse-meta">
+            <cite class="wov-verse-ref" data-cms-key="block:${id}:reference">— ${escapeCmsText(reference)}</cite>
+            ${version ? `<span class="wov-verse-badge" data-cms-key="block:${id}:version">${escapeCmsText(version)}</span>` : ""}
+          </div>
+          ${reflection ? `<p class="wov-verse-reflection" data-cms-key="block:${id}:reflection">${escapeCmsText(reflection)}</p>` : ""}
+        </div>
+      </div>`;
+    }
+    case "audio": {
+      const title = content.title || "Weekly Devotional Reflection";
+      const speaker = content.speaker || "Women of Virtue Fellowship";
+      const date = content.date || "Devotional Audio";
+      const desc = content.description || "";
+      const url = content.url || "";
+      const art = content.artwork || "";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="audio" ${styleAttr} style="padding: 20px 0;">
+        <div class="wov-audio-card">
+          ${art ? `<img class="wov-audio-art" src="${escapeCmsText(art)}" alt="${escapeCmsText(title)}" loading="lazy" data-cms-key="block:${id}:artwork" />` : ""}
+          <div class="wov-audio-details">
+            ${date ? `<span class="wov-audio-pill" data-cms-key="block:${id}:date">${escapeCmsText(date)}</span>` : ""}
+            <h3 class="wov-audio-title" data-cms-key="block:${id}:title">${escapeCmsText(title)}</h3>
+            ${speaker ? `<p class="wov-audio-speaker" data-cms-key="block:${id}:speaker">🎙 ${escapeCmsText(speaker)}</p>` : ""}
+            ${desc ? `<p class="wov-audio-desc" data-cms-key="block:${id}:desc">${escapeCmsText(desc)}</p>` : ""}
+            ${url ? `<audio class="wov-audio-player" controls preload="metadata" src="${escapeCmsText(url)}"></audio>` : `<p style="font-size:12px; color:var(--muted); font-style:italic;">Add an audio URL (.mp3 or podcast stream) in Inspector.</p>`}
+          </div>
+        </div>
+      </div>`;
+    }
+    case "newsletter": {
+      const title = content.title || "Join Our Weekly Fellowship & Devotionals";
+      const subtitle = content.subtitle || "Receive weekly scripture reflections, community updates, and prayer digests straight to your inbox.";
+      const btnText = content.buttonText || "Subscribe";
+      const ph = content.placeholder || "Enter your email address…";
+      return `<section class="wov-block page-section wov-block-newsletter" data-wov-block-id="${id}" data-wov-block-type="newsletter" ${styleAttr}>
+        <div class="wov-newsletter-inner">
+          <div class="wov-newsletter-copy">
+            <span class="eyebrow" style="color:var(--peach, #d4967d);">Stay Connected</span>
+            <h2 data-cms-key="block:${id}:title">${escapeCmsText(title)}</h2>
+            <p data-cms-key="block:${id}:subtitle">${escapeCmsText(subtitle)}</p>
+          </div>
+          <form class="wov-newsletter-form" onsubmit="event.preventDefault(); const s=this.querySelector('.form-status'); if(s) s.textContent='Thank you for subscribing! Welcome to Women of Virtue.'; this.reset();">
+            <div class="wov-newsletter-input-group">
+              <input type="email" placeholder="${escapeCmsText(ph)}" required />
+              <button class="button" type="submit" data-cms-key="block:${id}:button">${escapeCmsText(btnText)}</button>
+            </div>
+            <p class="form-status" aria-live="polite" style="font-size:13px; color:#fff; margin-top:10px; font-weight:500;"></p>
+          </form>
+        </div>
+      </section>`;
+    }
+    case "testimonial": {
+      const quote = content.quote || "Women of Virtue has brought so much peace and biblical grounding to my life.";
+      const author = content.author || "Faithful Sister";
+      const role = content.role || "Community Member";
+      const avatar = content.avatar || "";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="testimonial" ${styleAttr} style="padding: 24px 0;">
+        <div class="wov-testimonial-card">
+          <div class="wov-testimonial-quote-icon">“</div>
+          <p class="wov-testimonial-quote" data-cms-key="block:${id}:quote">${escapeCmsText(quote)}</p>
+          <div class="wov-testimonial-author">
+            ${avatar ? `<img class="wov-testimonial-avatar" src="${escapeCmsText(avatar)}" alt="${escapeCmsText(author)}" loading="lazy" data-cms-key="block:${id}:avatar" />` : ""}
+            <div>
+              <strong class="wov-testimonial-name" data-cms-key="block:${id}:author">${escapeCmsText(author)}</strong>
+              ${role ? `<span class="wov-testimonial-role" data-cms-key="block:${id}:role">${escapeCmsText(role)}</span>` : ""}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+    case "splitFeature":
+    case "split-feature": {
+      const eyebrow = content.eyebrow || "";
+      const title = content.title || "Rooted in Scripture, Walking in Grace";
+      const desc = content.description || "Discover fellowship and encouragement through devotionals, prayer calls, and timeless biblical wisdom.";
+      const btnText = content.buttonText || "Learn More";
+      const btnLink = content.buttonLink || "#/about";
+      const imgUrl = content.imageUrl || "";
+      const imgAlt = content.imageAlt || "";
+      const isReversed = content.imagePosition === "right";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="splitFeature" ${styleAttr} style="padding: 40px 0;">
+        <div class="wov-split-feature ${isReversed ? 'is-reversed' : ''}">
+          <div class="wov-split-image-wrap">
+            <img src="${escapeCmsText(imgUrl)}" alt="${escapeCmsText(imgAlt)}" loading="lazy" data-cms-key="block:${id}:image" />
+          </div>
+          <div class="wov-split-content">
+            ${eyebrow ? `<p class="eyebrow" data-cms-key="block:${id}:eyebrow">${escapeCmsText(eyebrow)}</p>` : ""}
+            <h2 data-cms-key="block:${id}:title">${escapeCmsText(title)}</h2>
+            <p class="wov-split-desc" data-cms-key="block:${id}:description">${escapeCmsText(desc)}</p>
+            ${btnText ? `<a class="button" href="${escapeCmsText(btnLink)}" data-cms-key="block:${id}:button">${escapeCmsText(btnText)}</a>` : ""}
+          </div>
+        </div>
+      </div>`;
+    }
+    case "announcement": {
+      const badge = content.badge || "ANNOUNCEMENT";
+      const text = content.text || "Welcome to the Women of Virtue movement.";
+      const linkText = content.linkText || "";
+      const linkUrl = content.linkUrl || "#/";
+      return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="announcement" ${styleAttr} style="padding: 12px 0;">
+        <div class="wov-announcement-banner">
+          ${badge ? `<span class="wov-announcement-badge" data-cms-key="block:${id}:badge">${escapeCmsText(badge)}</span>` : ""}
+          <span class="wov-announcement-text" data-cms-key="block:${id}:text">${escapeCmsText(text)}</span>
+          ${linkText ? `<a class="wov-announcement-link" href="${escapeCmsText(linkUrl)}" data-cms-key="block:${id}:link">${escapeCmsText(linkText)}</a>` : ""}
+        </div>
+      </div>`;
+    }
     default:
       return "";
   }

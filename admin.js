@@ -79,6 +79,275 @@
     { name: "Contact Portrait", url: "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790619981837-7AS9A066HHXXG5JZJWRV/unsplash-image-lUjOwG-o2XM.jpg?format=1500w" }
   ];
 
+  // Toast Notification System
+  function showToast(message, type = "info") {
+    const container = document.querySelector("#admin-toast-container");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = `admin-toast is-${type}`;
+    const icon = type === "success" ? "✓" : (type === "warning" ? "⚠" : "ℹ");
+    toast.innerHTML = `<span style="font-weight:700;">${icon}</span> <span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add("is-hiding");
+      setTimeout(() => toast.remove(), 250);
+    }, 2800);
+  }
+
+  // Curated Stock Photo Library (High-Resolution Unsplash Christian & Lifestyle Photography)
+  const CURATED_STOCK_PHOTOS = [
+    // Bibles & Scripture
+    { title: "Open Bible & Morning Light", category: "bible", author: "Aaron Burden", url: "https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Leather Bible with Ribbon Marker", category: "bible", author: "Rod Long", url: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Scripture Study & Warm Coffee", category: "bible", author: "Kelly Sikkema", url: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Pages of the Word", category: "bible", author: "Ben White", url: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Vintage Hymnal & Scripture", category: "bible", author: "Rachel Strong", url: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Morning Devotional & Journal", category: "bible", author: "Debby Hudson", url: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80" },
+    
+    // Prayer & Worship
+    { title: "Hands Folded in Prayer", category: "prayer", author: "Olivia Snow", url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Peaceful Church Sanctuary Light", category: "prayer", author: "Josh Applegate", url: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Warm Candlelight & Faith", category: "prayer", author: "Karl Fredrickson", url: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Cross Against Morning Sky", category: "prayer", author: "Mads Schmidt Rasmussen", url: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Quiet Sanctuary Altar", category: "prayer", author: "Grant Whitty", url: "https://images.unsplash.com/photo-1548625361-125032b4b218?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Communion Elements & Bread", category: "prayer", author: "James Coleman", url: "https://images.unsplash.com/photo-1516575334481-f85287c2c82d?auto=format&fit=crop&w=1200&q=80" },
+
+    // Women & Fellowship
+    { title: "Women in Christian Fellowship", category: "women", author: "Priscilla Du Preez", url: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Sisterhood & Gentle Conversation", category: "women", author: "Alexis Brown", url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Women Walking in Grace & Sunshine", category: "women", author: "Eye for Ebony", url: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Warm Brunch Table & Conversation", category: "women", author: "Ali Inay", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Mother & Daughter in Field", category: "women", author: "Simon Rae", url: "https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Quiet Demeanor & Modesty", category: "women", author: "Tamara Bellis", url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80" },
+
+    // Nature & Creation
+    { title: "Golden Sunrise over Mountain Peaks", category: "nature", author: "Kalab Teshale", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Gentle Morning Fog & Pines", category: "nature", author: "Luca Bravo", url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Wildflowers in Summer Meadow", category: "nature", author: "Daiga Ellaby", url: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Peaceful Ocean Shore at Dawn", category: "nature", author: "Shifaaz shamheed", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Golden Wheat Field at Harvest", category: "nature", author: "Pekka Rautiainen", url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Calm Lake Reflection at Sunset", category: "nature", author: "Bailey Zindel", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80" },
+
+    // Quiet Time & Reflection
+    { title: "Morning Tea & Open Notebook", category: "quiet", author: "Hope House Press", url: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Cozy Study Desk with Flowers", category: "quiet", author: "Joanna Kosinska", url: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Window Light & Warm Quilt", category: "quiet", author: "Alisa Anton", url: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=80" },
+    { title: "Handwritten Scripture Journal", category: "quiet", author: "Hannah Olinger", url: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80" }
+  ];
+
+  const STOCK_CATEGORIES = [
+    { id: "all", name: "All Photos" },
+    { id: "bible", name: "📖 Bible & Study" },
+    { id: "prayer", name: "✝ Prayer & Worship" },
+    { id: "women", name: "👭 Fellowship" },
+    { id: "nature", name: "🌿 Nature" },
+    { id: "quiet", name: "☕ Reflection" }
+  ];
+
+  let activeStockPickerCallback = null;
+  let activeStockCategory = "all";
+  let stockSearchDebounceTimer = null;
+
+  function openStockImagePicker(onSelect) {
+    activeStockPickerCallback = onSelect;
+    const modal = document.querySelector("#modal-stock-search");
+    if (!modal) return;
+    modal.hidden = false;
+    activeStockCategory = "all";
+    renderStockCategoryChips();
+    const input = document.querySelector("#stock-search-input");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+    renderStockGrid("");
+  }
+
+  function closeStockImagePicker() {
+    const modal = document.querySelector("#modal-stock-search");
+    if (modal) modal.hidden = true;
+    activeStockPickerCallback = null;
+  }
+
+  function selectStockPhoto(url, title = "Stock Photo") {
+    if (typeof activeStockPickerCallback === "function") {
+      activeStockPickerCallback(url, title);
+    } else {
+      navigator.clipboard?.writeText(url);
+      showToast("Photo URL copied to clipboard!", "info");
+    }
+    closeStockImagePicker();
+  }
+
+  function renderStockCategoryChips() {
+    const chipsWrap = document.querySelector("#stock-category-chips");
+    if (!chipsWrap) return;
+    chipsWrap.innerHTML = STOCK_CATEGORIES.map(cat => `
+      <button type="button" class="stock-chip ${cat.id === activeStockCategory ? 'is-active' : ''}" data-cat-id="${cat.id}">
+        ${cat.name}
+      </button>
+    `).join("");
+
+    chipsWrap.querySelectorAll(".stock-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeStockCategory = btn.dataset.catId;
+        renderStockCategoryChips();
+        const input = document.querySelector("#stock-search-input");
+        renderStockGrid(input ? input.value : "");
+      });
+    });
+  }
+
+  async function renderStockGrid(query = "") {
+    const grid = document.querySelector("#stock-results-grid");
+    const status = document.querySelector("#stock-search-status");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const q = query.toLowerCase().trim();
+    let localMatches = CURATED_STOCK_PHOTOS;
+
+    if (activeStockCategory !== "all") {
+      localMatches = localMatches.filter(p => p.category === activeStockCategory);
+    }
+    if (q) {
+      localMatches = localMatches.filter(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.author.toLowerCase().includes(q));
+    }
+
+    if (status) {
+      status.textContent = `Showing ${localMatches.length} curated photo(s)${q ? ` for "${query}"` : ""}`;
+    }
+
+    localMatches.forEach(photo => {
+      const card = createStockCard(photo);
+      grid.appendChild(card);
+    });
+
+    // If query provided, asynchronously query Openverse public stock images
+    if (q) {
+      if (status) status.textContent = `Searching free stock library for "${query}"…`;
+      try {
+        const res = await fetch(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&page_size=16`, {
+          headers: { "Accept": "application/json" }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const results = data.results || [];
+          if (status) {
+            status.textContent = `Found ${localMatches.length + results.length} photos for "${query}"`;
+          }
+          results.forEach(item => {
+            const photo = {
+              title: item.title || "Free Stock Photo",
+              author: item.creator || "Openverse",
+              url: item.url || item.thumbnail,
+              thumb: item.thumbnail || item.url
+            };
+            const card = createStockCard(photo);
+            grid.appendChild(card);
+          });
+        }
+      } catch (err) {
+        console.warn("Live stock search fallback:", err);
+      }
+    }
+  }
+
+  function createStockCard(photo) {
+    const card = document.createElement("div");
+    card.className = "stock-photo-card";
+    const thumbUrl = photo.thumb || photo.url;
+    card.innerHTML = `
+      <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(photo.title)}" loading="lazy" />
+      <div class="stock-photo-card-overlay">
+        <p class="stock-photo-title" title="${escapeHtml(photo.title)}">${escapeHtml(photo.title)}</p>
+        <p class="stock-photo-author">📷 ${escapeHtml(photo.author)}</p>
+        <div class="stock-photo-actions">
+          <button type="button" class="stock-btn-insert">✓ Insert</button>
+          <button type="button" class="stock-btn-copy" title="Copy URL">Copy</button>
+        </div>
+      </div>
+    `;
+    card.querySelector(".stock-btn-insert").addEventListener("click", e => {
+      e.stopPropagation();
+      selectStockPhoto(photo.url, photo.title);
+    });
+    card.querySelector(".stock-btn-copy").addEventListener("click", e => {
+      e.stopPropagation();
+      navigator.clipboard?.writeText(photo.url);
+      showToast("Photo URL copied to clipboard!", "info");
+    });
+    card.addEventListener("click", () => {
+      selectStockPhoto(photo.url, photo.title);
+    });
+    return card;
+  }
+
+  function setupStockPhotoSearch() {
+    const modal = document.querySelector("#modal-stock-search");
+    const closeBtn = document.querySelector("#btn-close-stock-modal");
+    const searchInput = document.querySelector("#stock-search-input");
+    const searchBtn = document.querySelector("#btn-run-stock-search");
+    const quickBtn = document.querySelector("#btn-quick-stock-search");
+    const browseMediaBtn = document.querySelector("#btn-browse-stock-library");
+
+    if (closeBtn) closeBtn.addEventListener("click", closeStockImagePicker);
+    if (modal) {
+      modal.addEventListener("click", e => {
+        if (e.target === modal) closeStockImagePicker();
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", e => {
+        clearTimeout(stockSearchDebounceTimer);
+        stockSearchDebounceTimer = setTimeout(() => {
+          renderStockGrid(e.target.value);
+        }, 300);
+      });
+      searchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          clearTimeout(stockSearchDebounceTimer);
+          renderStockGrid(searchInput.value);
+        }
+      });
+    }
+
+    if (searchBtn && searchInput) {
+      searchBtn.addEventListener("click", () => renderStockGrid(searchInput.value));
+    }
+
+    const defaultHandler = (url, title) => {
+      if (selectedElement && selectedElement.tagName && selectedElement.tagName.toLowerCase() === "img") {
+        selectedElement.src = url;
+        const block = findBlock(selectedBlockId);
+        if (block && block.content) {
+          block.content.src = url;
+        }
+        pushHistory();
+        setDirty(true);
+        updatePreviewLive();
+        showToast(`Image updated with "${title}"!`, "success");
+      } else {
+        navigator.clipboard?.writeText(url);
+        showToast(`Copied photo URL to clipboard! Paste into any image block or field.`, "info");
+      }
+    };
+
+    if (quickBtn) {
+      quickBtn.addEventListener("click", () => {
+        openStockImagePicker(defaultHandler);
+      });
+    }
+    if (browseMediaBtn) {
+      browseMediaBtn.addEventListener("click", () => {
+        openStockImagePicker(defaultHandler);
+      });
+    }
+  }
+
+
   // Widget Factory
   const WIDGET_DEFAULTS = {
     heading: {
@@ -234,6 +503,73 @@
         email: "heylee@absolutionuecna.org"
       },
       style: { paddingTop: "30px", paddingBottom: "30px" }
+    },
+    verseCard: {
+      type: "verseCard",
+      content: {
+        verse: "She is clothed with strength and dignity; she can laugh at the days to come.",
+        reference: "Proverbs 31:25",
+        version: "ESV",
+        reflection: "Take courage today knowing your identity and strength rest in Christ alone.",
+        theme: "peach"
+      },
+      style: { paddingTop: "24px", paddingBottom: "24px" }
+    },
+    audio: {
+      type: "audio",
+      content: {
+        title: "Weekly Devotional: Walking in Quiet Dignity",
+        speaker: "Women of Virtue Fellowship",
+        date: "Weekly Reflection",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        artwork: PRESET_IMAGES[1].url,
+        description: "Listen to this week's 10-minute scripture meditation and encouragement."
+      },
+      style: { paddingTop: "20px", paddingBottom: "20px" }
+    },
+    newsletter: {
+      type: "newsletter",
+      content: {
+        title: "Join Our Weekly Fellowship & Devotionals",
+        subtitle: "Receive weekly scripture reflections, community updates, and prayer digests straight to your inbox.",
+        buttonText: "Subscribe",
+        placeholder: "Enter your email address…"
+      },
+      style: { paddingTop: "40px", paddingBottom: "40px" }
+    },
+    testimonial: {
+      type: "testimonial",
+      content: {
+        quote: "Women of Virtue has brought so much peace and biblical grounding to my life. It is a true sisterhood in Christ.",
+        author: "Sarah M.",
+        role: "Community Member · Texas",
+        avatar: PRESET_IMAGES[7].url
+      },
+      style: { paddingTop: "30px", paddingBottom: "30px" }
+    },
+    splitFeature: {
+      type: "splitFeature",
+      content: {
+        eyebrow: "Our Calling",
+        title: "Rooted in Scripture, Walking in Grace",
+        description: "We are committed to helping women of every season discover the peace and beauty of biblical femininity through devotionals, prayer, and discipleship.",
+        buttonText: "Read Our Story",
+        buttonLink: "#/about",
+        imageUrl: PRESET_IMAGES[6].url,
+        imageAlt: "Women of Virtue Fellowship",
+        imagePosition: "left"
+      },
+      style: { paddingTop: "50px", paddingBottom: "50px" }
+    },
+    announcement: {
+      type: "announcement",
+      content: {
+        badge: "NEW DEVOTIONAL",
+        text: "Join us for our upcoming study series starting this month. Open to all women!",
+        linkText: "Learn More →",
+        linkUrl: "#/devotionals"
+      },
+      style: { paddingTop: "12px", paddingBottom: "12px" }
     }
   };
 
@@ -2192,7 +2528,22 @@
         </div>
       `;
 
-      dynamicContentFields.append(dropzone, rowUrl, presetsWrap, rowAlt, rowCap);
+      // Search Stock Photos Button
+      const btnStockSearch = document.createElement("button");
+      btnStockSearch.type = "button";
+      btnStockSearch.className = "small-primary-btn";
+      btnStockSearch.style.cssText = "width:100%; margin:8px 0; display:flex; align-items:center; justify-content:center; gap:6px; background:var(--forest); color:#fff; padding:8px 12px; cursor:pointer;";
+      btnStockSearch.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>🔍 Search Free Stock Photos (Unsplash)</span>`;
+      btnStockSearch.addEventListener("click", () => {
+        openStockImagePicker((url, title) => {
+          applyImgUrl(url);
+          if (el) el.alt = title;
+          rowAlt.querySelector("input").value = title;
+          showToast("Stock photo applied to image!", "success");
+        });
+      });
+
+      dynamicContentFields.append(dropzone, btnStockSearch, rowUrl, presetsWrap, rowAlt, rowCap);
 
       const applyImgUrl = url => {
         rowUrl.querySelector("input").value = url;
@@ -2344,7 +2695,20 @@
         }
       });
 
-      dynamicContentFields.append(rowEye, rowT1, rowT2, rowDesc, rowBtn, rowLink, bgDropzone, rowBg);
+      // Hero Stock Photos Search
+      const heroStockBtn = document.createElement("button");
+      heroStockBtn.type = "button";
+      heroStockBtn.className = "small-primary-btn";
+      heroStockBtn.style.cssText = "width:100%; margin:8px 0; display:flex; align-items:center; justify-content:center; gap:6px; background:var(--forest); color:#fff; padding:8px 12px; cursor:pointer;";
+      heroStockBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>🔍 Browse Stock Photos for Hero Background</span>`;
+      heroStockBtn.addEventListener("click", () => {
+        openStockImagePicker((url, title) => {
+          applyHeroBg(url);
+          showToast(`Applied "${title}" to Hero Background!`, "success");
+        });
+      });
+
+      dynamicContentFields.append(rowEye, rowT1, rowT2, rowDesc, rowBtn, rowLink, bgDropzone, heroStockBtn, rowBg);
 
       rowEye.querySelector("input").addEventListener("input", e => { c.eyebrow = e.target.value; updateBlockLive(block); });
       rowT1.querySelector("input").addEventListener("input", e => { c.title1 = e.target.value; updateBlockLive(block); });
@@ -2545,9 +2909,14 @@
               <input type="text" class="gallery-img-alt" data-img-idx="${idx}" value="${escapeHtml(img.alt || '')}" placeholder="Alt description" style="width:100%; box-sizing:border-box;" />
             </div>
           `).join("")}
-          <button type="button" class="action-btn" id="btn-add-gallery-img" style="margin-top:4px; padding:6px 12px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer;">
-            + Add Image to Gallery
-          </button>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button type="button" class="action-btn" id="btn-add-gallery-img" style="flex:1; padding:7px 10px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer;">
+              + Add Image
+            </button>
+            <button type="button" class="action-btn" id="btn-add-gallery-stock" style="flex:1; padding:7px 10px; font-size:11px; background:rgba(201,117,91,0.15); color:var(--accent-color); border:1px dashed var(--accent-color); border-radius:4px; cursor:pointer;">
+              🔍 Add Stock Photo
+            </button>
+          </div>
         </div>
       `;
 
@@ -2599,6 +2968,15 @@
         populateInspectorContent(el, block);
       });
 
+      imagesWrap.querySelector("#btn-add-gallery-stock")?.addEventListener("click", () => {
+        openStockImagePicker((url, title) => {
+          c.images.push({ url, alt: title || "Gallery photo" });
+          updateBlockLive(block);
+          populateInspectorContent(el, block);
+          showToast("Stock photo added to gallery!", "success");
+        });
+      });
+
       return;
     }
 
@@ -2616,6 +2994,159 @@
       rowYt.querySelector("input").addEventListener("input", e => { c.youtube = e.target.value; updateBlockLive(block); });
       rowSp.querySelector("input").addEventListener("input", e => { c.spotify = e.target.value; updateBlockLive(block); });
       rowEmail.querySelector("input").addEventListener("input", e => { c.email = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 17. Scripture Verse Card
+    if (block?.type === "verseCard" || block?.type === "verse-card") {
+      const c = block.content || {};
+      const rowVerse = createField("Scripture Text", `<textarea id="field-verse-text" rows="3">${escapeHtml(c.verse || '')}</textarea>`);
+      const rowRef = createField("Bible Reference", `<input type="text" id="field-verse-ref" value="${escapeHtml(c.reference || '')}" placeholder="e.g. Proverbs 31:25" />`);
+      const rowVer = createField("Translation Badge", `<input type="text" id="field-verse-ver" value="${escapeHtml(c.version || '')}" placeholder="e.g. ESV, KJV, NIV" />`);
+      const rowRefl = createField("Reflection / Takeaway", `<textarea id="field-verse-refl" rows="2" placeholder="Optional reflection note…">${escapeHtml(c.reflection || '')}</textarea>`);
+      const rowTheme = createField("Color Theme", `
+        <select id="field-verse-theme">
+          <option value="peach" ${c.theme === "peach" ? "selected" : ""}>Soft Peach / Rose (Light)</option>
+          <option value="forest" ${c.theme === "forest" ? "selected" : ""}>Forest Deep (Dark Green)</option>
+          <option value="warm" ${c.theme === "warm" ? "selected" : ""}>Warm Parchment</option>
+          <option value="dark" ${c.theme === "dark" ? "selected" : ""}>Midnight Charcoal</option>
+        </select>
+      `);
+      dynamicContentFields.append(rowVerse, rowRef, rowVer, rowRefl, rowTheme);
+      rowVerse.querySelector("textarea").addEventListener("input", e => { c.verse = e.target.value; updateBlockLive(block); });
+      rowRef.querySelector("input").addEventListener("input", e => { c.reference = e.target.value; updateBlockLive(block); });
+      rowVer.querySelector("input").addEventListener("input", e => { c.version = e.target.value; updateBlockLive(block); });
+      rowRefl.querySelector("textarea").addEventListener("input", e => { c.reflection = e.target.value; updateBlockLive(block); });
+      rowTheme.querySelector("select").addEventListener("change", e => { c.theme = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 18. Devotional Audio Player
+    if (block?.type === "audio") {
+      const c = block.content || {};
+      const rowTitle = createField("Reflection Title", `<input type="text" id="field-audio-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowSpeaker = createField("Speaker / Author", `<input type="text" id="field-audio-speaker" value="${escapeHtml(c.speaker || '')}" />`);
+      const rowDate = createField("Category / Date Pill", `<input type="text" id="field-audio-date" value="${escapeHtml(c.date || '')}" />`);
+      const rowDesc = createField("Summary Description", `<textarea id="field-audio-desc" rows="2">${escapeHtml(c.description || '')}</textarea>`);
+      const rowUrl = createField("Audio File URL (.mp3 or podcast)", `<input type="url" id="field-audio-url" value="${escapeHtml(c.url || '')}" placeholder="https://...mp3" />`);
+      const rowArt = createField("Cover Artwork URL", `
+        <div style="display:flex; gap:6px;">
+          <input type="url" id="field-audio-art" value="${escapeHtml(c.artwork || '')}" placeholder="https://..." style="flex:1;" />
+          <button type="button" class="small-quiet-btn" id="btn-audio-stock-art">🔍 Stock</button>
+        </div>
+      `);
+      dynamicContentFields.append(rowTitle, rowSpeaker, rowDate, rowDesc, rowUrl, rowArt);
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowSpeaker.querySelector("input").addEventListener("input", e => { c.speaker = e.target.value; updateBlockLive(block); });
+      rowDate.querySelector("input").addEventListener("input", e => { c.date = e.target.value; updateBlockLive(block); });
+      rowDesc.querySelector("textarea").addEventListener("input", e => { c.description = e.target.value; updateBlockLive(block); });
+      rowUrl.querySelector("input").addEventListener("input", e => { c.url = e.target.value; updateBlockLive(block); });
+      rowArt.querySelector("input").addEventListener("input", e => { c.artwork = e.target.value; updateBlockLive(block); });
+      rowArt.querySelector("#btn-audio-stock-art")?.addEventListener("click", () => {
+        openStockImagePicker(url => {
+          c.artwork = url;
+          rowArt.querySelector("input").value = url;
+          updateBlockLive(block);
+          showToast("Audio artwork updated!", "success");
+        });
+      });
+      return;
+    }
+
+    // 19. Newsletter Signup Block
+    if (block?.type === "newsletter") {
+      const c = block.content || {};
+      const rowTitle = createField("Headline", `<input type="text" id="field-news-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowSub = createField("Subtitle", `<textarea id="field-news-sub" rows="2">${escapeHtml(c.subtitle || '')}</textarea>`);
+      const rowBtn = createField("Button Text", `<input type="text" id="field-news-btn" value="${escapeHtml(c.buttonText || '')}" />`);
+      const rowPh = createField("Input Placeholder", `<input type="text" id="field-news-ph" value="${escapeHtml(c.placeholder || '')}" />`);
+      dynamicContentFields.append(rowTitle, rowSub, rowBtn, rowPh);
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowSub.querySelector("textarea").addEventListener("input", e => { c.subtitle = e.target.value; updateBlockLive(block); });
+      rowBtn.querySelector("input").addEventListener("input", e => { c.buttonText = e.target.value; updateBlockLive(block); });
+      rowPh.querySelector("input").addEventListener("input", e => { c.placeholder = e.target.value; updateBlockLive(block); });
+      return;
+    }
+
+    // 20. Testimonial Block
+    if (block?.type === "testimonial") {
+      const c = block.content || {};
+      const rowQuote = createField("Testimonial Quote", `<textarea id="field-test-quote" rows="3">${escapeHtml(c.quote || '')}</textarea>`);
+      const rowAuthor = createField("Sister / Author Name", `<input type="text" id="field-test-author" value="${escapeHtml(c.author || '')}" />`);
+      const rowRole = createField("Role or Location", `<input type="text" id="field-test-role" value="${escapeHtml(c.role || '')}" placeholder="e.g. Fellowship Member · Dallas, TX" />`);
+      const rowAvatar = createField("Avatar Photo URL", `
+        <div style="display:flex; gap:6px;">
+          <input type="url" id="field-test-avatar" value="${escapeHtml(c.avatar || '')}" placeholder="https://..." style="flex:1;" />
+          <button type="button" class="small-quiet-btn" id="btn-test-stock-avatar">🔍 Stock</button>
+        </div>
+      `);
+      dynamicContentFields.append(rowQuote, rowAuthor, rowRole, rowAvatar);
+      rowQuote.querySelector("textarea").addEventListener("input", e => { c.quote = e.target.value; updateBlockLive(block); });
+      rowAuthor.querySelector("input").addEventListener("input", e => { c.author = e.target.value; updateBlockLive(block); });
+      rowRole.querySelector("input").addEventListener("input", e => { c.role = e.target.value; updateBlockLive(block); });
+      rowAvatar.querySelector("input").addEventListener("input", e => { c.avatar = e.target.value; updateBlockLive(block); });
+      rowAvatar.querySelector("#btn-test-stock-avatar")?.addEventListener("click", () => {
+        openStockImagePicker(url => {
+          c.avatar = url;
+          rowAvatar.querySelector("input").value = url;
+          updateBlockLive(block);
+          showToast("Avatar image updated!", "success");
+        });
+      });
+      return;
+    }
+
+    // 21. Split Feature (Side-by-Side Image & Text)
+    if (block?.type === "splitFeature" || block?.type === "split-feature") {
+      const c = block.content || {};
+      const rowEye = createField("Eyebrow", `<input type="text" id="field-split-eye" value="${escapeHtml(c.eyebrow || '')}" />`);
+      const rowTitle = createField("Feature Headline", `<input type="text" id="field-split-title" value="${escapeHtml(c.title || '')}" />`);
+      const rowDesc = createField("Description", `<textarea id="field-split-desc" rows="3">${escapeHtml(c.description || '')}</textarea>`);
+      const rowBtn = createField("Button Text", `<input type="text" id="field-split-btn" value="${escapeHtml(c.buttonText || '')}" />`);
+      const rowLink = createField("Button Link", `<input type="text" id="field-split-link" value="${escapeHtml(c.buttonLink || '')}" />`);
+      const rowPos = createField("Image Position", `
+        <select id="field-split-pos">
+          <option value="left" ${c.imagePosition !== "right" ? "selected" : ""}>Image on Left</option>
+          <option value="right" ${c.imagePosition === "right" ? "selected" : ""}>Image on Right</option>
+        </select>
+      `);
+      const rowImg = createField("Feature Image URL", `
+        <div style="display:flex; gap:6px;">
+          <input type="url" id="field-split-img" value="${escapeHtml(c.imageUrl || '')}" placeholder="https://..." style="flex:1;" />
+          <button type="button" class="small-quiet-btn" id="btn-split-stock-img">🔍 Stock</button>
+        </div>
+      `);
+      dynamicContentFields.append(rowEye, rowTitle, rowDesc, rowBtn, rowLink, rowPos, rowImg);
+      rowEye.querySelector("input").addEventListener("input", e => { c.eyebrow = e.target.value; updateBlockLive(block); });
+      rowTitle.querySelector("input").addEventListener("input", e => { c.title = e.target.value; updateBlockLive(block); });
+      rowDesc.querySelector("textarea").addEventListener("input", e => { c.description = e.target.value; updateBlockLive(block); });
+      rowBtn.querySelector("input").addEventListener("input", e => { c.buttonText = e.target.value; updateBlockLive(block); });
+      rowLink.querySelector("input").addEventListener("input", e => { c.buttonLink = e.target.value; updateBlockLive(block); });
+      rowPos.querySelector("select").addEventListener("change", e => { c.imagePosition = e.target.value; updateBlockLive(block); });
+      rowImg.querySelector("input").addEventListener("input", e => { c.imageUrl = e.target.value; updateBlockLive(block); });
+      rowImg.querySelector("#btn-split-stock-img")?.addEventListener("click", () => {
+        openStockImagePicker(url => {
+          c.imageUrl = url;
+          rowImg.querySelector("input").value = url;
+          updateBlockLive(block);
+          showToast("Feature image updated!", "success");
+        });
+      });
+      return;
+    }
+
+    // 22. Announcement Ribbon
+    if (block?.type === "announcement") {
+      const c = block.content || {};
+      const rowBadge = createField("Badge Text", `<input type="text" id="field-ann-badge" value="${escapeHtml(c.badge || '')}" />`);
+      const rowText = createField("Announcement Text", `<input type="text" id="field-ann-text" value="${escapeHtml(c.text || '')}" />`);
+      const rowLinkText = createField("Link Text", `<input type="text" id="field-ann-linktext" value="${escapeHtml(c.linkText || '')}" placeholder="Optional: e.g. Register Now →" />`);
+      const rowLinkUrl = createField("Link URL", `<input type="text" id="field-ann-linkurl" value="${escapeHtml(c.linkUrl || '')}" placeholder="#/about" />`);
+      dynamicContentFields.append(rowBadge, rowText, rowLinkText, rowLinkUrl);
+      rowBadge.querySelector("input").addEventListener("input", e => { c.badge = e.target.value; updateBlockLive(block); });
+      rowText.querySelector("input").addEventListener("input", e => { c.text = e.target.value; updateBlockLive(block); });
+      rowLinkText.querySelector("input").addEventListener("input", e => { c.linkText = e.target.value; updateBlockLive(block); });
+      rowLinkUrl.querySelector("input").addEventListener("input", e => { c.linkUrl = e.target.value; updateBlockLive(block); });
       return;
     }
 
@@ -3820,10 +4351,12 @@
     logoutBtn.textContent = `Sign out (${authenticatedUser || 'Admin'})`;
     setupSidebarDrag();
     setupMediaLibrary();
+    setupStockPhotoSearch();
     setupInquiries();
     setupEmailSettings();
     setupLiveGithubSettings();
     await loadContent();
+    updatePreviewLive();
     if (!isLiveStaticMode) {
       fetchGithubStatus();
     } else {
