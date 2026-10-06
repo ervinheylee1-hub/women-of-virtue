@@ -414,14 +414,25 @@ function setCmsText(element, value) {
 function idbGetDraft() {
   return new Promise(resolve => {
     try {
-      const req = indexedDB.open("wov_cms_db", 1);
+      if (typeof indexedDB === "undefined") return resolve(null);
+      const req = indexedDB.open("wov_cms_db", 2);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("draft_store")) {
+          db.createObjectStore("draft_store");
+        }
+      };
       req.onsuccess = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains("draft_store")) return resolve(null);
-        const tx = db.transaction("draft_store", "readonly");
-        const getReq = tx.objectStore("draft_store").get("draft_content");
-        getReq.onsuccess = () => resolve(getReq.result || null);
-        getReq.onerror = () => resolve(null);
+        try {
+          const tx = db.transaction("draft_store", "readonly");
+          const getReq = tx.objectStore("draft_store").get("draft_content");
+          getReq.onsuccess = () => resolve(getReq.result || null);
+          getReq.onerror = () => resolve(null);
+        } catch {
+          resolve(null);
+        }
       };
       req.onerror = () => resolve(null);
     } catch {

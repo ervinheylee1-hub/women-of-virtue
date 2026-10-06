@@ -37,35 +37,85 @@
   const inspectorBlockTitle = document.querySelector("#inspector-block-title");
 
   // IndexedDB Persistent Engine (avoids 5MB localStorage quota limits)
+  let dbPromise = null;
+
   function openIdb() {
-    return new Promise(resolve => {
+    if (dbPromise) return dbPromise;
+
+    dbPromise = new Promise(resolve => {
       try {
-        const req = indexedDB.open("wov_cms_db", 1);
+        if (typeof indexedDB === "undefined") return resolve(null);
+
+        const DB_NAME = "wov_cms_db";
+        const CURRENT_VERSION = 2; // Version 2 guarantees draft_store creation on upgraded clients
+
+        const req = indexedDB.open(DB_NAME, CURRENT_VERSION);
+
         req.onupgradeneeded = () => {
           const db = req.result;
           if (!db.objectStoreNames.contains("draft_store")) {
             db.createObjectStore("draft_store");
           }
         };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => resolve(null);
-      } catch {
+
+        req.onsuccess = () => {
+          const db = req.result;
+          if (db.objectStoreNames.contains("draft_store")) {
+            db.onversionchange = () => db.close();
+            return resolve(db);
+          }
+
+          // If draft_store is somehow missing on an existing database, recreate clean
+          db.close();
+          const delReq = indexedDB.deleteDatabase(DB_NAME);
+          delReq.onsuccess = delReq.onerror = () => {
+            const freshReq = indexedDB.open(DB_NAME, 1);
+            freshReq.onupgradeneeded = () => {
+              freshReq.result.createObjectStore("draft_store");
+            };
+            freshReq.onsuccess = () => resolve(freshReq.result);
+            freshReq.onerror = () => resolve(null);
+          };
+        };
+
+        req.onerror = () => {
+          console.warn("IndexedDB open error:", req.error);
+          resolve(null);
+        };
+      } catch (err) {
+        console.warn("IndexedDB not available:", err);
         resolve(null);
       }
     });
+
+    return dbPromise;
   }
 
   async function idbSet(key, value) {
     try {
       const db = await openIdb();
-      if (!db) return false;
+      if (!db || !db.objectStoreNames.contains("draft_store")) {
+        try {
+          if (typeof value === "object") {
+            sessionStorage.setItem(`idb_fallback_${key}`, JSON.stringify(value));
+          }
+        } catch {}
+        return false;
+      }
       return new Promise(resolve => {
-        const tx = db.transaction("draft_store", "readwrite");
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = () => resolve(false);
-        tx.objectStore("draft_store").put(value, key);
+        try {
+          const tx = db.transaction("draft_store", "readwrite");
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+          tx.onabort = () => resolve(false);
+          tx.objectStore("draft_store").put(value, key);
+        } catch (err) {
+          console.warn("idbSet transaction exception:", err);
+          resolve(false);
+        }
       });
-    } catch {
+    } catch (err) {
+      console.warn("idbSet error:", err);
       return false;
     }
   }
@@ -73,14 +123,27 @@
   async function idbGet(key) {
     try {
       const db = await openIdb();
-      if (!db) return null;
+      if (!db || !db.objectStoreNames.contains("draft_store")) {
+        try {
+          const fallback = sessionStorage.getItem(`idb_fallback_${key}`);
+          return fallback ? JSON.parse(fallback) : null;
+        } catch {
+          return null;
+        }
+      }
       return new Promise(resolve => {
-        const tx = db.transaction("draft_store", "readonly");
-        const req = tx.objectStore("draft_store").get(key);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
+        try {
+          const tx = db.transaction("draft_store", "readonly");
+          const req = tx.objectStore("draft_store").get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } catch (err) {
+          console.warn("idbGet transaction exception:", err);
+          resolve(null);
+        }
       });
-    } catch {
+    } catch (err) {
+      console.warn("idbGet error:", err);
       return null;
     }
   }
@@ -88,12 +151,16 @@
   async function idbDel(key) {
     try {
       const db = await openIdb();
-      if (!db) return false;
+      if (!db || !db.objectStoreNames.contains("draft_store")) return false;
       return new Promise(resolve => {
-        const tx = db.transaction("draft_store", "readwrite");
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = () => resolve(false);
-        tx.objectStore("draft_store").delete(key);
+        try {
+          const tx = db.transaction("draft_store", "readwrite");
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+          tx.objectStore("draft_store").delete(key);
+        } catch {
+          resolve(false);
+        }
       });
     } catch {
       return false;
@@ -4592,8 +4659,12 @@
         // Upload any remaining embedded data:image/ strings to GitHub uploads/ folder
         if (statusText) statusText.textContent = "Uploading images to GitHub…";
         await cleanAndUploadAllDataUrlsToGithub(content, githubToken, githubRepo, githubBranch);
-        await idbSet("draft_content", content);
-        await idbSet("cms-live-draft", content);
+        try {
+          await idbSet("draft_content", content);
+          await idbSet("cms-live-draft", content);
+        } catch (idbErr) {
+          console.warn("Could not cache draft to IDB:", idbErr);
+        }
 
         if (statusText) statusText.textContent = "Committing to GitHub…";
 
