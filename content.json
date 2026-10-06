@@ -55,15 +55,15 @@
               "alt": "Fellowship"
             },
             {
-              "url": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633053455-M9PKGDBGT7X31AK2HVEM/unsplash-image-w15nu-WJLNs.jpg?format=1500w",
+              "url": "./uploads/img_7277_1791260562938.jpg",
               "alt": "Prayer"
             },
             {
-              "url": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633299594-ZJP2LO473KCB4KZ92TRN/unsplash-image-yuqCAKrbjyE.jpg?format=1500w",
+              "url": "./uploads/img_7249_1791260573285.jpg",
               "alt": "Scripture"
             },
             {
-              "url": "https://images.squarespace-cdn.com/content/v1/6abaae7844626360a63d6f9d/1790633201979-AX91BC0BXNUUGWC7AXC8/unsplash-image-8huCshiNhro.jpg?format=1500w",
+              "url": "./uploads/img_7324_1791260583653.jpg",
               "alt": "Faith"
             }
           ],
@@ -356,8 +356,8 @@
       "height": 238
     },
     "block:block_gallery_rf50ajt:img:0": {
-      "x": -14,
-      "y": 4,
+      "x": -13,
+      "y": -4,
       "width": 320,
       "height": 245
     }
