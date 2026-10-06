@@ -267,7 +267,8 @@
     "bodyTextColor": "#303636"
   },
   "graphics": {
-    "photo": "./uploads/photo_1791260520401.jpg"
+    "photo": "./uploads/img_7379_1791260717285.jpg",
+    "contact": "./uploads/img_7379_1791260717285.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -360,6 +361,10 @@
       "y": -4,
       "width": 320,
       "height": 245
+    },
+    "lesson:harden-not:photo": {
+      "x": -12,
+      "y": -47
     }
   },
   "devotionals": [
