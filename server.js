@@ -391,7 +391,44 @@ function readContentStore() {
   }
 }
 
+function extractAndSaveDataUrls(obj) {
+  if (!obj || typeof obj !== 'object') return;
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (typeof val === 'string' && val.startsWith('data:image/')) {
+      const match = val.match(/^data:image\/([a-zA-Z0-9\+\-\.]+);base64,(.+)$/);
+      if (match) {
+        let ext = match[1].toLowerCase();
+        if (ext === 'jpeg') ext = 'jpg';
+        if (ext === 'svg+xml') ext = 'svg';
+        const allowedExts = ['png', 'jpg', 'webp', 'gif', 'svg'];
+        if (allowedExts.includes(ext)) {
+          try {
+            const buf = Buffer.from(match[2], 'base64');
+            const safeBase = key.toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 32) || 'image';
+            const fileName = `${safeBase}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+            const filePath = path.join(UPLOADS_DIR, fileName);
+            fs.writeFileSync(filePath, buf);
+            obj[key] = `./uploads/${fileName}`;
+            console.log(`[CONTENT AUTO-EXTRACT] Saved inline image: ${fileName} -> ./uploads/${fileName}`);
+          } catch (e) {
+            console.warn('[CONTENT AUTO-EXTRACT] Failed to save inline image:', e.message);
+          }
+        }
+      }
+    } else if (typeof val === 'object' && val !== null) {
+      extractAndSaveDataUrls(val);
+    }
+  }
+}
+
 function saveContentStore(content) {
+  try {
+    extractAndSaveDataUrls(content);
+  } catch (err) {
+    console.warn('[CONTENT AUTO-EXTRACT] Error processing images:', err.message);
+  }
+
   const formatted = JSON.stringify(content, null, 2);
   const tempPath = `${CONTENT_FILE}.tmp`;
   fs.writeFileSync(tempPath, formatted, 'utf8');

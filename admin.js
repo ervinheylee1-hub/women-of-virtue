@@ -13,7 +13,7 @@
   const preview = document.querySelector("#site-preview");
   const deviceWrapper = document.querySelector("#device-wrapper");
   const saveStatus = document.querySelector("#save-status");
-  const saveBtn = document.querySelector("#btn-save-publish");
+  const syncBtn = document.querySelector("#btn-github-sync");
   const viewLiveBtn = document.querySelector("#btn-view-live");
   const logoutBtn = document.querySelector("#logout-button");
   const undoBtn = document.querySelector("#btn-undo");
@@ -35,6 +35,129 @@
   const dynamicContentFields = document.querySelector("#dynamic-content-fields");
   const inspectorElementType = document.querySelector("#inspector-element-type");
   const inspectorBlockTitle = document.querySelector("#inspector-block-title");
+
+  // IndexedDB Persistent Engine (avoids 5MB localStorage quota limits)
+  function openIdb() {
+    return new Promise(resolve => {
+      try {
+        const req = indexedDB.open("wov_cms_db", 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains("draft_store")) {
+            db.createObjectStore("draft_store");
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
+  async function idbSet(key, value) {
+    try {
+      const db = await openIdb();
+      if (!db) return false;
+      return new Promise(resolve => {
+        const tx = db.transaction("draft_store", "readwrite");
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+        tx.objectStore("draft_store").put(value, key);
+      });
+    } catch {
+      return false;
+    }
+  }
+
+  async function idbGet(key) {
+    try {
+      const db = await openIdb();
+      if (!db) return null;
+      return new Promise(resolve => {
+        const tx = db.transaction("draft_store", "readonly");
+        const req = tx.objectStore("draft_store").get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async function idbDel(key) {
+    try {
+      const db = await openIdb();
+      if (!db) return false;
+      return new Promise(resolve => {
+        const tx = db.transaction("draft_store", "readwrite");
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+        tx.objectStore("draft_store").delete(key);
+      });
+    } catch {
+      return false;
+    }
+  }
+
+  // Upload an image directly to the GitHub repository via Contents API (Live Static Mode)
+  async function githubUploadFile(fileOrDataUrl, filename) {
+    const token = localStorage.getItem("wov_github_pat") || sessionStorage.getItem("wov_github_pat");
+    if (!token) throw new Error("No GitHub Personal Access Token configured.");
+
+    let base64Data = "";
+    let cleanExt = "png";
+
+    if (typeof fileOrDataUrl === "string" && fileOrDataUrl.startsWith("data:image/")) {
+      const match = fileOrDataUrl.match(/^data:image\/([a-zA-Z0-9\+\-\.]+);base64,(.+)$/);
+      if (!match) throw new Error("Invalid image DataURL.");
+      cleanExt = match[1].toLowerCase().split(";")[0].replace("jpeg", "jpg").replace("svg+xml", "svg");
+      base64Data = match[2].trim();
+    } else if (fileOrDataUrl instanceof File || fileOrDataUrl instanceof Blob) {
+      const extMatch = (fileOrDataUrl.name || filename || "").match(/\.([a-zA-Z0-9]+)$/);
+      if (extMatch) cleanExt = extMatch[1].toLowerCase();
+      base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const res = reader.result;
+          const comma = res.indexOf(",");
+          resolve(comma !== -1 ? res.slice(comma + 1).trim() : res.trim());
+        };
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(fileOrDataUrl);
+      });
+    } else {
+      throw new Error("Unsupported file input.");
+    }
+
+    const safeBase = (filename || "image").replace(/\.[^/.]+$/, "").toLowerCase().replace(/[^a-z0-9_-]/g, "-").slice(0, 32) || "image";
+    const remoteFilename = `${safeBase}_${Date.now()}.${cleanExt}`;
+    const targetPath = `uploads/${remoteFilename}`;
+    const githubRepo = "ervinheylee1-hub/women-of-virtue";
+    const githubBranch = "main";
+    const authHeader = token.startsWith("Bearer ") || token.startsWith("token ") ? token : `Bearer ${token}`;
+
+    const res = await fetch(`https://api.github.com/repos/${githubRepo}/contents/${targetPath}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": authHeader,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: `Upload ${remoteFilename} via Visual Editor`,
+        content: base64Data,
+        branch: githubBranch
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `GitHub upload failed (${res.status})`);
+    }
+
+    return `./uploads/${remoteFilename}`;
+  }
 
   // State
   let isLiveStaticMode = false;
@@ -431,10 +554,10 @@
         title: "Photo Gallery",
         columns: 4,
         images: [
-          { url: PRESET_IMAGES[0].url, alt: "Fellowship" },
-          { url: PRESET_IMAGES[1].url, alt: "Prayer" },
-          { url: PRESET_IMAGES[2].url, alt: "Scripture" },
-          { url: PRESET_IMAGES[3].url, alt: "Faith" }
+          { url: "", alt: "" },
+          { url: "", alt: "" },
+          { url: "", alt: "" },
+          { url: "", alt: "" }
         ]
       },
       style: { paddingTop: "40px", paddingBottom: "40px" }
@@ -622,30 +745,93 @@
     return result;
   }
 
+  // Optimize uploaded images to max 1920px width/height to avoid memory bloat and speed up uploads
+  async function optimizeImageForWeb(file) {
+    if (!file || !file.type.startsWith("image/") || file.type === "image/svg+xml" || file.type === "image/gif") {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Failed to read image file."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    return new Promise(resolve => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const maxDim = 1920;
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+        resolve(canvas.toDataURL(mime, 0.88));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(file);
+      };
+      img.src = objectUrl;
+    });
+  }
+
   // Image Dropper & Upload Helper
   async function uploadImageFile(file) {
     if (!file) throw new Error("No file selected.");
     if (!file.type.startsWith("image/")) throw new Error("Please select an image file (PNG, JPG, WEBP, GIF, SVG).");
 
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Failed to read image file."));
-      reader.readAsDataURL(file);
-    });
+    const optimizedDataUrl = await optimizeImageForWeb(file);
 
-    try {
-      const res = await api("./api/admin/upload", {
-        method: "POST",
-        body: { dataUrl, filename: file.name }
-      });
-      if (res && res.url) {
-        return res.url;
+    // In local server mode, upload via local API
+    if (!isLiveStaticMode) {
+      try {
+        const res = await api("./api/admin/upload", {
+          method: "POST",
+          body: { dataUrl: optimizedDataUrl, filename: file.name }
+        });
+        if (res && res.url) {
+          return res.url;
+        }
+      } catch (err) {
+        console.warn("Local server upload failed, falling back to data URL:", err.message);
       }
-    } catch (err) {
-      console.warn("Server upload failed, falling back to DataURL:", err.message);
+      return optimizedDataUrl;
     }
-    return dataUrl;
+
+    // In Live Static Mode (GitHub Pages)
+    // 1. If GitHub PAT is available, upload directly to repo uploads/ folder
+    const token = localStorage.getItem("wov_github_pat") || sessionStorage.getItem("wov_github_pat");
+    if (token) {
+      try {
+        const remoteUrl = await githubUploadFile(optimizedDataUrl, file.name);
+        return remoteUrl;
+      } catch (err) {
+        console.warn("Direct GitHub upload failed, falling back to draft data URL:", err.message);
+      }
+    }
+
+    // 2. Otherwise return optimized data URL and store in IndexedDB draft
+    return optimizedDataUrl;
   }
 
   // History & Undo/Redo
@@ -659,6 +845,9 @@
       richTextOverrides: content.richTextOverrides,
       linkOverrides: content.linkOverrides,
       textStyles: content.textStyles,
+      graphics: content.graphics,
+      theme: content.theme,
+      layout: content.layout,
       positionOverrides: content.positionOverrides
     }));
     if (historyStack.length > MAX_HISTORY) historyStack.shift();
@@ -682,10 +871,14 @@
       content.richTextOverrides = snapshot.richTextOverrides || {};
       content.linkOverrides = snapshot.linkOverrides || {};
       content.textStyles = snapshot.textStyles || {};
+      content.graphics = snapshot.graphics || {};
+      content.theme = snapshot.theme || {};
+      content.layout = snapshot.layout || {};
       content.positionOverrides = snapshot.positionOverrides || {};
       updateUndoRedoButtons();
       renderNavigator();
       updatePreviewLive();
+      syncDraftStorage();
     }
   }
 
@@ -698,10 +891,14 @@
       content.richTextOverrides = snapshot.richTextOverrides || {};
       content.linkOverrides = snapshot.linkOverrides || {};
       content.textStyles = snapshot.textStyles || {};
+      content.graphics = snapshot.graphics || {};
+      content.theme = snapshot.theme || {};
+      content.layout = snapshot.layout || {};
       content.positionOverrides = snapshot.positionOverrides || {};
       updateUndoRedoButtons();
       renderNavigator();
       updatePreviewLive();
+      syncDraftStorage();
     }
   }
 
@@ -709,22 +906,31 @@
     isDirty = dirty;
     saveStatus.classList.toggle("is-dirty", dirty);
     saveStatus.classList.toggle("is-saved", !dirty);
-    saveStatus.querySelector(".status-text").textContent = dirty ? "Unsaved Changes" : "Saved";
-    saveBtn.disabled = !dirty;
-    try {
-      if (dirty) {
+    if (dirty) {
+      saveStatus.querySelector(".status-text").textContent = "Draft Auto-Saved";
+      markSyncPending(true);
+      try {
         localStorage.setItem("cms-has-unsaved-draft", "true");
-        localStorage.setItem("cms-live-draft", JSON.stringify(content));
-      } else {
+      } catch {}
+      idbSet("draft_content", content);
+      idbSet("cms-live-draft", content);
+    } else {
+      saveStatus.querySelector(".status-text").textContent = "Synced with Live Site";
+      try {
         localStorage.removeItem("cms-has-unsaved-draft");
-        localStorage.removeItem("cms-live-draft");
-      }
-    } catch {}
+      } catch {}
+      // We NEVER delete draft_content or cms-live-draft from IndexedDB!
+      // This ensures that on refresh or reload, photos and layout changes persist.
+      idbSet("draft_content", content);
+      idbSet("cms-live-draft", content);
+    }
   }
 
   function syncDraftStorage() {
+    idbSet("draft_content", content);
+    idbSet("cms-live-draft", content);
     try {
-      localStorage.setItem("women-of-virtue-content-v1", JSON.stringify(content));
+      localStorage.setItem("cms-has-unsaved-draft", "true");
     } catch {}
   }
 
@@ -1238,6 +1444,12 @@
       e.preventDefault();
       if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
 
+      // If dragging actual files from the OS/Downloads, do not display the widget inserter indicator
+      if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+        removeDropIndicator();
+        return;
+      }
+
       const indicator = getDropIndicator(doc);
       const blockEls = [...doc.querySelectorAll("[data-wov-block-id]")];
 
@@ -1283,6 +1495,12 @@
     doc.addEventListener("drop", e => {
       e.preventDefault();
       e.stopPropagation();
+
+      // If files were dropped onto unhandled empty canvas area, clear indicator and return
+      if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+        removeDropIndicator();
+        return;
+      }
 
       const indicator = doc.querySelector("#wov-drop-zone-indicator");
       const type = activeDraggedWidget?.type || e.dataTransfer?.getData("text/plain");
@@ -1501,7 +1719,17 @@
                   const blockEl = el.closest("[data-wov-block-id]");
                   if (blockEl) {
                     const block = findBlock(blockEl.dataset.wovBlockId);
-                    if (block && block.content) block.content.url = url;
+                    if (block && block.content) {
+                      if (block.type === "gallery" && Array.isArray(block.content.images)) {
+                        const slot = el.closest("[data-gallery-slot]");
+                        const sIdx = slot ? parseInt(slot.dataset.gallerySlot, 10) : -1;
+                        if (sIdx >= 0 && block.content.images[sIdx]) {
+                          block.content.images[sIdx].url = url;
+                        }
+                      } else {
+                        block.content.url = url;
+                      }
+                    }
                   }
                   if (el.dataset.cmsLayoutKey) {
                     content.graphics[el.dataset.cmsLayoutKey] = url;
@@ -1522,6 +1750,132 @@
               }
             }
           }
+        });
+      }
+    });
+
+    // Dedicated Gallery Item & Blank Photo Box Drag & Drop + Click Pickers
+    doc.querySelectorAll(".wov-gallery-item, .wov-block-gallery-grid").forEach(galEl => {
+      const isGrid = galEl.classList.contains("wov-block-gallery-grid");
+      const itemEl = isGrid ? null : galEl;
+      const blockEl = galEl.closest("[data-wov-block-id]");
+      const blockId = blockEl?.dataset?.wovBlockId || galEl.dataset.galleryBlockId;
+
+      galEl.addEventListener("dragover", e => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+          e.preventDefault();
+          e.stopPropagation();
+          galEl.classList.add("is-dragover");
+        }
+      });
+
+      galEl.addEventListener("dragleave", e => {
+        if (!galEl.contains(e.relatedTarget)) {
+          galEl.classList.remove("is-dragover");
+        }
+      });
+
+      galEl.addEventListener("drop", async e => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+          e.preventDefault();
+          e.stopPropagation();
+          galEl.classList.remove("is-dragover");
+
+          const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith("image/"));
+          if (files.length === 0) return;
+
+          const block = findBlock(blockId);
+          if (!block || block.type !== "gallery") return;
+          if (!Array.isArray(block.content.images)) block.content.images = [];
+
+          const slotIdx = itemEl ? parseInt(itemEl.dataset.gallerySlot, 10) : -1;
+
+          try {
+            if (files.length === 1 && slotIdx >= 0) {
+              showToast(`Uploading photo for slot #${slotIdx + 1}…`, "info");
+              const url = await uploadImageFile(files[0]);
+              if (!block.content.images[slotIdx]) {
+                block.content.images[slotIdx] = { url: "", alt: "" };
+              }
+              block.content.images[slotIdx].url = url;
+              block.content.images[slotIdx].alt = files[0].name.replace(/\.[^/.]+$/, "");
+              pushHistory();
+              setDirty(true);
+              updatePreviewLive();
+              showToast(`Photo added to slot #${slotIdx + 1}!`, "success");
+              selectBlock(block.id);
+            } else {
+              showToast(`Uploading ${files.length} photo(s)…`, "info");
+              let startIdx = slotIdx >= 0 ? slotIdx : block.content.images.findIndex(img => !img.url);
+              if (startIdx === -1) startIdx = block.content.images.length;
+
+              for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const url = await uploadImageFile(file);
+                const targetIdx = startIdx + i;
+                if (targetIdx < block.content.images.length) {
+                  block.content.images[targetIdx].url = url;
+                  block.content.images[targetIdx].alt = file.name.replace(/\.[^/.]+$/, "");
+                } else {
+                  block.content.images.push({
+                    url,
+                    alt: file.name.replace(/\.[^/.]+$/, "")
+                  });
+                }
+              }
+              pushHistory();
+              setDirty(true);
+              updatePreviewLive();
+              showToast(`Added ${files.length} photo(s) to gallery!`, "success");
+              selectBlock(block.id);
+            }
+          } catch (err) {
+            showToast("Upload failed: " + err.message, "warning");
+          }
+        }
+      });
+
+      // Clicking on a blank box opens file picker to select from Downloads
+      if (itemEl && itemEl.classList.contains("wov-gallery-blank-box")) {
+        itemEl.addEventListener("click", e => {
+          e.stopPropagation();
+          const block = findBlock(blockId);
+          if (block) selectBlock(block.id);
+
+          const slotIdx = parseInt(itemEl.dataset.gallerySlot, 10);
+          const picker = document.createElement("input");
+          picker.type = "file";
+          picker.accept = "image/png, image/jpeg, image/webp, image/gif, image/svg+xml";
+          picker.multiple = true;
+          picker.onchange = async () => {
+            const picked = Array.from(picker.files || []).filter(f => f.type.startsWith("image/"));
+            if (picked.length === 0) return;
+            const b = findBlock(blockId);
+            if (!b || !Array.isArray(b.content.images)) return;
+
+            showToast(`Loading ${picked.length} photo(s)…`, "info");
+            try {
+              for (let i = 0; i < picked.length; i++) {
+                const file = picked[i];
+                const url = await uploadImageFile(file);
+                const targetIdx = isNaN(slotIdx) ? b.content.images.length : (slotIdx + i);
+                if (targetIdx < b.content.images.length) {
+                  b.content.images[targetIdx].url = url;
+                  b.content.images[targetIdx].alt = file.name.replace(/\.[^/.]+$/, "");
+                } else {
+                  b.content.images.push({ url, alt: file.name.replace(/\.[^/.]+$/, "") });
+                }
+              }
+              pushHistory();
+              setDirty(true);
+              updatePreviewLive();
+              showToast(`Photo(s) added to gallery!`, "success");
+              selectBlock(b.id);
+            } catch (err) {
+              showToast("Failed to load photo: " + err.message, "warning");
+            }
+          };
+          picker.click();
         });
       }
     });
@@ -2548,12 +2902,50 @@
       const applyImgUrl = url => {
         rowUrl.querySelector("input").value = url;
         if (el) el.src = url;
-        if (block) block.content.url = url;
-        if (el?.dataset?.cmsLayoutKey) {
-          content.graphics[el.dataset.cmsLayoutKey] = url;
+
+        // 1. Gallery block element support: Check if element is inside a gallery slot or if block is gallery
+        const galSlotEl = el ? el.closest("[data-gallery-slot]") : null;
+        const galBlockEl = el ? el.closest("[data-wov-block-id]") : null;
+        const targetBlock = block || (galBlockEl ? findBlock(galBlockEl.dataset.wovBlockId) : null);
+
+        if (targetBlock && targetBlock.type === "gallery" && Array.isArray(targetBlock.content.images)) {
+          let slotIdx = -1;
+          if (galSlotEl && galSlotEl.dataset.gallerySlot !== undefined) {
+            slotIdx = parseInt(galSlotEl.dataset.gallerySlot, 10);
+          } else if (selectedCmsKey && selectedCmsKey.includes(":img:")) {
+            const parts = selectedCmsKey.split(":img:");
+            slotIdx = parseInt(parts[1], 10);
+          }
+          if (slotIdx >= 0 && slotIdx < targetBlock.content.images.length) {
+            targetBlock.content.images[slotIdx].url = url;
+          } else {
+            const blankIdx = targetBlock.content.images.findIndex(img => !img.url);
+            if (blankIdx !== -1) {
+              targetBlock.content.images[blankIdx].url = url;
+            } else {
+              targetBlock.content.images.push({ url, alt: el?.alt || "Gallery image" });
+            }
+          }
+        } else if (targetBlock && (targetBlock.type === "hero" || targetBlock.content.backgroundImage !== undefined)) {
+          targetBlock.content.backgroundImage = url;
+        } else if (targetBlock && (targetBlock.type === "image" || targetBlock.content.url !== undefined)) {
+          targetBlock.content.url = url;
         }
+
+        // 2. Global layout keys (Home gallery: brunch, prayer, bible, letter; About: about; Contact: contact; Hero: hero)
+        const layoutKey = el?.dataset?.cmsLayoutKey || (selectedCmsKey && !selectedCmsKey.startsWith("block:") ? selectedCmsKey : null);
+        if (layoutKey) {
+          content.graphics[layoutKey] = url;
+          if (layoutKey === "contact") content.graphics["photo"] = url;
+          if (layoutKey === "photo") content.graphics["contact"] = url;
+        } else if (selectedCmsKey && !selectedCmsKey.startsWith("block:")) {
+          content.graphics[selectedCmsKey] = url;
+        }
+
+        pushHistory();
         setDirty(true);
         syncDraftStorage();
+        updatePreviewLive();
       };
 
       // Dropper event listeners
@@ -2656,8 +3048,13 @@
 
       const applyHeroBg = url => {
         c.backgroundImage = url;
+        if (content.graphics) content.graphics.hero = url;
         rowBg.querySelector("input").value = url;
+        pushHistory();
+        setDirty(true);
+        syncDraftStorage();
         updateBlockLive(block);
+        updatePreviewLive();
       };
 
       const bgFileInput = bgDropzone.querySelector("input[type='file']");
@@ -2897,23 +3294,42 @@
       const imagesWrap = document.createElement("div");
       imagesWrap.className = "control-row";
       imagesWrap.innerHTML = `
-        <label>Gallery Photos (${c.images.length} images)</label>
-        <div class="gallery-images-list" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="margin:0; font-weight:600;">Gallery Photos (${c.images.length} boxes)</label>
+          <span style="font-size:10px; color:var(--text-muted);">${c.images.filter(im => im.url).length} filled, ${c.images.filter(im => !im.url).length} blank</span>
+        </div>
+
+        <!-- Inspector Dropzone -->
+        <div class="gallery-inspector-dropzone" id="gallery-inspector-dropzone" style="border:2px dashed rgba(201,117,91,0.45); border-radius:6px; padding:12px; text-align:center; background:#fff9f6; cursor:pointer; margin-bottom:10px; transition:all 0.15s ease;">
+          <div style="font-size:20px; margin-bottom:2px;">📥</div>
+          <div style="font-size:11px; font-weight:600; color:var(--accent-color);">Drag photos here from Downloads</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:1px;">or click to browse files from your computer</div>
+          <input type="file" id="gallery-inspector-file-input" multiple accept="image/*" style="display:none;" />
+        </div>
+
+        <div class="gallery-images-list" style="display:flex; flex-direction:column; gap:8px;">
           ${c.images.map((img, idx) => `
-            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:11px; color:#9cb2ab; font-weight:600;">Image #${idx + 1}</span>
-                <button type="button" class="wov-badge-btn" data-del-img-idx="${idx}" title="Delete image" style="width:18px; height:18px; color:#ff8080;">✕</button>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:9px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  ${img.url ? `<img src="${escapeHtml(img.url)}" style="width:26px; height:26px; object-fit:cover; border-radius:3px; border:1px solid rgba(255,255,255,0.2);" />` : `<div style="width:26px; height:26px; background:rgba(201,117,91,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:12px;">📷</div>`}
+                  <span style="font-size:11px; color:#9cb2ab; font-weight:600;">Box #${idx + 1} ${img.url ? '<span style="color:#4caf50;">(Filled)</span>' : '<span style="color:var(--accent-color);">(Blank)</span>'}</span>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button type="button" class="wov-badge-btn btn-slot-upload" data-slot-upload-idx="${idx}" title="Upload from Downloads" style="width:22px; height:22px; font-size:11px;">📁</button>
+                  <button type="button" class="wov-badge-btn btn-slot-stock" data-slot-stock-idx="${idx}" title="Choose Stock Photo" style="width:22px; height:22px; font-size:11px;">🔍</button>
+                  <button type="button" class="wov-badge-btn" data-del-img-idx="${idx}" title="Delete Box" style="width:22px; height:22px; color:#ff8080;">✕</button>
+                </div>
               </div>
-              <input type="url" class="gallery-img-url" data-img-idx="${idx}" value="${escapeHtml(img.url || '')}" placeholder="Image URL (https://...)" style="width:100%; box-sizing:border-box; margin-bottom:6px;" />
-              <input type="text" class="gallery-img-alt" data-img-idx="${idx}" value="${escapeHtml(img.alt || '')}" placeholder="Alt description" style="width:100%; box-sizing:border-box;" />
+              <input type="url" class="gallery-img-url" data-img-idx="${idx}" value="${escapeHtml(img.url || '')}" placeholder="Image URL (or upload above)" style="width:100%; box-sizing:border-box; margin-bottom:5px; font-size:11px;" />
+              <input type="text" class="gallery-img-alt" data-img-idx="${idx}" value="${escapeHtml(img.alt || '')}" placeholder="Alt description" style="width:100%; box-sizing:border-box; font-size:11px;" />
             </div>
           `).join("")}
-          <div style="display:flex; gap:6px; margin-top:6px;">
-            <button type="button" class="action-btn" id="btn-add-gallery-img" style="flex:1; padding:7px 10px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer;">
-              + Add Image
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            <button type="button" class="action-btn" id="btn-add-gallery-img" style="flex:1; padding:8px 10px; font-size:11px; background:rgba(0,180,216,0.15); color:#00b4d8; border:1px dashed #00b4d8; border-radius:4px; cursor:pointer; font-weight:600;">
+              + Add Blank Box
             </button>
-            <button type="button" class="action-btn" id="btn-add-gallery-stock" style="flex:1; padding:7px 10px; font-size:11px; background:rgba(201,117,91,0.15); color:var(--accent-color); border:1px dashed var(--accent-color); border-radius:4px; cursor:pointer;">
+            <button type="button" class="action-btn" id="btn-add-gallery-stock" style="flex:1; padding:8px 10px; font-size:11px; background:rgba(201,117,91,0.15); color:var(--accent-color); border:1px dashed var(--accent-color); border-radius:4px; cursor:pointer; font-weight:600;">
               🔍 Add Stock Photo
             </button>
           </div>
@@ -2931,6 +3347,55 @@
         c.columns = parseInt(e.target.value, 10);
         updateBlockLive(block);
       });
+
+      // Inspector Dropzone Wiring
+      const dropzoneBox = imagesWrap.querySelector("#gallery-inspector-dropzone");
+      const dropzoneInput = imagesWrap.querySelector("#gallery-inspector-file-input");
+      if (dropzoneBox && dropzoneInput) {
+        dropzoneBox.addEventListener("click", () => dropzoneInput.click());
+        dropzoneBox.addEventListener("dragover", e => {
+          e.preventDefault();
+          dropzoneBox.style.borderColor = "#00b4d8";
+          dropzoneBox.style.background = "#e6f8fc";
+        });
+        dropzoneBox.addEventListener("dragleave", () => {
+          dropzoneBox.style.borderColor = "rgba(201,117,91,0.45)";
+          dropzoneBox.style.background = "#fff9f6";
+        });
+        const handleFiles = async (files) => {
+          const imgFiles = Array.from(files).filter(f => f.type.startsWith("image/"));
+          if (imgFiles.length === 0) return;
+          showToast(`Uploading ${imgFiles.length} photo(s)…`, "info");
+          try {
+            for (const file of imgFiles) {
+              const url = await uploadImageFile(file);
+              const emptySlot = c.images.find(im => !im.url);
+              if (emptySlot) {
+                emptySlot.url = url;
+                emptySlot.alt = file.name.replace(/\.[^/.]+$/, "");
+              } else {
+                c.images.push({ url, alt: file.name.replace(/\.[^/.]+$/, "") });
+              }
+            }
+            pushHistory();
+            setDirty(true);
+            updatePreviewLive();
+            populateInspectorContent(el, block);
+            showToast(`Gallery updated with ${imgFiles.length} photo(s)!`, "success");
+          } catch (err) {
+            showToast("Upload error: " + err.message, "warning");
+          }
+        };
+        dropzoneBox.addEventListener("drop", e => {
+          e.preventDefault();
+          dropzoneBox.style.borderColor = "rgba(201,117,91,0.45)";
+          dropzoneBox.style.background = "#fff9f6";
+          if (e.dataTransfer?.files) handleFiles(e.dataTransfer.files);
+        });
+        dropzoneInput.addEventListener("change", e => {
+          if (e.target.files) handleFiles(e.target.files);
+        });
+      }
 
       imagesWrap.querySelectorAll(".gallery-img-url").forEach(inp => {
         inp.addEventListener("input", e => {
@@ -2957,21 +3422,76 @@
         if (delBtn) {
           const idx = parseInt(delBtn.dataset.delImgIdx, 10);
           c.images.splice(idx, 1);
+          pushHistory();
+          setDirty(true);
           updateBlockLive(block);
           populateInspectorContent(el, block);
+          showToast("Box removed.", "info");
         }
       });
 
+      imagesWrap.querySelectorAll(".btn-slot-upload").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.slotUploadIdx, 10);
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = async () => {
+            const file = input.files?.[0];
+            if (file) {
+              showToast("Uploading photo…", "info");
+              try {
+                const url = await uploadImageFile(file);
+                if (c.images[idx]) {
+                  c.images[idx].url = url;
+                  c.images[idx].alt = file.name.replace(/\.[^/.]+$/, "");
+                }
+                pushHistory();
+                setDirty(true);
+                updatePreviewLive();
+                populateInspectorContent(el, block);
+                showToast("Photo uploaded to box!", "success");
+              } catch (err) {
+                showToast("Upload failed: " + err.message, "warning");
+              }
+            }
+          };
+          input.click();
+        });
+      });
+
+      imagesWrap.querySelectorAll(".btn-slot-stock").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const idx = parseInt(btn.dataset.slotStockIdx, 10);
+          openStockImagePicker((url, title) => {
+            if (c.images[idx]) {
+              c.images[idx].url = url;
+              c.images[idx].alt = title || "Gallery photo";
+            }
+            pushHistory();
+            setDirty(true);
+            updatePreviewLive();
+            populateInspectorContent(el, block);
+            showToast("Stock photo applied!", "success");
+          });
+        });
+      });
+
       imagesWrap.querySelector("#btn-add-gallery-img")?.addEventListener("click", () => {
-        c.images.push({ url: PRESET_IMAGES[0].url, alt: "New gallery image" });
-        updateBlockLive(block);
+        c.images.push({ url: "", alt: "" });
+        pushHistory();
+        setDirty(true);
+        updatePreviewLive();
         populateInspectorContent(el, block);
+        showToast("Blank photo box added!", "info");
       });
 
       imagesWrap.querySelector("#btn-add-gallery-stock")?.addEventListener("click", () => {
         openStockImagePicker((url, title) => {
           c.images.push({ url, alt: title || "Gallery photo" });
-          updateBlockLive(block);
+          pushHistory();
+          setDirty(true);
+          updatePreviewLive();
           populateInspectorContent(el, block);
           showToast("Stock photo added to gallery!", "success");
         });
@@ -3308,6 +3828,8 @@
   // Re-render single block live
   function updateBlockLive(block) {
     pushHistory();
+    setDirty(true);
+    syncDraftStorage();
     const doc = preview.contentDocument;
     if (doc) {
       const el = doc.querySelector(`[data-wov-block-id="${block.id}"]`);
@@ -3907,6 +4429,26 @@
     }
   }
 
+  // Helper: Find and upload all DataURLs in content object to GitHub before committing content.json
+  async function cleanAndUploadAllDataUrlsToGithub(obj, token, repo, branch) {
+    if (!obj || typeof obj !== "object") return;
+    for (const key of Object.keys(obj)) {
+      const val = obj[key];
+      if (typeof val === "string" && val.startsWith("data:image/")) {
+        try {
+          const safeName = (obj.alt || key || "image").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 24);
+          const uploadedUrl = await githubUploadFile(val, `${safeName}.png`);
+          obj[key] = uploadedUrl;
+        } catch (err) {
+          console.error("Failed to upload inline image to GitHub:", err.message);
+          throw new Error(`Failed to upload image "${key}" to GitHub: ${err.message}`);
+        }
+      } else if (typeof val === "object" && val !== null) {
+        await cleanAndUploadAllDataUrlsToGithub(val, token, repo, branch);
+      }
+    }
+  }
+
   // Live Sync trigger: commits and publishes to GitHub Pages ONLY when explicitly clicked
   async function syncGitHub() {
     // If there are unsaved pending edits in inputs, save them locally first
@@ -3943,10 +4485,20 @@
           return;
         }
 
+        // Upload any remaining embedded data:image/ strings to GitHub uploads/ folder
+        if (statusText) statusText.textContent = "Uploading images to GitHub…";
+        await cleanAndUploadAllDataUrlsToGithub(content, githubToken, githubRepo, githubBranch);
+        await idbSet("draft_content", content);
+        await idbSet("cms-live-draft", content);
+
+        if (statusText) statusText.textContent = "Committing to GitHub…";
+
+        const authHeader = githubToken.startsWith("Bearer ") || githubToken.startsWith("token ") ? githubToken : `Bearer ${githubToken}`;
+
         // 1. Fetch current file SHA from GitHub Contents API
         const getRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json?ref=${githubBranch}`, {
           headers: {
-            "Authorization": `token ${githubToken}`,
+            "Authorization": authHeader,
             "Accept": "application/vnd.github.v3+json"
           }
         });
@@ -3966,7 +4518,7 @@
         const putRes = await fetch(`https://api.github.com/repos/${githubRepo}/contents/content.json`, {
           method: "PUT",
           headers: {
-            "Authorization": `token ${githubToken}`,
+            "Authorization": authHeader,
             "Accept": "application/vnd.github.v3+json",
             "Content-Type": "application/json"
           },
@@ -4049,59 +4601,46 @@
 
   document.querySelector("#btn-github-sync")?.addEventListener("click", syncGitHub);
 
-  // Save changes locally as a draft (does NOT push to live site until Sync is clicked)
+  // Save changes locally as a draft (persists to IndexedDB & Server, does NOT push to GitHub until Sync is clicked)
   async function saveContent() {
-    saveBtn.disabled = true;
     saveStatus.querySelector(".status-text").textContent = "Saving draft…";
     const dot = saveStatus.querySelector(".status-dot");
     if (dot) dot.style.background = "#d4967d";
 
-    if (isLiveStaticMode) {
-      try {
-        // Store draft in localStorage and broadcast to preview canvas
-        localStorage.setItem("cms-live-draft", JSON.stringify(content));
-        localStorage.setItem("cms-has-unsaved-draft", "true");
-        setDirty(false);
-        updatePreviewLive();
-        markSyncPending(true);
-
-        saveStatus.querySelector(".status-text").textContent = "Draft saved locally · Click Sync to publish";
-        if (dot) dot.style.background = "#d4967d";
-      } catch (err) {
-        alert("Failed to save draft locally: " + err.message);
-        setDirty(true);
-        if (dot) dot.style.background = "#c92a2a";
-      } finally {
-        saveBtn.disabled = false;
-      }
-      return;
-    }
-
-    // Backend server mode
     try {
-      const res = await api("./api/admin/content", { method: "PUT", body: content });
+      await idbSet("draft_content", content);
+      await idbSet("cms-live-draft", content);
+      try {
+        localStorage.setItem("cms-has-unsaved-draft", "true");
+      } catch {}
+
+      if (!isLiveStaticMode) {
+        try {
+          await api("./api/admin/content", { method: "PUT", body: content });
+        } catch (err) {
+          console.warn("Could not save to backend server:", err.message);
+        }
+      }
+
       setDirty(false);
       updatePreviewLive();
       markSyncPending(true);
 
-      saveStatus.querySelector(".status-text").textContent = "Draft saved on server · Click Sync to publish";
+      saveStatus.querySelector(".status-text").textContent = "Draft auto-saved · Click Sync to publish";
       if (dot) dot.style.background = "#d4967d";
     } catch (err) {
-      alert("Failed to save changes: " + err.message);
+      console.warn("Failed to save draft:", err.message);
       setDirty(true);
       if (dot) dot.style.background = "#c92a2a";
-    } finally {
-      saveBtn.disabled = false;
     }
   }
 
-  saveBtn.addEventListener("click", saveContent);
-
   // Keyboard Shortcuts: Ctrl+S, Ctrl+Z, Ctrl+Y
-  window.addEventListener("keydown", e => {
+  window.addEventListener("keydown", async e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
       e.preventDefault();
-      if (isDirty) saveContent();
+      await saveContent();
+      showToast("Draft saved locally. Click 'Sync to Live Site' to publish.", "info");
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
       e.preventDefault();
@@ -4125,43 +4664,52 @@
   // Load Content
   async function loadContent(forceLive = false) {
     let loadedFromLive = false;
+    let baseline = null;
     if (isLiveStaticMode || forceLive) {
       try {
         const resp = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
         if (resp.ok) {
-          content = await resp.json();
+          baseline = await resp.json();
+          content = baseline;
           loadedFromLive = true;
         }
       } catch (err) {
         console.warn("Could not fetch content.json:", err);
       }
-      if (!forceLive) {
-        try {
-          const savedDraft = localStorage.getItem("cms-live-draft");
-          const hasUnsavedDraft = localStorage.getItem("cms-has-unsaved-draft") === "true";
-          const hasPendingSync = localStorage.getItem("cms-sync-pending") === "true";
-          if (savedDraft && (hasUnsavedDraft || hasPendingSync)) {
-            const draft = JSON.parse(savedDraft);
-            content = { ...content, ...draft };
-            if (hasUnsavedDraft) setDirty(true);
-            if (hasPendingSync) {
-              markSyncPending(true);
-              const saveStatusEl = saveStatus?.querySelector(".status-text");
-              if (saveStatusEl) saveStatusEl.textContent = "Draft loaded · Click Sync to publish";
-            }
-          } else {
-            markSyncPending(false);
-          }
-        } catch {}
-      } else {
-        markSyncPending(false);
-      }
     } else {
       try {
-        content = await api("./api/admin/content");
+        baseline = await api("./api/admin/content");
+        content = baseline;
       } catch {
         const resp = await fetch(`./content.json?_t=${Date.now()}`, { cache: "no-store" });
-        content = await resp.json();
+        if (resp.ok) {
+          baseline = await resp.json();
+          content = baseline;
+        }
+      }
+    }
+
+    if (!forceLive) {
+      try {
+        const idbDraft = await idbGet("draft_content") || await idbGet("cms-live-draft");
+        let savedDraft = idbDraft;
+        if (!savedDraft) {
+          const lsDraft = localStorage.getItem("cms-live-draft") || localStorage.getItem("women-of-virtue-content-v1");
+          if (lsDraft) savedDraft = JSON.parse(lsDraft);
+        }
+        if (savedDraft && typeof savedDraft === "object" && savedDraft.blocks) {
+          content = savedDraft;
+          const hasUnsavedDraft = localStorage.getItem("cms-has-unsaved-draft") === "true";
+          const hasPendingSync = localStorage.getItem("cms-sync-pending") === "true";
+          if (hasUnsavedDraft) setDirty(true);
+          if (hasPendingSync || idbDraft) {
+            markSyncPending(true);
+            const saveStatusEl = saveStatus?.querySelector(".status-text");
+            if (saveStatusEl) saveStatusEl.textContent = "Draft loaded · Click Sync to publish";
+          }
+        }
+      } catch (err) {
+        console.warn("Could not restore local draft:", err);
       }
     }
     if (!content.blocks || typeof content.blocks !== "object") {
@@ -4337,7 +4885,7 @@
     dashboard.hidden = screen !== "dashboard";
     headerPageControl.hidden = screen !== "dashboard";
     headerCanvasControls.hidden = screen !== "dashboard";
-    saveBtn.hidden = screen !== "dashboard";
+    if (syncBtn) syncBtn.hidden = screen !== "dashboard";
     if (viewLiveBtn) viewLiveBtn.hidden = screen !== "dashboard";
     logoutBtn.hidden = screen !== "dashboard";
     const ghBadge = document.querySelector("#github-sync-badge");
@@ -5388,6 +5936,8 @@
       return;
     }
     try {
+      await idbDel("draft_content");
+      await idbDel("cms-live-draft");
       localStorage.removeItem("cms-has-unsaved-draft");
       localStorage.removeItem("cms-live-draft");
       localStorage.removeItem("cms-sync-pending");
@@ -5583,6 +6133,12 @@
 
   // Initialize
   async function init() {
+    // Proactively clean up any legacy bloated JSON strings from localStorage to free up the 5MB browser quota
+    try {
+      localStorage.removeItem("cms-live-draft");
+      localStorage.removeItem("women-of-virtue-content-v1");
+    } catch {}
+
     try {
       const status = await api("./api/admin/status");
       if (status.authenticated) {

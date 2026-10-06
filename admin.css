@@ -351,6 +351,26 @@ button, input, select, textarea {
   background: var(--accent-hover);
   transform: translateY(-1px);
 }
+.primary-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.primary-sync-btn.has-pending-sync {
+  background: var(--accent-color);
+  color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(201, 117, 91, 0.25), 0 2px 8px rgba(201, 117, 91, 0.35);
+  animation: pulse-sync-btn 2.5s infinite ease-in-out;
+}
+.primary-sync-btn.is-syncing {
+  opacity: 0.8;
+  cursor: wait;
+}
+@keyframes pulse-sync-btn {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(201, 117, 91, 0.2), 0 2px 8px rgba(201, 117, 91, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(201, 117, 91, 0.45), 0 2px 12px rgba(201, 117, 91, 0.5); }
+}
 
 .quiet-btn {
   background: #ffffff;

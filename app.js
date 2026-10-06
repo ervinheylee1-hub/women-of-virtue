@@ -2,6 +2,7 @@ const main = document.querySelector("#main");
 const nav = document.querySelector("#site-nav");
 const menuToggle = document.querySelector(".menu-toggle");
 const cmsStorageKey = "women-of-virtue-content-v1";
+const isCmsPreview = new URLSearchParams(window.location.search).get("cmsPreview") === "1";
 let cmsContent = {
   blocks: {},
   copyOverrides: {},
@@ -410,13 +411,34 @@ function setCmsText(element, value) {
   textNodes.slice(1).forEach(node => { node.nodeValue = ""; });
 }
 
+function idbGetDraft() {
+  return new Promise(resolve => {
+    try {
+      const req = indexedDB.open("wov_cms_db", 1);
+      req.onsuccess = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("draft_store")) return resolve(null);
+        const tx = db.transaction("draft_store", "readonly");
+        const getReq = tx.objectStore("draft_store").get("draft_content");
+        getReq.onsuccess = () => resolve(getReq.result || null);
+        getReq.onerror = () => resolve(null);
+      };
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 async function loadCmsContent() {
   let data = null;
-  const isCmsPreview = new URLSearchParams(window.location.search).get("cmsPreview") === "1";
   if (isCmsPreview) {
     try {
-      const saved = localStorage.getItem(cmsStorageKey);
-      if (saved) data = JSON.parse(saved);
+      data = await idbGetDraft();
+      if (!data) {
+        const saved = localStorage.getItem(cmsStorageKey);
+        if (saved) data = JSON.parse(saved);
+      }
     } catch {}
   }
   const localServer = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
@@ -434,8 +456,11 @@ async function loadCmsContent() {
   }
   if (!data && isCmsPreview) {
     try {
-      const stored = localStorage.getItem(cmsStorageKey);
-      if (stored) data = JSON.parse(stored);
+      data = await idbGetDraft();
+      if (!data) {
+        const stored = localStorage.getItem(cmsStorageKey);
+        if (stored) data = JSON.parse(stored);
+      }
     } catch {}
   }
   if (!data) return;
@@ -466,16 +491,26 @@ const images = {
 
 function validImageUrl(value) {
   if (!value) return "";
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("data:image/") || trimmed.startsWith("blob:") || trimmed.startsWith("./") || trimmed.startsWith("/")) {
+    return trimmed;
+  }
   try {
-    const url = new URL(value, window.location.href);
-    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    const url = new URL(trimmed, window.location.href);
+    return ["http:", "https:", "data:", "blob:"].includes(url.protocol) ? url.href : "";
   } catch {
     return "";
   }
 }
 
 function cmsImage(name, fallback = images[name]) {
-  return validImageUrl(cmsContent.graphics[name]) || validImageUrl(fallback);
+  const direct = validImageUrl(cmsContent.graphics[name]);
+  if (direct) return direct;
+  if (name === "contact" && validImageUrl(cmsContent.graphics["photo"])) return validImageUrl(cmsContent.graphics["photo"]);
+  if (name === "photo" && validImageUrl(cmsContent.graphics["contact"])) return validImageUrl(cmsContent.graphics["contact"]);
+  return validImageUrl(fallback);
 }
 
 const lessons = [
@@ -608,7 +643,7 @@ function aboutPage() {
   return `<div class="page-fade"><section class="about-page page-section">
     <div class="about-story">
         <div class="about-copy" data-cms-layout-group="about-columns" data-cms-layout-key="copy"><h1>For decades, women across the globe have been fed a lie.</h1><h3>The lie that the biblical woman is an oppressed woman.</h3><p>This lie is as old as time; there is nothing new under the sun. The first feminists fought to be equal under the law, not to erase roles altogether. However, over the years, this has changed. The enemy has convinced young women that they must abandon their God-given calling within the home and flip their priorities backwards to appease the feminist hustler culture we see today.</p><p>God created man and woman equal, but <strong><em>different</em></strong>.</p><h3>What can we do?</h3><p>The Women of Virtue Movement is devoted to reassuring women around the globe that they do not need to suppress their feminine nature. By enlisting God’s word on their minds and fostering a community to grow in Christ without fear of condemnation from the modern culture. Together we can bring back the traditional femininity.</p><p class="about-empty"></p><p class="about-quote"><strong>Far too many Christian women today are eager to call themselves a feminist. The fear of the roles God has called women to is a direct act of unbelief and disobedience. We must not believe this fallen world’s definition of womanhood, and cling tightly to God’s truth.</strong></p></div>
-      <div class="about-side" data-cms-layout-group="about-columns" data-cms-layout-key="media"><img src="${escapeCmsText(cmsImage("about"))}" alt="a woman wearing a veil in church" />
+      <div class="about-side" data-cms-layout-group="about-columns" data-cms-layout-key="media"><img data-cms-layout-group="about-columns" data-cms-layout-key="about" src="${escapeCmsText(cmsImage("about"))}" alt="a woman wearing a veil in church" />
         <div class="virtues" aria-label="The Way, The Truth, The Life"><details class="virtue"><summary>THE WAY</summary><p>Daily calls to prayer and weekly devotionals.</p><p>The foundation of Women of Virtue</p></details><details class="virtue"><summary>THE TRUTH</summary><p>Breaking down years of unbiblical propaganda that’s been fed to young women.</p><p>Rebuilding women’s true, biblical mindset.</p></details><details class="virtue"><summary>THE LIFE</summary><p>Guidance on living out the Virtues in daily life.</p><p>Both for married and unmarried woman's.</p></details></div>
       </div>
     </section>
@@ -625,7 +660,7 @@ function contactPage() {
         <div class="field full"><label for="contact-message">Message <span>(required)</span></label><textarea id="contact-message" name="message" rows="4" required></textarea></div>
         <button class="button" type="submit">SEND</button><p class="form-status" aria-live="polite"></p>
       </form>
-    </div><img class="contact-photo" data-cms-layout-group="contact-columns" data-cms-layout-key="photo" src="${escapeCmsText(cmsImage("contact"))}" alt="A woman wearing a white hoodie and gold jewelry" />
+    </div><img class="contact-photo" data-cms-layout-group="contact-columns" data-cms-layout-key="contact" src="${escapeCmsText(cmsImage("contact"))}" alt="A woman wearing a white hoodie and gold jewelry" />
   </section></div>`;
 }
 
@@ -790,15 +825,42 @@ function renderBlock(block) {
     }
     case "gallery": {
       const cols = Number(content.columns) || 4;
-      const images = Array.isArray(content.images) ? content.images : [];
+      const rawImages = Array.isArray(content.images) ? content.images : [];
+      // In CMS preview mode, show all slots including blank boxes. On public site, show only filled slots (or all if none filled yet).
+      const hasAnyFilled = rawImages.some(img => img && img.url && String(img.url).trim());
+      const images = (isCmsPreview || !hasAnyFilled) ? rawImages : rawImages.filter(img => img && img.url && String(img.url).trim());
+
       return `<div class="wov-block wov-block-container" data-wov-block-id="${id}" data-wov-block-type="gallery" ${styleAttr}>
         ${content.title ? `<div class="section-heading"><h2 data-cms-key="block:${id}:title">${escapeCmsText(content.title)}</h2></div>` : ""}
         <div class="wov-block-gallery-grid wov-gallery-cols-${cols}">
-          ${images.map((img, idx) => `
-            <div class="wov-gallery-item">
-              <img src="${escapeCmsText(img.url || '')}" alt="${escapeCmsText(img.alt || '')}" loading="lazy" data-cms-key="block:${id}:img:${idx}" />
-            </div>
-          `).join("")}
+          ${images.map((img, idx) => {
+            const url = img && img.url ? String(img.url).trim() : "";
+            const alt = img && img.alt ? escapeCmsText(img.alt) : "";
+            if (url) {
+              return `
+                <div class="wov-gallery-item" data-gallery-slot="${idx}" data-gallery-block-id="${id}">
+                  <img src="${escapeCmsText(url)}" alt="${alt}" loading="lazy" data-cms-key="block:${id}:img:${idx}" />
+                  <div class="wov-gallery-item-hover">
+                    <span class="wov-gallery-replace-hint">⇄ Drop photo to replace</span>
+                  </div>
+                </div>`;
+            } else {
+              return `
+                <div class="wov-gallery-item wov-gallery-blank-box" data-gallery-slot="${idx}" data-gallery-block-id="${id}" data-cms-key="block:${id}:img:${idx}" role="button" tabindex="0" title="Drag photo here from Downloads folder or click to browse">
+                  <div class="wov-gallery-placeholder">
+                    <div class="wov-gallery-ph-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                    <span class="wov-gallery-ph-text">Drop Photo Here</span>
+                    <span class="wov-gallery-ph-sub">from Downloads folder or click</span>
+                  </div>
+                </div>`;
+            }
+          }).join("")}
         </div>
       </div>`;
     }
@@ -1205,6 +1267,20 @@ window.addEventListener("message", event => {
     render();
   }
 });
+
+// Image Error Fallback: If an uploaded image fails to load via relative ./uploads/, fallback to GitHub raw URL
+window.addEventListener("error", e => {
+  if (e.target && e.target.tagName === "IMG") {
+    const src = e.target.getAttribute("src") || "";
+    if (src.includes("uploads/")) {
+      const fileName = src.split("/").pop();
+      const rawUrl = `https://raw.githubusercontent.com/ervinheylee1-hub/women-of-virtue/main/uploads/${fileName}`;
+      if (e.target.src !== rawUrl) {
+        e.target.src = rawUrl;
+      }
+    }
+  }
+}, true);
 
 async function initializeSite() {
   await loadCmsContent();
