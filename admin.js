@@ -1168,11 +1168,20 @@
         outline: none !important;
         box-shadow: none !important;
       }
+      h1.wov-visual-target, h2.wov-visual-target, h3.wov-visual-target,
+      h4.wov-visual-target, h5.wov-visual-target, h6.wov-visual-target,
+      p.wov-visual-target, blockquote.wov-visual-target, cite.wov-visual-target,
+      summary.wov-visual-target,
+      [contenteditable="true"] {
+        cursor: text !important;
+      }
       .wov-visual-target[contenteditable="true"] {
         outline: 2px solid #c9755b !important;
         outline-offset: 2px !important;
         background: rgba(201, 117, 91, 0.06) !important;
         cursor: text !important;
+        user-select: text !important;
+        -webkit-user-select: text !important;
       }
 
       /* Visual Transformer Overlay (Move & Resize) */
@@ -1628,64 +1637,7 @@
 
       el.classList.add("wov-visual-target");
 
-      // Visual Click Selection
-      el.addEventListener("click", e => {
-        if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) {
-          return; // Let standard link navigation & button clicks occur in clean preview mode!
-        }
-        if (e.target.closest(".wov-details-toggle")) {
-          return; // Handled directly by toggle button
-        }
-        if (e.ctrlKey || e.metaKey) {
-          return; // Allow Ctrl+click to follow links or buttons natively
-        }
-        if (el.matches("a, button, .menu-toggle") && !el.closest(".wov-badge-btn, .wov-tf-btn, .wov-details-toggle")) {
-          e.preventDefault();
-        }
-        if (el.tagName.toLowerCase() === "summary") {
-          const det = el.closest("details");
-          if (det && !det.open) {
-            det.open = true;
-            const btn = det.querySelector(".wov-details-toggle");
-            if (btn) btn.textContent = "▾";
-          }
-        }
-        e.stopPropagation();
-        selectVisualElement(el);
-      });
 
-      // Double Click: Follow Link or Toggle Menu directly on canvas
-      el.addEventListener("dblclick", e => {
-        if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) return;
-        const linkEl = el.matches("a") ? el : el.closest("a");
-        if (linkEl) {
-          const href = linkEl.getAttribute("href");
-          if (href) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (href.startsWith("#/")) {
-              preview.contentWindow.location.hash = href;
-              const route = href.replace(/^#\/?/, "").replace(/\/$/, "") || "home";
-              if (pageSelector) pageSelector.value = route;
-              currentRoute = route;
-            } else if (href.startsWith("http://") || href.startsWith("https://")) {
-              window.open(href, "_blank", "noopener,noreferrer");
-            }
-          }
-          return;
-        }
-        if (el.matches(".menu-toggle, .menu-toggle *")) {
-          e.preventDefault();
-          e.stopPropagation();
-          const navEl = doc.querySelector("#site-nav");
-          const toggleEl = doc.querySelector(".menu-toggle");
-          if (navEl && toggleEl) {
-            const isOpen = navEl.classList.toggle("is-open");
-            toggleEl.setAttribute("aria-expanded", String(isOpen));
-            toggleEl.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
-          }
-        }
-      });
 
       // Direct file drop from OS onto canvas images and hero banners
       const isImg = el.tagName.toLowerCase() === "img";
@@ -1891,6 +1843,147 @@
     doc.addEventListener("toggle", onDocDetailsToggle, true);
     doc.removeEventListener("keydown", handleElementNudge);
     doc.addEventListener("keydown", handleElementNudge);
+
+    // Dedicated Delegated Pointer & Click Handlers on preview document
+    doc.removeEventListener("mousedown", handleCanvasMouseDown, true);
+    doc.addEventListener("mousedown", handleCanvasMouseDown, true);
+    doc.removeEventListener("click", handleCanvasClick, true);
+    doc.addEventListener("click", handleCanvasClick, true);
+    doc.removeEventListener("dblclick", handleCanvasDblClick, true);
+    doc.addEventListener("dblclick", handleCanvasDblClick, true);
+
+    try {
+      preview.contentWindow?.removeEventListener("hashchange", handlePreviewHashChange);
+      preview.contentWindow?.addEventListener("hashchange", handlePreviewHashChange);
+    } catch {}
+  }
+
+  function handleCanvasMouseDown(e) {
+    const doc = preview.contentDocument;
+    if (!doc || !doc.body) return;
+    if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) {
+      return;
+    }
+    if (e.target.closest(".wov-editor-badge, .wov-between-inserter, #wov-drop-zone-indicator, #wov-transformer-box, .wov-details-toggle")) {
+      return;
+    }
+
+    // Direct text element clicked
+    const textTarget = e.target.closest("h1, h2, h3, h4, h5, h6, p, a, button, summary, blockquote, cite, [data-cms-key], .cms-rich-copy");
+    if (textTarget) {
+      // Ensure contenteditable is enabled immediately on mousedown so native browser caret positioning works at click coordinates
+      if (textTarget.getAttribute("contenteditable") !== "true") {
+        textTarget.setAttribute("contenteditable", "true");
+      }
+    }
+  }
+
+  function handleCanvasClick(e) {
+    const doc = preview.contentDocument;
+    if (!doc || !doc.body) return;
+    if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) {
+      return; // Clean preview mode: allow standard link navigation & button clicks
+    }
+    if (e.target.closest(".wov-details-toggle")) {
+      return; // Handled directly by dropdown toggle button
+    }
+    if (e.target.closest(".wov-editor-badge, .wov-between-inserter, #wov-drop-zone-indicator, #wov-transformer-box")) {
+      return;
+    }
+    if (e.ctrlKey || e.metaKey) {
+      return; // Allow Ctrl+click to follow links natively
+    }
+
+    // Priority 1: Direct text target (headings, paragraphs, links, buttons, summary, quotes, CMS overrides)
+    let target = e.target.closest("h1, h2, h3, h4, h5, h6, p, a, button, summary, blockquote, cite, [data-cms-key], .cms-rich-copy");
+
+    // Priority 2: Direct image
+    if (!target) {
+      target = e.target.closest("img");
+    }
+
+    // Priority 3: Block container or layout wrapper (only if clicked directly on empty container space)
+    if (!target) {
+      target = e.target.closest("[data-wov-block-id], .hero-copy, .project-copy, .wov-block, details.lesson-section, .site-header, .site-footer, .footer-partnership, .wordmark, .site-nav, .social-links");
+    }
+
+    if (!target) return;
+
+    // In editor mode, prevent native link navigation on single click so clicking a link/button doesn't navigate away from editor
+    if (target.matches("a, button, .menu-toggle") && !target.closest(".wov-badge-btn, .wov-tf-btn, .wov-details-toggle")) {
+      e.preventDefault();
+    }
+
+    if (target.tagName.toLowerCase() === "summary") {
+      const det = target.closest("details");
+      if (det && !det.open) {
+        det.open = true;
+        const btn = det.querySelector(".wov-details-toggle");
+        if (btn) btn.textContent = "▾";
+      }
+    }
+
+    // If this element is ALREADY selected and editable, user is placing caret between words or selecting text!
+    // NEVER re-run selectVisualElement which would reset focus and destroy caret/selection!
+    if (selectedElement === target && target.getAttribute("contenteditable") === "true") {
+      updateTransformerPosition();
+      return;
+    }
+
+    e.stopPropagation();
+    selectVisualElement(target, { isMouseClick: true });
+  }
+
+  function handleCanvasDblClick(e) {
+    const doc = preview.contentDocument;
+    if (!doc || !doc.body) return;
+    if (doc.body.classList.contains("is-clean-preview") || document.body.classList.contains("is-preview-mode")) return;
+
+    // If element is contenteditable or user is double-clicking text, allow native word selection!
+    if (e.target.isContentEditable || e.target.closest("[contenteditable='true']")) {
+      return;
+    }
+
+    const linkEl = e.target.closest("a");
+    if (linkEl) {
+      const href = linkEl.getAttribute("href");
+      if (href) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (href.startsWith("#/")) {
+          preview.contentWindow.location.hash = href;
+          const route = href.replace(/^#\/?/, "").replace(/\/$/, "") || "home";
+          if (pageSelector) pageSelector.value = route;
+          currentRoute = route;
+        } else if (href.startsWith("http://") || href.startsWith("https://")) {
+          window.open(href, "_blank", "noopener,noreferrer");
+        }
+      }
+      return;
+    }
+
+    const menuToggle = e.target.closest(".menu-toggle");
+    if (menuToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      const navEl = doc.querySelector("#site-nav");
+      if (navEl) {
+        const isOpen = navEl.classList.toggle("is-open");
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        menuToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+      }
+    }
+  }
+
+  function handlePreviewHashChange() {
+    const hash = preview.contentWindow?.location?.hash || "#/";
+    const route = hash.replace(/^#\/?/, "").replace(/\/$/, "") || "home";
+    currentRoute = route;
+    if (pageSelector) pageSelector.value = route;
+    selectedBlockId = null;
+    selectedElement = null;
+    selectedCmsKey = null;
+    setTimeout(bindPreviewCanvas, 40);
   }
 
   function onDocDetailsToggle() {
@@ -2406,9 +2499,17 @@
   }
 
   // Universal Selection Function
-  function selectVisualElement(el) {
+  function selectVisualElement(el, options = {}) {
     const doc = preview.contentDocument;
     if (!doc || !el) return;
+
+    const isMouseClick = Boolean(options.isMouseClick);
+
+    // If already selected, do not re-select or reset focus
+    if (selectedElement === el && el.classList.contains("wov-element-selected")) {
+      updateTransformerPosition();
+      return;
+    }
 
     // If inside a details dropdown, make sure it is open so content is visible
     const parentDetails = el.closest("details");
@@ -2480,10 +2581,12 @@
 
     // Direct Inline Canvas Editing for Text Elements (exclude layout container wrappers)
     const isContainer = ["header", "footer", "nav"].includes(tagName) || el.classList.contains("site-header") || el.classList.contains("site-footer") || el.classList.contains("footer-partnership") || el.classList.contains("social-links") || el.classList.contains("site-nav");
-    const isTextElement = !isContainer && (["h1", "h2", "h3", "h4", "h5", "h6", "p", "a", "button", "blockquote", "cite", "summary"].includes(tagName) || el.classList.contains("cms-rich-copy"));
+    const isTextElement = !isContainer && (["h1", "h2", "h3", "h4", "h5", "h6", "p", "a", "button", "blockquote", "cite", "summary"].includes(tagName) || el.classList.contains("cms-rich-copy") || Boolean(el.dataset.cmsKey));
     if (isTextElement) {
       el.setAttribute("contenteditable", "true");
-      el.focus();
+      if (!isMouseClick && doc.activeElement !== el) {
+        el.focus();
+      }
 
       // Two-way sync: Canvas input -> Sidebar & Content Store
       el.oninput = () => {
@@ -2495,6 +2598,7 @@
           else if (block.content.quote !== undefined) block.content.quote = newText;
           else if (block.content.buttonText !== undefined) block.content.buttonText = newText;
         } else if (selectedCmsKey) {
+          if (!content.copyOverrides) content.copyOverrides = {};
           content.copyOverrides[selectedCmsKey] = newText;
         }
 
@@ -6129,6 +6233,13 @@
       }
     }
     bindPreviewCanvas();
+  });
+
+  // Listen for preview render notifications to reliably bind canvas
+  window.addEventListener("message", event => {
+    if (event.data && event.data.type === "WOV_PREVIEW_RENDERED") {
+      bindPreviewCanvas();
+    }
   });
 
   // Initialize

@@ -1139,6 +1139,11 @@ function render() {
   menuToggle.setAttribute("aria-label", "Open navigation");
   document.body.style.overflow = "";
   window.scrollTo(0, 0);
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "WOV_PREVIEW_RENDERED" }, "*");
+    }
+  } catch {}
 }
 
 function saveLesson(slug, checked) {
