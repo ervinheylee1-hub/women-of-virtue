@@ -47,7 +47,7 @@
       {
         "type": "gallery",
         "content": {
-          "title": "",
+          "title": "Photo Gallery",
           "columns": 4,
           "images": [
             {
@@ -186,20 +186,22 @@
     "contact": [],
     "devotionals/prayer-life-and-church-community": [],
     "devotionals/denying-flesh": [],
-    "devotionals/harden-not": []
+    "devotionals/harden-not": [],
+    "devotionals/fruit": [],
+    "devotionals/bearing": []
   },
   "copyOverrides": {
     "block:block_hero_1:button": "Learn More",
     "block:block_about_heading_1:heading": "FOR DECADES, WOMEN ACROSS THE GLOBE HAVE BEEN FED A LIE.",
     "block:block_hero_1:eyebrow": "WELCOME TO THE WOMEN OF VIRTUE MOVEMENT",
-    "home:h2:follow-the-journey:0": "",
-    "block:block_text_2q1i1b5:text": "The lie that the biblical woman is an oppressed woman.",
+    "home:h2:follow-the-journey:0": "\n",
+    "block:block_text_2q1i1b5:text": "\n\nThe lie that the biblical woman is an oppressed woman.\n\n",
     "devotionals-defining-femininity:div:the-prayer-for-the-human-family-o-god-you-made-u:0": "The Prayer for the Human Family — “O God, you made us in your own image and redeemed us through Jesus your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love; and work through our struggle and confusion to accomplish your purposes on earth; that, in your good time, all nations and races may serve you in harmony around your heavenly throne; through Jesus Christ our lord. Amen 1928 Book of Common Prayer",
     "lesson:prayer-life-and-church-community:res:p:0": "1928 Book of Common Prayer:\n The General Thanksgiving \nAlmighty God, Father of all mercies, we thine unworthy servants do give thee most humble and hearty thanks for all thy goodness and loving-kindness to us and to all men. We bless thee for our creation, preservation, and all the blessings of this life; but above all, for thine inestimable love in the redemption of the world by our Lord Jesus Christ; for the means of grace, and for the hope of glory. And, we beseech thee, give us that due sense of all thy mercies, that our hearts may be unfeignedly thankful; and that we show forth thy praise, not only with our lips, but in our lives, by giving up ourselves to thy service, and by walking before thee in holiness and righteousness all our days; through Jesus Christ our Lord, to whom, with thee and the Holy Ghost, be all honor and glory, world without end. Amen.",
-    "lesson:prayer-life-and-church-community:res:title": "Todays",
-    "block:block_gallery_1:title": "",
+    "lesson:prayer-life-and-church-community:res:title": "▾Todays",
+    "block:block_gallery_1:title": "\n",
     "devotionals:summary:what-if-i-don-t-attend-a-church-:0": "What if I don't attend a Church?",
-    "lesson:defining-femininity:res:title": "Prayer:",
+    "lesson:defining-femininity:res:title": "▾Prayer:",
     "devotionals-defining-femininity:p:firm-foundations-2-lessons-january-5-2026:0": "FIRM FOUNDATIONS · 2 LESSONS · ",
     "devotionals-prayer-life-and-church-community:p:firm-foundations-2-lessons-january-12-2026:0": "FIRM FOUNDATIONS · 2 LESSONS ·",
     "shared:footer:partnership-orgs": "The Anglican Renaissance",
@@ -207,14 +209,15 @@
     "lesson:harden-not:sec:0:p:2": "Wellspring \nProverbs 4:23 “Above all else guard your heart, for everything you do flows from it.”",
     "lesson:harden-not:sec:1:p:0": "Poor and Needy\n Proverbs 31:20 “She opens her arms to the poor and extends her hands to the needy.”",
     "lesson:harden-not:sec:2:p:0": "Avoiding revenge\n Leviticus 19:18 “Do not seek revenge or bear a grudge against anyone among your people, but love your neighbor as yourself. I am the Lord.”",
-    "lesson:harden-not:sec:2:title": "Forgivness",
+    "lesson:harden-not:sec:2:title": "▾\nForgivness",
     "lesson:harden-not:sec:2:p:2": "Peace \n Romans 12:18 “If it is possible, as far as it depends on you, live at peace with everyone.”",
     "lesson:denying-flesh:sec:0:p:0": "Fallen World \nEphesians 6:12-13 \"For our struggle is not against flesh and blood, but against the rulers, against the authorities, against the powers of this dark world and against the spiritual forces of evil in the heavenly realms. Therefore put on the full armor of God...\"",
     "lesson:denying-flesh:sec:0:p:2": "Lean not on your own understanding\n Proverbs 3:5-6 \"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.\"",
     "lesson:denying-flesh:sec:1:p:0": "Creatures of habit \n1 Timothy 4:7-8 “Train yourself to be godly. For physical training is of some value, but godliness has value for all things”",
     "lesson:denying-flesh:sec:1:p:2": "Feed your Spirit not your Flesh:\n Matthew 6:11 “Give us this day our daily bread”",
     "lesson:denying-flesh:sec:2:p:0": "Confession \nJames 5:16 “Therfore confess your sins to eachother and pray for eachother so that you may be healed.”",
-    "lesson:denying-flesh:sec:2:p:2": "Bear one another's burdens \n Galatians 6:2 “Carry one another's burdens, and in this you will fulfill the law of Christ.”"
+    "lesson:denying-flesh:sec:2:p:2": "Bear one another's burdens \n Galatians 6:2 “Carry one another's burdens, and in this you will fulfill the law of Christ.”",
+    "lesson:fruit:introTitle": "\n"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -261,16 +264,12 @@
       "fontSize": "26px"
     }
   },
-  "theme": {
-    "headerPink": "#d4967d",
-    "headingPink": "#d4967d",
-    "bodyTextColor": "#303636"
-  },
+  "theme": {},
   "graphics": {
-    "photo": "./uploads/img_7378_1791260928967.jpg",
-    "contact": "./uploads/img_7378_1791260928967.jpg",
-    "lesson:harden-not": "./uploads/img_7378_1791856057029.jpg",
-    "lesson:harden-not:photo": "./uploads/img_7378_1791856057029.jpg"
+    "lesson:fruit": "./uploads/img_7380_1791933460108.jpg",
+    "lesson:fruit:photo": "./uploads/img_7380_1791933460108.jpg",
+    "lesson:bearing": "./uploads/img_7377_1791933753338.jpg",
+    "lesson:bearing:photo": "./uploads/img_7377_1791933753338.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -585,6 +584,101 @@
             "The Collect for the Eighteenth Sunday after Trinity. American Book of Common Prayer (1928)"
           ],
           "image": "",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        }
+      ]
+    },
+    {
+      "id": "fruitful",
+      "title": "Fruitful",
+      "description": "Fruitfulness is not about becoming a better Christian, it's about drawing so near to Christ that His character begins to show up in your actions and attitude. This week we are doing more than checking boxes, we are seeking God to cultivate the fruit of HIS Spirit in our everyday lives. When we abide in Him, we don't have to force the fruits, we bear them.",
+      "lessons": [
+        {
+          "id": "lesson-fruit",
+          "slug": "fruit",
+          "title": "Fruit?",
+          "publishedAt": "2026-10-13",
+          "introTitle": "",
+          "intro": "It is called fruit—singular in the Greek: Karposs. It is one fruit, with nine characteristics, the characteristics of Christ. Being fruitful isn't a test, it's a transformation in us through the Holy Spirit. We can easily confuse our works with our fruit; works are actions, but the fruit is a state of being.",
+          "sections": [
+            {
+              "title": "THE 9 CHARACTERISTICS OF FRUIT",
+              "paragraphs": [
+                "LOVE (AGAPE)\nUnconditional, selfless love.The kind that is sacrificial. The kind of love that a Father has for his Children. It is a choice, not a feeling.",
+                "JOY (CHARA)\nA deep gladness because of who God is, not because of what's currently going on in our lives.",
+                "PEACE (EIRENE) \nComplete serenity because you have been joined to God.",
+                "Our peace does not come from worldly security, but rather from the security that God's promises to us are true and everlasting. Nothing that happens on this earth and in our daily lives can frustrate God’s plans for the end. God has already won, we are simply awaiting the feast.",
+                "FOREBEARANCE (MAKROTHUMIA)\nThe ability to be wronged without retaliation, to wait without growing bitter. Forbearance is a divine patience that comes only from the Lord.",
+                "When we are patient and forgiving towards others, we directly reflect the love of Christ. None of us DESERVE mercy, yet our Heavenly Father gives it every day. He never grows tired of forgiving us, we mustn't grow tired of forgiving each other.",
+                "KINDNESS (CHRESTOTES)\nOften confused with niceness, true kindness actively seeks the best for others. Kindness is useful, benevolent, and willing to have a hard conversation if it helps someone heal or grow towards the Lord.",
+                "When we are kind to others, we show them the love of Christ. We must not lose true kindness in order to make others comfortable or happy. We must hold fast to God's truth and encourage each other daily to do the same.",
+                "GOODNESS (AGATHOSUNE) \nMoral integrity and courage rooted in the Lord.",
+                "As believers we are called to have a backbone, to do what IS right, not just what feels right. When Jesus flipped tables, he wasn't being nice, he was being GOOD.",
+                "FAITHFULNESS (PISTIS)\nLoyalty and reliability, both towards the Lord and towards others.",
+                "When we have Faithfulness we can be trusted with the small and large things. Being faithful is a daily commitment between us and the Lord.",
+                "GENTLENESS (PRAUTES)\nGentleness is not weakness, it is strength used for good. Jesus could have called a legion of angels down to fight for Him, instead He touched lepers, washed feet, and ultimately let Himself be crucified on the cross, was He weak? Of course not.",
+                "We are called to be gentle. Gentle with others, gentle with ourselves. This isn't appeasement, nor is it being soft. It is the innate drive to have mercy with others, while still holding them fast to the truth, just as our Lord Jesus Christ has done towards us.",
+                "SELF-CONTROL (EGKRATEIA)\nThe ability to fight our flesh.",
+                "When we are close to the lord, and allow the spirit to guide us, we are able to control our fleshy desires and seek first the kingdom."
+              ]
+            },
+            {
+              "title": "REFLECTION QUESTIONS",
+              "paragraphs": [
+                "What evidence of fruit do you see in those around you? In yourself?",
+                "How has the Lord shown fruit towards you recently?",
+                "How have you seen God’s fruit develop and ripen in you over the past few years?",
+                "Is there anything you don't quite understand about the fruit of the Spirit?"
+              ]
+            }
+          ],
+          "resourceTitle": "Additional Resources",
+          "resource": [],
+          "image": "./uploads/img_7380_1791933460108.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        },
+        {
+          "id": "lesson-bearing",
+          "slug": "bearing",
+          "title": "BEARING",
+          "publishedAt": "2026-10-13",
+          "introTitle": "What does it mean to 'bear' Fruit?",
+          "intro": "We've learned what the fruit is, but how does it actually look day to day in our lives? God does not say to “Act Fruitful” he calls us to BEAR it. When we are abiding in Christ; His word, His character, and HIS fruit begins to show up all around and within us.",
+          "sections": [
+            {
+              "title": "ABIDE",
+              "paragraphs": [
+                "When we spend time with the Lord, through prayer and reading his word, he begins to mold us. Abiding isn't a checklist, its daily connection to our father. When you are connected to the vine, the fruit soon follows. We ought to cling tightly to the Lord, not as a demonstration for what we can do for Him, but rather what He can do in us.",
+                "Hosea 10:12\n“Break up your fallow ground, for it is time to seek the Lord, that He may rain righteousness upon you”"
+              ]
+            },
+            {
+              "title": "RECEIVE",
+              "paragraphs": [
+                "Fruit is not something you work for, it is something you receive through the Lord. It is His fruit, not ours. We begin to receive fruit as the spirit transforms our hearts and minds. When we let God work in us, He begins to produce the fruit through us. An inner transformation occurs before the outward expression.",
+                "John 15:4-5\n\"Abide in me, and I in you. As the branch cannot bear fruit by itself, unless it abides in the vine, neither can you, unless you abide in me. I am the vine; you are the branches. Whoever abides in me and I in him, he it is that bears much fruit, for apart from me you can do nothing.\""
+              ]
+            },
+            {
+              "title": "PROVIDE",
+              "paragraphs": [
+                "The fruit is not for the tree. The fruit the Lord produces in us  is not for ourselves, it is for the people passing by, and to spread seeds. We must use the fruit God has instilled in us through His holy vine in order to help, encourage, and grow those around us. By sharing our fruit with others, we are directly planting seeds and spreading the Gospel. Matthew states, “you shall know them by their fruit.” Our fruit should be evident to those around us, it's not a personal gift, but rather God using us as living instruments to love each other well.",
+                "1 Peter 4:10\n\"As each has received a gift, use it to serve one another, as good stewards of God's varied grace:\""
+              ]
+            }
+          ],
+          "resourceTitle": "This Week's Prayer:",
+          "resource": [
+            "The Collect For The Ninth Sunday After Trinity, American Book Of Common Prayer  (1928)",
+            "“Grant to us. Lord, we beseech thee, the Spirit to think and do always such things as are right; that we, who cannot do any thing that is good without thee, may by thee be enabled to live according to thy will; through Jesus Christ our Lord. Amen,”"
+          ],
+          "image": "./uploads/img_7377_1791933753338.jpg",
           "imageAlt": "",
           "pdfUrl": "",
           "imageHeight": 600,
