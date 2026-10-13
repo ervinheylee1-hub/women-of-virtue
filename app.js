@@ -32,8 +32,9 @@ function normalizeLessonItem(item) {
   const sections = Array.isArray(item.sections) && item.sections.some(Boolean)
     ? item.sections.filter(Boolean).map(section => {
       const [title, paragraphs] = Array.isArray(section) ? section : [section.title, section.paragraphs];
+      const cleanTitle = String(title || "Section").replace(/^[▾▸\s]+/, "").trim();
       return [
-        escapeCmsText(title || "Section"),
+        escapeCmsText(cleanTitle || "Section"),
         Array.isArray(paragraphs) ? paragraphs.map(p => (
           p && typeof p === "object" && Object.hasOwn(p, "html") ? { html: sanitizeCmsHtml(p.html) } : p
         )) : []
@@ -61,7 +62,7 @@ function normalizeLessonItem(item) {
     intro: item.intro || "",
     introHtml: item.introHtml ? sanitizeCmsHtml(item.introHtml) : "",
     sections: sections,
-    resourceTitle: escapeCmsText(item.resourceTitle || "Additional Resources"),
+    resourceTitle: escapeCmsText(String(item.resourceTitle || "Additional Resources").replace(/^[▾▸\s]+/, "").trim()),
     resource: resource,
     image: cmsImage(`lesson:${slug}`, item.image || images.bible),
     imageAlt: escapeCmsText(item.imageAlt || item.title || ""),
@@ -402,12 +403,16 @@ function registerCmsText() {
 }
 
 function setCmsText(element, value) {
+  let cleanVal = value;
+  if (element && element.tagName && element.tagName.toLowerCase() === "summary") {
+    cleanVal = String(value || "").replace(/^[▾▸\s]+/, "").trim();
+  }
   const textNodes = [...element.childNodes].filter(node => node.nodeType === Node.TEXT_NODE);
   if (!textNodes.length) {
-    element.textContent = value;
+    element.textContent = cleanVal;
     return;
   }
-  textNodes[0].nodeValue = value;
+  textNodes[0].nodeValue = cleanVal;
   textNodes.slice(1).forEach(node => { node.nodeValue = ""; });
 }
 
