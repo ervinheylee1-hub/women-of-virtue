@@ -1735,23 +1735,31 @@
                 const url = await uploadImageFile(file);
                 if (isImg) {
                   el.src = url;
-                  const blockEl = el.closest("[data-wov-block-id]");
-                  if (blockEl) {
-                    const block = findBlock(blockEl.dataset.wovBlockId);
-                    if (block && block.content) {
-                      if (block.type === "gallery" && Array.isArray(block.content.images)) {
-                        const slot = el.closest("[data-gallery-slot]");
-                        const sIdx = slot ? parseInt(slot.dataset.gallerySlot, 10) : -1;
-                        if (sIdx >= 0 && block.content.images[sIdx]) {
-                          block.content.images[sIdx].url = url;
+                  const lessonSlug = el.closest("[data-lesson]")?.dataset?.lesson ||
+                    (el.classList.contains("lesson-photo") ? (preview.contentWindow?.location?.hash || "").replace(/^#\/?devotionals\//, "").split("?")[0].replace(/\/$/, "") : null) ||
+                    (currentRoute && currentRoute.startsWith("devotionals/") ? currentRoute.replace(/^devotionals\//, "") : null);
+
+                  if (lessonSlug && el.classList.contains("lesson-photo")) {
+                    updateLessonImage(lessonSlug, url);
+                  } else {
+                    const blockEl = el.closest("[data-wov-block-id]");
+                    if (blockEl) {
+                      const block = findBlock(blockEl.dataset.wovBlockId);
+                      if (block && block.content) {
+                        if (block.type === "gallery" && Array.isArray(block.content.images)) {
+                          const slot = el.closest("[data-gallery-slot]");
+                          const sIdx = slot ? parseInt(slot.dataset.gallerySlot, 10) : -1;
+                          if (sIdx >= 0 && block.content.images[sIdx]) {
+                            block.content.images[sIdx].url = url;
+                          }
+                        } else {
+                          block.content.url = url;
                         }
-                      } else {
-                        block.content.url = url;
                       }
                     }
-                  }
-                  if (el.dataset.cmsLayoutKey) {
-                    content.graphics[el.dataset.cmsLayoutKey] = url;
+                    if (el.dataset.cmsLayoutKey) {
+                      content.graphics[el.dataset.cmsLayoutKey] = url;
+                    }
                   }
                 } else if (isHero) {
                   el.style.backgroundImage = `url('${url}')`;
@@ -2457,6 +2465,32 @@
   }
 
   // Two-way sync from Canvas element to Devotionals Content Store
+  function updateLessonImage(lessonSlug, url) {
+    if (!lessonSlug || !url) return;
+    ensureDevotionalsInitialized();
+    if (!content.graphics) content.graphics = {};
+    content.graphics[`lesson:${lessonSlug}`] = url;
+    content.graphics[`lesson:${lessonSlug}:photo`] = url;
+
+    let targetLesson = null;
+    if (Array.isArray(content.devotionals)) {
+      for (const dev of content.devotionals) {
+        if (Array.isArray(dev.lessons)) {
+          targetLesson = dev.lessons.find(l => l.slug === lessonSlug);
+          if (targetLesson) break;
+        } else if (dev.slug === lessonSlug) {
+          targetLesson = dev;
+          break;
+        }
+      }
+    }
+    if (targetLesson) {
+      targetLesson.image = url;
+    }
+    setDirty(true);
+    syncDraftStorage();
+  }
+
   function syncLessonTextFromElement(el, newText) {
     if (!el || !content.devotionals) return;
     const doc = preview.contentDocument;
@@ -2480,20 +2514,15 @@
       }
     }
     if (!targetLesson && Array.isArray(content.devotionals)) {
-      // If content.devotionals does not yet have units or lessons, copy from default lessons
-      const defLesson = lessons.find(l => l.slug === lessonSlug);
-      if (defLesson) {
-        let firmUnit = content.devotionals.find(d => d.id === "firm-foundations" || d.title === "Firm Foundations");
-        if (!firmUnit) {
-          firmUnit = {
-            id: "firm-foundations",
-            title: "Firm Foundations",
-            description: "Weekly Devotionals for Women of Virtue",
-            lessons: JSON.parse(JSON.stringify(lessons))
-          };
-          content.devotionals.unshift(firmUnit);
+      ensureDevotionalsInitialized();
+      for (const dev of content.devotionals) {
+        if (Array.isArray(dev.lessons)) {
+          targetLesson = dev.lessons.find(l => l.slug === lessonSlug);
+          if (targetLesson) break;
+        } else if (dev.slug === lessonSlug) {
+          targetLesson = dev;
+          break;
         }
-        targetLesson = firmUnit.lessons?.find(l => l.slug === lessonSlug);
       }
     }
     if (!targetLesson) return;
@@ -3103,14 +3132,24 @@
           targetBlock.content.url = url;
         }
 
-        // 2. Global layout keys (Home gallery: brunch, prayer, bible, letter; About: about; Contact: contact; Hero: hero)
-        const layoutKey = el?.dataset?.cmsLayoutKey || (selectedCmsKey && !selectedCmsKey.startsWith("block:") ? selectedCmsKey : null);
-        if (layoutKey) {
-          content.graphics[layoutKey] = url;
-          if (layoutKey === "contact") content.graphics["photo"] = url;
-          if (layoutKey === "photo") content.graphics["contact"] = url;
-        } else if (selectedCmsKey && !selectedCmsKey.startsWith("block:")) {
-          content.graphics[selectedCmsKey] = url;
+        // 2. Devotional lesson photos
+        const lessonSlug = el?.closest("[data-lesson]")?.dataset?.lesson ||
+          (selectedCmsKey && selectedCmsKey.startsWith("lesson:") ? selectedCmsKey.split(":")[1] : null) ||
+          (el?.classList?.contains("lesson-photo") ? (preview.contentWindow?.location?.hash || "").replace(/^#\/?devotionals\//, "").split("?")[0].replace(/\/$/, "") : null) ||
+          (currentRoute && currentRoute.startsWith("devotionals/") ? currentRoute.replace(/^devotionals\//, "") : null);
+
+        if (lessonSlug && (el?.classList?.contains("lesson-photo") || (selectedCmsKey && selectedCmsKey.startsWith("lesson:")))) {
+          updateLessonImage(lessonSlug, url);
+        } else {
+          // 3. Global layout keys (Home gallery: brunch, prayer, bible, letter; About: about; Contact: contact; Hero: hero)
+          const layoutKey = el?.dataset?.cmsLayoutKey || (selectedCmsKey && !selectedCmsKey.startsWith("block:") ? selectedCmsKey : null);
+          if (layoutKey) {
+            content.graphics[layoutKey] = url;
+            if (layoutKey === "contact") content.graphics["photo"] = url;
+            if (layoutKey === "photo") content.graphics["contact"] = url;
+          } else if (selectedCmsKey && !selectedCmsKey.startsWith("block:")) {
+            content.graphics[selectedCmsKey] = url;
+          }
         }
 
         pushHistory();

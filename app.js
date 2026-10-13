@@ -519,6 +519,10 @@ function validImageUrl(value) {
 function cmsImage(name, fallback = images[name]) {
   const direct = validImageUrl(cmsContent.graphics[name]);
   if (direct) return direct;
+  if (validImageUrl(cmsContent.graphics[`${name}:photo`])) return validImageUrl(cmsContent.graphics[`${name}:photo`]);
+  if (name.endsWith(":photo") && validImageUrl(cmsContent.graphics[name.replace(/:photo$/, "")])) {
+    return validImageUrl(cmsContent.graphics[name.replace(/:photo$/, "")]);
+  }
   if (name === "contact" && validImageUrl(cmsContent.graphics["photo"])) return validImageUrl(cmsContent.graphics["photo"]);
   if (name === "photo" && validImageUrl(cmsContent.graphics["contact"])) return validImageUrl(cmsContent.graphics["contact"]);
   return validImageUrl(fallback);
@@ -851,9 +855,10 @@ function renderBlock(block) {
               return `
                 <div class="wov-gallery-item" data-gallery-slot="${idx}" data-gallery-block-id="${id}">
                   <img src="${escapeCmsText(url)}" alt="${alt}" loading="lazy" data-cms-key="block:${id}:img:${idx}" />
+                  ${isCmsPreview ? `
                   <div class="wov-gallery-item-hover">
                     <span class="wov-gallery-replace-hint">⇄ Drop photo to replace</span>
-                  </div>
+                  </div>` : ""}
                 </div>`;
             } else {
               return `

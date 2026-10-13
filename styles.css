@@ -667,11 +667,15 @@ details[open] > summary::after { content: "−"; }
 }
 
 .wov-gallery-item-hover {
+  display: none !important;
+}
+
+body.is-cms-preview .wov-gallery-item-hover {
+  display: flex !important;
   position: absolute;
   inset: 0;
   background: rgba(30, 41, 38, 0.65);
   opacity: 0;
-  display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease;
@@ -679,7 +683,7 @@ details[open] > summary::after { content: "−"; }
   padding: 12px;
 }
 
-.wov-gallery-item:hover .wov-gallery-item-hover {
+body.is-cms-preview .wov-gallery-item:hover .wov-gallery-item-hover {
   opacity: 1;
 }
 
