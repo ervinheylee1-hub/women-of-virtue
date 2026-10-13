@@ -47,7 +47,7 @@
       {
         "type": "gallery",
         "content": {
-          "title": "Photo Gallery",
+          "title": "",
           "columns": 4,
           "images": [
             {
