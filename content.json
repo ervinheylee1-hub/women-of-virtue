@@ -268,7 +268,9 @@
   },
   "graphics": {
     "photo": "./uploads/img_7378_1791260928967.jpg",
-    "contact": "./uploads/img_7378_1791260928967.jpg"
+    "contact": "./uploads/img_7378_1791260928967.jpg",
+    "lesson:harden-not": "./uploads/img_7378_1791856057029.jpg",
+    "lesson:harden-not:photo": "./uploads/img_7378_1791856057029.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -527,7 +529,7 @@
             "Prayer: The Collect for Quinquagesima 1928 BCP",
             "“O LORD, who has taught us that all our doings without charity are worth nothing; Send thy Holy Ghost, and pour into our hearts that most excellent gift of charity, the very bond of peace and all virtues, without which whosoever liveth is counted dead before tee. Grant this for thine only son Jesus Christ's sake. Amen.”"
           ],
-          "image": "",
+          "image": "./uploads/img_7378_1791856057029.jpg",
           "imageAlt": "",
           "pdfUrl": "",
           "imageHeight": 600,
