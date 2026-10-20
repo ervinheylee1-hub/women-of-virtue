@@ -188,7 +188,9 @@
     "devotionals/denying-flesh": [],
     "devotionals/harden-not": [],
     "devotionals/fruit": [],
-    "devotionals/bearing": []
+    "devotionals/bearing": [],
+    "devotionals/essential": [],
+    "devotionals/intentional": []
   },
   "copyOverrides": {
     "block:block_hero_1:button": "Learn More",
@@ -217,7 +219,8 @@
     "lesson:denying-flesh:sec:1:p:2": "Feed your Spirit not your Flesh:\n Matthew 6:11 “Give us this day our daily bread”",
     "lesson:denying-flesh:sec:2:p:0": "Confession \nJames 5:16 “Therfore confess your sins to eachother and pray for eachother so that you may be healed.”",
     "lesson:denying-flesh:sec:2:p:2": "Bear one another's burdens \n Galatians 6:2 “Carry one another's burdens, and in this you will fulfill the law of Christ.”",
-    "lesson:fruit:introTitle": "\n"
+    "lesson:fruit:introTitle": "\n",
+    "lesson:essential:title": "ESSENTIAL"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -269,7 +272,11 @@
     "lesson:fruit": "./uploads/img_7380_1791933460108.jpg",
     "lesson:fruit:photo": "./uploads/img_7380_1791933460108.jpg",
     "lesson:bearing": "./uploads/img_7377_1791933753338.jpg",
-    "lesson:bearing:photo": "./uploads/img_7377_1791933753338.jpg"
+    "lesson:bearing:photo": "./uploads/img_7377_1791933753338.jpg",
+    "lesson:intentional": "./uploads/img_7376_1792533879252.jpg",
+    "lesson:intentional:photo": "./uploads/img_7376_1792533879252.jpg",
+    "lesson:essential": "./uploads/images_1792533909081.jpg",
+    "lesson:essential:photo": "./uploads/images_1792533909081.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -679,6 +686,109 @@
             "“Grant to us. Lord, we beseech thee, the Spirit to think and do always such things as are right; that we, who cannot do any thing that is good without thee, may by thee be enabled to live according to thy will; through Jesus Christ our Lord. Amen,”"
           ],
           "image": "./uploads/img_7377_1791933753338.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        }
+      ]
+    },
+    {
+      "id": "sisterhood",
+      "title": "Sisterhood",
+      "description": "The importance of biblical sisterhood.",
+      "lessons": [
+        {
+          "id": "lesson-essential",
+          "slug": "essential",
+          "title": "ESSENTIAL",
+          "publishedAt": "2026-10-20",
+          "introTitle": "Essential",
+          "intro": "It is essential that we develop a sisterhood with other faithful women of Christ. We were designed for it. We can see this innate communal structure modeled for us in the Trinity.  When we lack a meaningful relationship with our Sisters, it is easy for the enemy to isolate us and infiltrate our hearts and minds. We need our sisters to hold us fast to the Lord, and help us along the straight and narrow path",
+          "sections": [
+            {
+              "title": "DESIGN",
+              "paragraphs": [
+                "Genesis 1:26\n“ And God said, Let us make man in our image, after our likeness”",
+                "When mankind was first created, we were modeled after God's own image. We were designed to have community with each other, just as the Father, Son, and Holy Spirit have community amongst themselves. We were never meant to do life alone."
+              ]
+            },
+            {
+              "title": "ISOLATION",
+              "paragraphs": [
+                "When Eve was first tempted by the serpent, he isolated her. When we do not have the support of other strong-willed believers supporting us, it becomes easier for the enemy to isolate and deceive us"
+              ]
+            },
+            {
+              "title": "ACCOUNTABILITY",
+              "paragraphs": [
+                "Proverbs 27:17\n“As iron sharpens iron, so one person sharpens another.”",
+                "As believers, we need each other to hold us accountable. It is a great blessing to have a sister in Christ who is more concerned about your salvation and sanctification than your feelings and desires. We should surround ourselves with faithful and virtuous women who can help keep us on the right path."
+              ]
+            },
+            {
+              "title": "REFLECTION QUESTIONS",
+              "paragraphs": [
+                "How have you been supported and uplifted by your sisters in Christ?",
+                "Do you ever feel isolated? If so, do you reach out to your sisters for encouragement?",
+                "How can you pursue meaningful relationships with women of the faith near you?"
+              ]
+            }
+          ],
+          "resourceTitle": "Additional Resources",
+          "resource": [],
+          "image": "./uploads/images_1792533909081.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        },
+        {
+          "id": "lesson-intentional",
+          "slug": "intentional",
+          "title": "INTENTIONAL",
+          "publishedAt": "2026-10-20",
+          "introTitle": "INTENTIONAL",
+          "intro": "Not only do we need good sisters, but we need to BE good sisters. Everyone wants a village, but few want to be a villager. It doesn't come by accident, we build our sisterhood with intentionality. Being a good sister is a daily decision to love and support one another well.",
+          "sections": [
+            {
+              "title": "LOYALTY",
+              "paragraphs": [
+                "Proverbs 3:3\n“Let love and faithfulness never leave you;  bind them around your neck, write them on the tablet of your heart.”",
+                "Loyalty and faithfulness appear in the valley, not on the mountain top. We ought to cling to each other during the hard seasons, just as Naomi clung to Ruth when she was widowed and destitute. It's easy to be a good sister when everything is going according to our own plans, but we need to make the effort daily in the darkness to be a light to our sisters, during our troubles and theirs."
+              ]
+            },
+            {
+              "title": "HONOR AND TRUTH",
+              "paragraphs": [
+                "Ephesians 4:15-16\n“ Instead, speaking the truth in love, we will grow to become in every respect the mature body of him who is the head, that is, Christ. 16 From him the whole body, joined and held together by every supporting ligament, grows and builds itself up in love, as each part does its work.”",
+                "To love our sisters well is to be honest with them. Speaking truth over your sister isnt shaming or belittling her, its holding her accountable and to a higher standard. Just as our Heavenly Father convicts and guides us, we must also lovingly correct each other, that we may fulfill the law of Christ, and inherit the kingdom together. Likewise, we ought to honor each other, never speaking ill or sharing behind each others backs. Ephesians 4:29 states, “ Do not let any unwholesome talk come out of your mouths, but only what is helpful for building others up according to their needs, that it may benefit those who listen.” We are called to build each other up, not tear each other down with our words."
+              ]
+            },
+            {
+              "title": "COVER NOT COVET",
+              "paragraphs": [
+                "Luke 12:15\n“And He said to them, \"Take heed and beware of covetousness, for one's life does not consist in the abundance of the things he possesses.\"",
+                "James 2:14-16\n But if you harbor bitter envy and selfish ambition in your hearts, do not boast about it or deny the truth.  Such “wisdom” does not come down from heaven but is earthly, unspiritual, demonic. For where you have envy and selfish ambition, there you find disorder and every evil practice. “",
+                "1 Thessalonians 5:16-18 \n‘Rejoice always, pray continually, give thanks in all circumstances; for this is God’s will for you in Christ Jesus.”",
+                "Coveting is not simply desiring the same things that someone else has, it stems from envy and pride. We need to be able to rejoice over our sister's rain during our drought. We should never be jealous or drawn to anger when the father is blessing someone else, instead we shall praise the Lord with them and cover them in prayer and gratitude."
+              ]
+            },
+            {
+              "title": "REFLECTION QUESTIONS",
+              "paragraphs": [
+                "How can you support your sisters this week?",
+                "Search your heart, have you ever coveted your sister's blessings?",
+                "How can you show gratitude for the women God has placed in your life?"
+              ]
+            }
+          ],
+          "resourceTitle": "This Week's Prayer:",
+          "resource": [
+            "The Collect for All Saints Day- American Book Of Common Prayer  (1928)",
+            "O ALMIGHTY God, who hast knit together thine elect in one communion and fellowship, in the mystical body of thy Son Christ our Lord; Grant us grace so to follow thy blessed Saints in all virtuous and godly living, that we may come to those unspeakable joys which thou hast prepared for those who unfeignedly love thee; through the same thy Son Jesus Christ our Lord. Amen."
+          ],
+          "image": "./uploads/img_7376_1792533879252.jpg",
           "imageAlt": "",
           "pdfUrl": "",
           "imageHeight": 600,
