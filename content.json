@@ -63,7 +63,7 @@
               "alt": "Scripture"
             },
             {
-              "url": "./uploads/img_7324_1791260583653.jpg",
+              "url": "./uploads/img_7607_1793404159839.jpg",
               "alt": "Faith"
             }
           ],
@@ -190,7 +190,9 @@
     "devotionals/fruit": [],
     "devotionals/bearing": [],
     "devotionals/essential": [],
-    "devotionals/intentional": []
+    "devotionals/intentional": [],
+    "devotionals/love-thy-neighbor": [],
+    "devotionals/love-thyself": []
   },
   "copyOverrides": {
     "block:block_hero_1:button": "Learn More",
@@ -220,7 +222,21 @@
     "lesson:denying-flesh:sec:2:p:0": "Confession \nJames 5:16 “Therfore confess your sins to eachother and pray for eachother so that you may be healed.”",
     "lesson:denying-flesh:sec:2:p:2": "Bear one another's burdens \n Galatians 6:2 “Carry one another's burdens, and in this you will fulfill the law of Christ.”",
     "lesson:fruit:introTitle": "\n",
-    "lesson:essential:title": "ESSENTIAL"
+    "lesson:essential:title": "ESSENTIAL",
+    "lesson:love-thy-neighbor:introTitle": "\n",
+    "lesson:love-thyself:introTitle": "We Are All Image Bearers",
+    "lesson:love-thyself:intro": "Biblical self-love is not selfishness. It is stewardship that allows you to love from overflow, not exhaustion. \n \n1 John 4:19 \n\"We love because He first loved us.\"",
+    "lesson:love-thyself:sec:0:p:0": "You cannot give what you haven't first received.\n\n\n Many of us try to love others while starving ourselves spiritually. Self-love biblically starts with being loved. You are made in God's image (Genesis 1:27), fearfully and wonderfully made (Psalm 139:14), and fully known and still chosen (Ephesians 1:4-5).",
+    "lesson:love-thyself:sec:1:p:0": "Ephesians 4:15 calls us to speak truth in love and that includes the conversations you have in your own head. \n\n\nThe enemy accuses; God convicts and comforts. If your inner voice is constantly shaming, name-calling, and condemning, that's not the Lord.",
+    "lesson:love-thyself:sec:1:p:1": "Selfishness says: \"I come first.\" \nSelf-hatred says: \"I come last.\" \nStewardship says: \"I matter to God, so I will care for what He entrusted to me.\"",
+    "lesson:love-thyself:sec:2:p:0": "Ephesians 5:29 says, \"No one ever hated their own flesh, but nourishes and cherishes it.\" Loving ourselves is taking care of the temple. \nBody: \nSleep, water, nourishment, movement. These are not punishments, but care. \nMind:\n What are we consuming? What we watch, scroll, and listen to is forming us. \nHeart: \nAllow ourselves to feel, lament, journal, and bring honest emotions to God. \nSoul:\n We need to protect our quiet, our Sabbath, and our boundaries. Jesus withdrew to lonely places to pray (Luke 5:16). \nSaying no is not unloving; it makes our yes more honest.",
+    "lesson:love-thy-neighbor:sec:0:p:0": "LUKE 10:27 \nHe answered, “‘Love the Lord your God with all your heart and with all your soul and with all your strength and with all your mind; and, ‘Love your neighbor as yourself.”",
+    "lesson:love-thy-neighbor:sec:0:p:1": "Jesus says to love God, and love your neighbor as yourself. We often preach one half. God reveals them to be inseparable. Your love for God is shown in how you love people, and how you love people reveals what you believe about God. \n\n\nLeviticus 19:18 shows this isn't new; God has always tied our relationship with Him to our relationship with others.",
+    "lesson:love-thy-neighbor:sec:1:p:0": "It's not just the people who are easy to love.\n\n\n In the Parable of the Good Samaritan (Luke 10:25-37), Jesus redefines our neighbor as anyone placed in our path, even when it's inconvenient, uncomfortable, or unreciprocated. our neighbor is our family, our roommate, the woman in the grocery line, the person who hurt us, and the woman in the mirror.",
+    "lesson:love-thy-neighbor:sec:3:p:0": "1 Corinthians 13:4-7 \n “Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres.”",
+    "lesson:love-thy-neighbor:sec:3:p:1": "God defines love as patient, kind, not keeping score. This is agape love, chosen, sacrificial, steadfast. \nIt's not about whether we feel loving. It's about whether we are willing to act loving, even when it's costly.",
+    "lesson:intentional:introTitle": "Are we being intentional?",
+    "lesson:essential:introTitle": "Sisterhood is Essential"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -276,7 +292,11 @@
     "lesson:intentional": "./uploads/img_7376_1792533879252.jpg",
     "lesson:intentional:photo": "./uploads/img_7376_1792533879252.jpg",
     "lesson:essential": "./uploads/images_1792533909081.jpg",
-    "lesson:essential:photo": "./uploads/images_1792533909081.jpg"
+    "lesson:essential:photo": "./uploads/images_1792533909081.jpg",
+    "lesson:love-thy-neighbor": "./uploads/img_7606_1793404110329.jpg",
+    "lesson:love-thy-neighbor:photo": "./uploads/img_7606_1793404110329.jpg",
+    "lesson:love-thyself": "./uploads/img_7604_1793404123094.jpg",
+    "lesson:love-thyself:photo": "./uploads/img_7604_1793404123094.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -703,7 +723,7 @@
           "slug": "essential",
           "title": "ESSENTIAL",
           "publishedAt": "2026-10-20",
-          "introTitle": "Essential",
+          "introTitle": "Sisterhood is Essential",
           "intro": "It is essential that we develop a sisterhood with other faithful women of Christ. We were designed for it. We can see this innate communal structure modeled for us in the Trinity.  When we lack a meaningful relationship with our Sisters, it is easy for the enemy to isolate us and infiltrate our hearts and minds. We need our sisters to hold us fast to the Lord, and help us along the straight and narrow path",
           "sections": [
             {
@@ -748,7 +768,7 @@
           "slug": "intentional",
           "title": "INTENTIONAL",
           "publishedAt": "2026-10-20",
-          "introTitle": "INTENTIONAL",
+          "introTitle": "Are we being intentional?",
           "intro": "Not only do we need good sisters, but we need to BE good sisters. Everyone wants a village, but few want to be a villager. It doesn't come by accident, we build our sisterhood with intentionality. Being a good sister is a daily decision to love and support one another well.",
           "sections": [
             {
@@ -789,6 +809,120 @@
             "O ALMIGHTY God, who hast knit together thine elect in one communion and fellowship, in the mystical body of thy Son Christ our Lord; Grant us grace so to follow thy blessed Saints in all virtuous and godly living, that we may come to those unspeakable joys which thou hast prepared for those who unfeignedly love thee; through the same thy Son Jesus Christ our Lord. Amen."
           ],
           "image": "./uploads/img_7376_1792533879252.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        }
+      ]
+    },
+    {
+      "id": "as-yourself",
+      "title": "As Yourself",
+      "description": "A study into loving ourselves well in order to love others as ourselves.",
+      "lessons": [
+        {
+          "id": "lesson-love-thy-neighbor",
+          "slug": "love-thy-neighbor",
+          "title": "Love Thy Neighbor",
+          "publishedAt": "2026-10-30",
+          "introTitle": "",
+          "intro": "We can't understand our calling to others until we understand God's standard for love itself.",
+          "sections": [
+            {
+              "title": "The Command",
+              "paragraphs": [
+                "LUKE 10:27 \nHe answered, “‘Love the Lord your God with all your heart and with all your soul and with all your strength and with all your mind; and, ‘Love your neighbor as yourself.”",
+                "Jesus says to love God, and love your neighbor as yourself. We often preach one half. God reveals them to be inseparable. Your love for God is shown in how you love people, and how you love people reveals what you believe about God. \n\n\nLeviticus 19:18 shows this isn't new; God has always tied our relationship with Him to our relationship with others."
+              ]
+            },
+            {
+              "title": "Who Is My Neighbor?",
+              "paragraphs": [
+                "It's not just the people who are easy to love.\n\n\n In the Parable of the Good Samaritan (Luke 10:25-37), Jesus redefines our neighbor as anyone placed in our path, even when it's inconvenient, uncomfortable, or unreciprocated. our neighbor is our family, our roommate, the woman in the grocery line, the person who hurt us, and the woman in the mirror."
+              ]
+            },
+            {
+              "title": "The Standard",
+              "paragraphs": [
+                "The word \"as\" means \"in the same manner and to the same degree.\" God uses our own natural instinct to care for ourself, to feed ourself, protect ourself, speak up for ourself, as the standard for how to care for others.\nIf that standard is broken, if we neglect, criticize, or punish ourselves, our love for others will be broken too"
+              ]
+            },
+            {
+              "title": "Persistance Over Prefrence",
+              "paragraphs": [
+                "1 Corinthians 13:4-7 \n “Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres.”",
+                "God defines love as patient, kind, not keeping score. This is agape love, chosen, sacrificial, steadfast. \nIt's not about whether we feel loving. It's about whether we are willing to act loving, even when it's costly."
+              ]
+            },
+            {
+              "title": "Reflection Questions:",
+              "paragraphs": [
+                "Who have you already decided isn't your neighbor?",
+                "How can we love others well this week?",
+                "Who has god called you to love even when they did not reciprocate it?"
+              ]
+            }
+          ],
+          "resourceTitle": "Additional Resources",
+          "resource": [],
+          "image": "./uploads/img_7606_1793404110329.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        },
+        {
+          "id": "lesson-love-thyself",
+          "slug": "love-thyself",
+          "title": "Love Thyself",
+          "publishedAt": "2026-10-30",
+          "introTitle": "We Are All Image Bearers",
+          "intro": "Biblical self-love is not selfishness. It is stewardship that allows you to love from overflow, not exhaustion. \n \n1 John 4:19 \n\"We love because He first loved us.\"",
+          "sections": [
+            {
+              "title": "Receive And Reflect",
+              "paragraphs": [
+                "You cannot give what you haven't first received.\n\n\n Many of us try to love others while starving ourselves spiritually. Self-love biblically starts with being loved. You are made in God's image (Genesis 1:27), fearfully and wonderfully made (Psalm 139:14), and fully known and still chosen (Ephesians 1:4-5)."
+              ]
+            },
+            {
+              "title": "Truth In Love",
+              "paragraphs": [
+                "Ephesians 4:15 calls us to speak truth in love and that includes the conversations you have in your own head. \n\n\nThe enemy accuses; God convicts and comforts. If your inner voice is constantly shaming, name-calling, and condemning, that's not the Lord.",
+                "Selfishness says: \"I come first.\" \nSelf-hatred says: \"I come last.\" \nStewardship says: \"I matter to God, so I will care for what He entrusted to me.\""
+              ]
+            },
+            {
+              "title": "Steward Thy Whole Self",
+              "paragraphs": [
+                "Ephesians 5:29 says, \"No one ever hated their own flesh, but nourishes and cherishes it.\" Loving ourselves is taking care of the temple. \nBody: \nSleep, water, nourishment, movement. These are not punishments, but care. \nMind:\n What are we consuming? What we watch, scroll, and listen to is forming us. \nHeart: \nAllow ourselves to feel, lament, journal, and bring honest emotions to God. \nSoul:\n We need to protect our quiet, our Sabbath, and our boundaries. Jesus withdrew to lonely places to pray (Luke 5:16). \nSaying no is not unloving; it makes our yes more honest."
+              ]
+            },
+            {
+              "title": "Overflow Not Obligation",
+              "paragraphs": [
+                "When we are full, we love differently. We stop keeping score, become less easily offended, more patient, more generous.",
+                "Galatians 5:22-26\n“But the fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness, gentleness and self-control. Against such things there is no law. Those who belong to Christ Jesus have crucified the flesh with its passions and desires. Since we live by the Spirit, let us keep in step with the Spirit. Let us not become conceited, provoking and envying each other.”",
+                "The fruit of the Spirit grows in us first, so it can be shared through us.\nThis week, choose to love one neighbor intentionally from a place of fullness, a text of encouragement, a meal, forgiveness, listening without trying to fix. Notice how different it feels when we are not running on empty."
+              ]
+            },
+            {
+              "title": "Reflection Questions:",
+              "paragraphs": [
+                "Do you believe in the value God has declared you have?",
+                "How often do you doubt your worth? Who do you go to when you're feeling unworthy?",
+                "How can you grow in your trust in the Lord and in who HE says YOU are?"
+              ]
+            }
+          ],
+          "resourceTitle": "This Week's Prayer:",
+          "resource": [
+            "American Book Of Common Prayer  (1928)",
+            "Dedication of Soul and Body to God's Service,\nwith a Resolution to be growing daily in Goodness.",
+            "‘AND since it is of thy mercy, O gracious Father, that another day is added to our lives; We here dedicate both our souls and our bodies to thee and thy service, in a sober, righteous, and godly life: in which resolution, do thou, O merciful God, confirm and strengthen us; that, as we grow in age, we may grow in grace, and in the knowledge of our Lord and Saviour Jesus Christ. Amen. ‘"
+          ],
+          "image": "./uploads/img_7604_1793404123094.jpg",
           "imageAlt": "",
           "pdfUrl": "",
           "imageHeight": 600,
