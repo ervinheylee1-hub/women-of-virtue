@@ -554,8 +554,8 @@ button, input, select, textarea {
 
 /* Left Sidebar */
 .elementor-sidebar {
-  width: 290px;
-  min-width: 290px;
+  width: 320px;
+  min-width: 320px;
   background: var(--panel-bg);
   border-right: 1px solid var(--panel-border);
   display: flex;
@@ -569,26 +569,35 @@ button, input, select, textarea {
   display: flex;
   background: var(--paper);
   border-bottom: 1px solid var(--panel-border);
-  padding: 4px 6px 0;
-  gap: 4px;
+  padding: 4px 4px 0;
+  gap: 2px;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .tab-btn {
-  flex: 1;
-  padding: 8px 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 3px;
   background: transparent;
   border: 0;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: all 0.15s ease;
+}
+.tab-btn svg {
+  flex-shrink: 0;
 }
 .tab-btn:hover {
   color: var(--forest);

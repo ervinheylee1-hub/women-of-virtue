@@ -5375,9 +5375,32 @@
 
     try {
       const local = JSON.parse(localStorage.getItem("wov_analytics_cache")) || {};
-      if (local.totals && local.totals.views > 0) {
-        cachedAnalyticsReport = local;
-        return local;
+      if (local && local.totals && local.totals.views > 0) {
+        // Merge real local events on top of historical baseline
+        const merged = JSON.parse(JSON.stringify(defaultHistorical));
+        merged.totals.views += (local.totals.views || 0);
+        merged.totals.uniqueVisitors += (local.totals.uniqueVisitors || 0);
+        merged.totals.completions += (local.totals.completions || 0);
+        merged.totals.totalTimeSpentSec += (local.totals.totalTimeSpentSec || 0);
+        if (local.devices) {
+          merged.devices.mobile += (local.devices.mobile || 0);
+          merged.devices.desktop += (local.devices.desktop || 0);
+          merged.devices.tablet += (local.devices.tablet || 0);
+        }
+        if (local.lessons) {
+          Object.entries(local.lessons).forEach(([slug, val]) => {
+            if (!merged.lessons[slug]) {
+              merged.lessons[slug] = { ...val };
+            } else {
+              merged.lessons[slug].views = (merged.lessons[slug].views || 0) + (val.views || 0);
+              merged.lessons[slug].uniqueVisitors = (merged.lessons[slug].uniqueVisitors || 0) + (val.uniqueVisitors || 0);
+              merged.lessons[slug].completions = (merged.lessons[slug].completions || 0) + (val.completions || 0);
+              merged.lessons[slug].totalTimeSpentSec = (merged.lessons[slug].totalTimeSpentSec || 0) + (val.totalTimeSpentSec || 0);
+            }
+          });
+        }
+        cachedAnalyticsReport = merged;
+        return merged;
       } else {
         localStorage.setItem("wov_analytics_cache", JSON.stringify(defaultHistorical));
         cachedAnalyticsReport = defaultHistorical;
@@ -5455,8 +5478,9 @@
     if (lessonsListEl) {
       lessonsListEl.innerHTML = "";
 
-      // Gather all existing lessons from content.devotionals
-      const allDevotionals = content.devotionals || [];
+      // Ensure devotionals are initialized if empty
+      ensureDevotionalsInitialized();
+      const allDevotionals = (content.devotionals && content.devotionals.length > 0) ? content.devotionals : DEFAULT_DEVOTIONALS;
       const catalogLessons = [];
       allDevotionals.forEach(course => {
         (course.lessons || []).forEach(l => {
@@ -5826,6 +5850,7 @@
   // Site Settings Handlers
   document.querySelector("#btn-save-site-theme").addEventListener("click", async () => {
     content.theme = {
+      ...(content.theme || {}),
       headerPink: document.querySelector("#setting-header-color").value,
       headingPink: document.querySelector("#setting-heading-color").value,
       bodyTextColor: document.querySelector("#setting-body-color").value
