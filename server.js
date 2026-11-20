@@ -12,6 +12,7 @@ const CONTENT_FILE = path.join(DATA_DIR, 'content.json');
 const ROOT_CONTENT_FILE = path.join(ROOT_DIR, 'content.json');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+const SUBSCRIBERS_FILE = path.join(DATA_DIR, 'subscribers.json');
 const EMAIL_SETTINGS_FILE = path.join(DATA_DIR, 'email-settings.json');
 const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
 const TARGET_EMAIL = 'heylee@absolutionuecna.org';
@@ -321,9 +322,10 @@ async function sendResendEmail({ apiKey, to, from, replyTo, subject, text, html 
   return data;
 }
 
-function buildEmailHtml({ senderName, senderEmail, phone, formType, message, createdAt }) {
+function buildEmailHtml({ senderName, senderEmail, phone, formType, message, createdAt, notifyEmail, notifySms }) {
+  const isSubscribe = formType === 'subscribe' || formType === 'newsletter';
   const isProject = formType === 'project';
-  const typeLabel = isProject ? 'Start a Project Inquiry' : 'General Contact Inquiry';
+  const typeLabel = isSubscribe ? 'Newsletter & Notification Signup' : (isProject ? 'Start a Project Inquiry' : 'General Contact Inquiry');
   const formattedDate = new Date(createdAt || Date.now()).toLocaleString('en-US', {
     dateStyle: 'full',
     timeStyle: 'short'
@@ -421,6 +423,19 @@ function readMessagesStore() {
 
 function saveMessagesStore(messages) {
   fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages, null, 2), 'utf8');
+}
+
+function readSubscribersStore() {
+  if (!fs.existsSync(SUBSCRIBERS_FILE)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(SUBSCRIBERS_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function saveSubscribersStore(subscribers) {
+  fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2), 'utf8');
 }
 
 function setSecurityHeaders(res) {
@@ -903,11 +918,11 @@ const server = http.createServer(async (req, res) => {
     }
 
 
-    // 8. POST /api/contact - Send form inquiries to heylee@absolutionuecna.org
-    if (pathname === '/api/contact' && method === 'POST') {
+    // 8. POST /api/contact & POST /api/subscribe - Send form inquiries or notification signups to heylee@absolutionuecna.org
+    if ((pathname === '/api/contact' || pathname === '/api/subscribe') && method === 'POST') {
       const now = Date.now();
       const contactLimit = contactFailures.get(remoteIp) || { count: 0, expires: now + 10 * 60 * 1000 };
-      if (contactLimit.expires > now && contactLimit.count >= 8) {
+      if (contactLimit.expires > now && contactLimit.count >= 15) {
         const mins = Math.ceil((contactLimit.expires - now) / 60000);
         return sendJson(res, { error: `Too many submissions. Please wait ${mins} minute(s) before trying again.` }, 429);
       }
@@ -918,13 +933,30 @@ const server = http.createServer(async (req, res) => {
       const email = String(body.email || '').trim();
       const phone = String(body.phone || '').trim();
       const message = String(body.message || body.vision || '').trim();
-      const formType = String(body.formType || 'contact').trim();
+      let formType = String(body.formType || (pathname === '/api/subscribe' ? 'subscribe' : 'contact')).trim();
+      const isSubscribe = formType === 'subscribe' || formType === 'newsletter' || pathname === '/api/subscribe';
+      const notifyEmail = body.notifyEmail !== undefined ? Boolean(body.notifyEmail) : Boolean(email);
+      const notifySms = body.notifySms !== undefined ? Boolean(body.notifySms) : Boolean(phone);
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return sendJson(res, { error: 'A valid email address is required.' }, 400);
-      }
-      if (!fname && !lname && !message) {
-        return sendJson(res, { error: 'Please provide your name or a brief message.' }, 400);
+      if (isSubscribe) {
+        // Validation: Neither email nor text is strictly required, but at least ONE contact method must be provided
+        if (!email && !phone) {
+          return sendJson(res, { error: 'Please enter either an email address or a phone number to subscribe.' }, 400);
+        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return sendJson(res, { error: 'Please enter a valid email address.' }, 400);
+        }
+        if (phone && phone.replace(/\D/g, '').length < 7) {
+          return sendJson(res, { error: 'Please enter a valid phone number with at least 7 digits.' }, 400);
+        }
+      } else {
+        // Regular contact or project inquiry
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return sendJson(res, { error: 'A valid email address is required.' }, 400);
+        }
+        if (!fname && !lname && !message) {
+          return sendJson(res, { error: 'Please provide your name or a brief message.' }, 400);
+        }
       }
 
       contactLimit.count += 1;
@@ -932,20 +964,48 @@ const server = http.createServer(async (req, res) => {
 
       const emailSettings = readEmailSettings();
       const effectiveRecipient = emailSettings.targetEmail || TARGET_EMAIL;
+      const senderName = `${fname} ${lname}`.trim() || (isSubscribe ? 'Fellowship Subscriber' : 'Website Visitor');
 
       const submission = {
-        id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        id: isSubscribe ? `sub_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` : `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         createdAt: new Date().toISOString(),
         recipient: effectiveRecipient,
-        senderName: `${fname} ${lname}`.trim() || 'Website Visitor',
+        senderName,
         senderEmail: email,
         phone,
-        formType,
-        message: message || '(No message content provided)',
+        formType: isSubscribe ? 'subscribe' : formType,
+        notifyEmail,
+        notifySms,
+        message: message || (isSubscribe ? `Subscribed to: ${[notifyEmail && email ? 'Email Newsletter' : '', notifySms && phone ? 'SMS Devotional Notifications' : ''].filter(Boolean).join(' & ') || 'Fellowship Updates'}` : '(No message content provided)'),
         ip: remoteIp,
         status: 'saved_locally'
       };
 
+      if (isSubscribe) {
+        // Save to dedicated subscribers store
+        const subscribers = readSubscribersStore();
+        // Check if existing subscriber to update preferences
+        const existingIdx = subscribers.findIndex(s => (email && s.email && s.email.toLowerCase() === email.toLowerCase()) || (phone && s.phone && s.phone.replace(/\D/g, '') === phone.replace(/\D/g, '')));
+        const subscriberRecord = {
+          id: submission.id,
+          createdAt: new Date().toISOString(),
+          name: senderName,
+          email: email || '',
+          phone: phone || '',
+          notifyEmail,
+          notifySms,
+          subscribedVia: formType
+        };
+        if (existingIdx >= 0) {
+          subscribers[existingIdx] = { ...subscribers[existingIdx], ...subscriberRecord, updatedAt: new Date().toISOString() };
+        } else {
+          subscribers.unshift(subscriberRecord);
+        }
+        if (subscribers.length > 2000) subscribers.pop();
+        saveSubscribersStore(subscribers);
+      }
+
+      // Also record in messages log so it shows up in inquiry feed
       const messages = readMessagesStore();
       messages.unshift(submission);
       if (messages.length > 500) messages.pop();
@@ -957,15 +1017,19 @@ const server = http.createServer(async (req, res) => {
 
       if (emailSettings.resendApiKey) {
         try {
-          const subject = `[Women of Virtue] New ${formType === 'project' ? 'Project' : 'Contact'} Inquiry from ${submission.senderName}`;
+          const subject = isSubscribe 
+            ? `[Women of Virtue] New Subscriber: ${senderName} (${[email, phone].filter(Boolean).join(' / ')})`
+            : `[Women of Virtue] New ${formType === 'project' ? 'Project' : 'Contact'} Inquiry from ${submission.senderName}`;
           const html = buildEmailHtml(submission);
-          const text = `New inquiry from ${submission.senderName} (${submission.senderEmail}):\nPhone: ${phone || 'N/A'}\nType: ${formType}\n\nMessage:\n${submission.message}\n\nSent: ${submission.createdAt}`;
+          const text = isSubscribe
+            ? `New signup from ${submission.senderName}:\nEmail: ${email || 'None'}\nPhone: ${phone || 'None'}\nPreferences: ${submission.message}\nDate: ${submission.createdAt}`
+            : `New inquiry from ${submission.senderName} (${submission.senderEmail}):\nPhone: ${phone || 'N/A'}\nType: ${formType}\n\nMessage:\n${submission.message}\n\nSent: ${submission.createdAt}`;
 
           const resendResult = await sendResendEmail({
             apiKey: emailSettings.resendApiKey,
             to: effectiveRecipient,
             from: emailSettings.resendFromEmail,
-            replyTo: `${submission.senderName} <${submission.senderEmail}>`,
+            replyTo: email ? `${submission.senderName} <${submission.senderEmail}>` : undefined,
             subject,
             text,
             html
@@ -985,22 +1049,25 @@ const server = http.createServer(async (req, res) => {
           console.error(`[RESEND ERROR] Failed to send email via Resend:`, err.message);
         }
       } else {
-        console.log(`[RESEND SKIPPED] No RESEND_API_KEY configured. Inquiry saved locally.`);
+        console.log(`[RESEND SKIPPED] No RESEND_API_KEY configured. Submission saved locally.`);
       }
 
       console.log(`\n======================================================`);
-      console.log(`[EMAIL DISPATCH] Sent to: ${effectiveRecipient}`);
-      console.log(`[EMAIL DISPATCH] From: "${submission.senderName}" <${email}>`);
-      console.log(`[EMAIL DISPATCH] Type: ${formType} | Phone: ${phone || 'N/A'}`);
-      console.log(`[EMAIL DISPATCH] Resend Status: ${resendDispatched ? `Sent (${resendId})` : (resendError ? `Error (${resendError})` : 'Saved locally (API Key not set)')}`);
+      console.log(`[SUBMISSION] Type: ${isSubscribe ? 'Notification / Newsletter Signup' : formType}`);
+      console.log(`[SUBMISSION] From: "${submission.senderName}" <${email || 'no-email'}> | Phone: ${phone || 'no-phone'}`);
+      console.log(`[SUBMISSION] Resend Status: ${resendDispatched ? `Sent (${resendId})` : (resendError ? `Error (${resendError})` : 'Saved locally (API Key not set)')}`);
       console.log(`======================================================\n`);
+
+      const thankYouMsg = isSubscribe
+        ? `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${[notifyEmail && email ? 'email newsletters' : '', notifySms && phone ? 'text notifications' : ''].filter(Boolean).join(' and ') || 'fellowship updates'}.`
+        : `Thank you, ${fname || 'friend'}! Your message has been received and sent to our team at ${effectiveRecipient}.`;
 
       return sendJson(res, {
         ok: true,
         recipient: effectiveRecipient,
         resendSent: resendDispatched,
         resendId,
-        message: `Thank you, ${fname || 'friend'}! Your message has been received and sent to our team at ${effectiveRecipient}.`
+        message: thankYouMsg
       });
     }
 
@@ -1094,6 +1161,30 @@ const server = http.createServer(async (req, res) => {
         saveMessagesStore(list);
       } else {
         saveMessagesStore([]);
+      }
+      return sendJson(res, { ok: true });
+    }
+
+    // 12b. GET /api/admin/subscribers - View email & text notification subscribers
+    if (pathname === '/api/admin/subscribers' && method === 'GET') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      return sendJson(res, {
+        subscribers: readSubscribersStore()
+      });
+    }
+
+    // 12c. DELETE /api/admin/subscribers - Remove subscriber
+    if (pathname === '/api/admin/subscribers' && method === 'DELETE') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+      const subId = parsedUrl.searchParams.get('id');
+      if (subId) {
+        const list = readSubscribersStore().filter(s => s.id !== subId);
+        saveSubscribersStore(list);
+      } else {
+        saveSubscribersStore([]);
       }
       return sendJson(res, { ok: true });
     }

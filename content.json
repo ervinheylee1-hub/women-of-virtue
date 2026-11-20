@@ -89,6 +89,19 @@
           "paddingTop": "80px",
           "paddingBottom": "90px"
         }
+      },
+      {
+        "id": "block_newsletter_home",
+        "type": "newsletter",
+        "content": {
+          "title": "Stay Connected with Women of Virtue",
+          "subtitle": "Sign up for weekly devotional notifications, biblical reflections, and fellowship announcements via email or text message.",
+          "buttonText": "Subscribe"
+        },
+        "style": {
+          "paddingTop": "60px",
+          "paddingBottom": "70px"
+        }
       }
     ],
     "about": [

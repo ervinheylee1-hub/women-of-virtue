@@ -930,14 +930,14 @@ body.is-cms-preview .wov-gallery-item:hover .wov-gallery-item-hover {
   }
 }
 
-/* 3. Newsletter & Prayer Call Signup Bar */
+/* 3. Newsletter & Notification Signup Section */
 .wov-block-newsletter {
   background: var(--forest, #26352f);
   color: #fff;
   padding: 60px 5vw;
 }
 .wov-newsletter-inner {
-  max-width: 740px;
+  max-width: 820px;
   margin: 0 auto;
   text-align: center;
 }
@@ -947,10 +947,84 @@ body.is-cms-preview .wov-gallery-item:hover .wov-gallery-item-hover {
   margin: 8px 0 12px;
 }
 .wov-newsletter-copy p {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 15px;
   margin: 0 0 24px;
   line-height: 1.55;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.wov-subscribe-form {
+  max-width: 760px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: clamp(18px, 3vw, 32px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.wov-subscribe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  text-align: left;
+}
+.wov-subscribe-grid .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wov-subscribe-grid .field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
+}
+.wov-subscribe-grid .field input {
+  padding: 11px 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.wov-subscribe-grid .field input:focus {
+  border-color: var(--peach, #d4967d);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(212, 150, 125, 0.35);
+}
+.wov-subscribe-prefs label {
+  color: rgba(255, 255, 255, 0.92);
+  transition: color 0.15s ease;
+}
+.wov-subscribe-prefs label:hover {
+  color: #ffffff;
+}
+.wov-subscribe-form .button {
+  background: var(--peach, #d4967d);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 300px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.wov-subscribe-form .button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+.wov-subscribe-form .button:active {
+  transform: translateY(0);
+}
+.wov-subscribe-form .form-status {
+  color: #fff;
 }
 .wov-newsletter-input-group {
   display: flex;

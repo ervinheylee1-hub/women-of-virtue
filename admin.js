@@ -5716,6 +5716,11 @@
     document.querySelector("#settings-media-library")?.addEventListener("toggle", e => {
       if (e.target.open) loadMediaLibrary();
     });
+    document.querySelector("#btn-refresh-subscribers")?.addEventListener("click", loadSubscribers);
+    document.querySelector("#btn-export-subscribers")?.addEventListener("click", exportSubscribersCsv);
+    document.querySelector("#settings-subscribers")?.addEventListener("toggle", e => {
+      if (e.target.open) loadSubscribers();
+    });
   }
 
   async function loadInquiries() {
@@ -5735,7 +5740,7 @@
             <span class="inquiry-meta">${new Date(msg.createdAt).toLocaleDateString()}</span>
           </div>
           <div>
-            <a href="mailto:${escapeHtml(msg.senderEmail)}" class="inquiry-email">${escapeHtml(msg.senderEmail)}</a>
+            ${msg.senderEmail ? `<a href="mailto:${escapeHtml(msg.senderEmail)}" class="inquiry-email">${escapeHtml(msg.senderEmail)}</a>` : '<span style="color:var(--text-muted); font-size:11px;">(No email)</span>'}
             ${msg.phone ? `<span style="color:var(--text-muted); font-size:10px; margin-left:6px;">☎ ${escapeHtml(msg.phone)}</span>` : ""}
             <span style="font-size:10px; color:var(--text-muted); margin-left:6px;">(${escapeHtml(msg.formType)})</span>
           </div>
@@ -5745,6 +5750,72 @@
     } catch (err) {
       container.innerHTML = `<p style="font-size:11px; color:var(--text-muted);">Unable to load messages: ${escapeHtml(err.message)}</p>`;
     }
+  }
+
+  let cachedSubscribers = [];
+
+  async function loadSubscribers() {
+    const container = document.querySelector("#subscribers-list");
+    if (!container) return;
+    try {
+      let subscribers = [];
+      try {
+        const res = await api("./api/admin/subscribers");
+        subscribers = Array.isArray(res.subscribers) ? res.subscribers : [];
+      } catch {
+        // Fallback to local storage if running in static/offline mode
+        try {
+          subscribers = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+        } catch {}
+      }
+      cachedSubscribers = subscribers;
+      if (subscribers.length === 0) {
+        container.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0;">No subscribers yet. When visitors sign up for notifications or newsletters on the website, their contact info and preferences will appear here.</p>`;
+        return;
+      }
+      container.innerHTML = subscribers.map(sub => `
+        <div class="inquiry-card" data-sub-id="${escapeHtml(sub.id || '')}">
+          <div class="inquiry-header">
+            <strong>${escapeHtml(sub.name || 'Fellowship Subscriber')}</strong>
+            <span class="inquiry-meta">${new Date(sub.createdAt || sub.date || Date.now()).toLocaleDateString()}</span>
+          </div>
+          <div style="margin: 4px 0 6px; font-size: 11px;">
+            ${sub.email ? `<div>✉ <a href="mailto:${escapeHtml(sub.email)}" style="color:var(--accent-color);">${escapeHtml(sub.email)}</a></div>` : ''}
+            ${sub.phone ? `<div>☎ <a href="tel:${escapeHtml(sub.phone)}" style="color:var(--accent-color);">${escapeHtml(sub.phone)}</a></div>` : ''}
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+            ${sub.notifyEmail && sub.email ? `<span style="background:rgba(212,150,125,0.18); color:var(--accent-color); padding:2px 7px; border-radius:4px; font-size:10px; font-weight:600;">Email Newsletter</span>` : ''}
+            ${sub.notifySms && sub.phone ? `<span style="background:rgba(38,53,47,0.12); color:var(--forest, #26352f); padding:2px 7px; border-radius:4px; font-size:10px; font-weight:600;">SMS Alerts</span>` : ''}
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      container.innerHTML = `<p style="font-size:11px; color:var(--text-muted);">Unable to load subscribers: ${escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  function exportSubscribersCsv() {
+    if (!cachedSubscribers || cachedSubscribers.length === 0) {
+      alert("No subscribers to export yet.");
+      return;
+    }
+    const headers = ["Name", "Email", "Phone", "Email Newsletter", "SMS Alerts", "Subscribed At"];
+    const rows = cachedSubscribers.map(s => [
+      `"${(s.name || '').replace(/"/g, '""')}"`,
+      `"${(s.email || '').replace(/"/g, '""')}"`,
+      `"${(s.phone || '').replace(/"/g, '""')}"`,
+      s.notifyEmail ? "Yes" : "No",
+      s.notifySms ? "Yes" : "No",
+      `"${new Date(s.createdAt || s.date || Date.now()).toISOString()}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `women-of-virtue-subscribers-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // Email Notifications (Resend) Settings

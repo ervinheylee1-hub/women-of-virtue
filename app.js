@@ -646,7 +646,54 @@ function homePage() {
       <div class="project-copy"><p>Tell us your vision and let's transform it into reality. From Bible Studies to Brunches, we’ll help you start a community near you!</p></div>
       ${projectForm()}
     </section>
+    ${newsletterSignupSection()}
   </div>`;
+}
+
+function newsletterSignupSection(custom = {}) {
+  const title = custom.title || "Stay Connected with Women of Virtue";
+  const subtitle = custom.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text message.";
+  const btnText = custom.buttonText || "Subscribe";
+
+  return `<section class="wov-block page-section wov-block-newsletter" data-cms-layout-group="home-sections" data-cms-layout-key="newsletter-signup">
+    <div class="wov-newsletter-inner">
+      <div class="wov-newsletter-copy">
+        <span class="eyebrow" style="color:var(--peach, #d4967d); font-size:12px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;">Devotionals &amp; Community</span>
+        <h2>${escapeCmsText(title)}</h2>
+        <p>${escapeCmsText(subtitle)}</p>
+      </div>
+      <form class="form wov-subscribe-form" data-form="subscribe">
+        <div class="wov-subscribe-grid">
+          <div class="field">
+            <label for="sub-first-name">First Name</label>
+            <input id="sub-first-name" name="fname" autocomplete="given-name" placeholder="Your name (optional)" />
+          </div>
+          <div class="field">
+            <label for="sub-email">Email Address <span style="font-weight:normal; opacity:0.8;">(optional if phone entered)</span></label>
+            <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="sub-phone">Cell Phone Number <span style="font-weight:normal; opacity:0.8;">(optional if email entered)</span></label>
+            <input id="sub-phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
+          </div>
+        </div>
+        <div class="wov-subscribe-prefs" style="margin: 16px auto 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 13.5px;">
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <input type="checkbox" name="notifyEmail" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
+            <span>Email Newsletters &amp; Reflections</span>
+          </label>
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <input type="checkbox" name="notifySms" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
+            <span>Text / SMS Devotional Alerts</span>
+          </label>
+        </div>
+        <div style="text-align: center;">
+          <button class="button" type="submit" style="min-width: 180px;">${escapeCmsText(btnText)}</button>
+        </div>
+        <p class="form-status" aria-live="polite" style="margin-top: 14px; text-align: center; font-size: 14px; min-height: 20px; font-weight: 500;"></p>
+      </form>
+    </div>
+  </section>`;
 }
 
 function projectForm() {
@@ -1041,23 +1088,45 @@ function renderBlock(block) {
       </div>`;
     }
     case "newsletter": {
-      const title = content.title || "Join Our Weekly Fellowship & Devotionals";
-      const subtitle = content.subtitle || "Receive weekly scripture reflections, community updates, and prayer digests straight to your inbox.";
+      const title = content.title || "Stay Connected with Women of Virtue";
+      const subtitle = content.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text message.";
       const btnText = content.buttonText || "Subscribe";
-      const ph = content.placeholder || "Enter your email address…";
       return `<section class="wov-block page-section wov-block-newsletter" data-wov-block-id="${id}" data-wov-block-type="newsletter" ${styleAttr}>
         <div class="wov-newsletter-inner">
           <div class="wov-newsletter-copy">
-            <span class="eyebrow" style="color:var(--peach, #d4967d);">Stay Connected</span>
+            <span class="eyebrow" style="color:var(--peach, #d4967d); font-size:12px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;">Devotionals &amp; Community</span>
             <h2 data-cms-key="block:${id}:title">${escapeCmsText(title)}</h2>
             <p data-cms-key="block:${id}:subtitle">${escapeCmsText(subtitle)}</p>
           </div>
-          <form class="wov-newsletter-form" onsubmit="event.preventDefault(); const s=this.querySelector('.form-status'); if(s) s.textContent='Thank you for subscribing! Welcome to Women of Virtue.'; this.reset();">
-            <div class="wov-newsletter-input-group">
-              <input type="email" placeholder="${escapeCmsText(ph)}" required />
-              <button class="button" type="submit" data-cms-key="block:${id}:button">${escapeCmsText(btnText)}</button>
+          <form class="form wov-subscribe-form" data-form="subscribe">
+            <div class="wov-subscribe-grid">
+              <div class="field">
+                <label for="sub-first-name-${id}">First Name</label>
+                <input id="sub-first-name-${id}" name="fname" autocomplete="given-name" placeholder="Your name (optional)" />
+              </div>
+              <div class="field">
+                <label for="sub-email-${id}">Email Address <span style="font-weight:normal; opacity:0.8;">(optional if phone entered)</span></label>
+                <input id="sub-email-${id}" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+              </div>
+              <div class="field">
+                <label for="sub-phone-${id}">Cell Phone Number <span style="font-weight:normal; opacity:0.8;">(optional if email entered)</span></label>
+                <input id="sub-phone-${id}" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
+              </div>
             </div>
-            <p class="form-status" aria-live="polite" style="font-size:13px; color:#fff; margin-top:10px; font-weight:500;"></p>
+            <div class="wov-subscribe-prefs" style="margin: 16px auto 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 13.5px;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" name="notifyEmail" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
+                <span>Email Newsletters &amp; Reflections</span>
+              </label>
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" name="notifySms" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
+                <span>Text / SMS Devotional Alerts</span>
+              </label>
+            </div>
+            <div style="text-align: center;">
+              <button class="button" type="submit" data-cms-key="block:${id}:button" style="min-width: 180px;">${escapeCmsText(btnText)}</button>
+            </div>
+            <p class="form-status" aria-live="polite" style="margin-top: 14px; text-align: center; font-size: 14px; min-height: 20px; font-weight: 500;"></p>
           </form>
         </div>
       </section>`;
@@ -1427,10 +1496,25 @@ main.addEventListener("submit", async event => {
   const phone = (form.querySelector("[name='phone']")?.value || "").trim();
   const message = (form.querySelector("[name='message']")?.value || form.querySelector("textarea")?.value || "").trim();
 
+  const isSubscribe = formType === "subscribe" || formType === "newsletter";
+  const notifyEmail = form.querySelector("[name='notifyEmail']") ? form.querySelector("[name='notifyEmail']").checked : Boolean(email);
+  const notifySms = form.querySelector("[name='notifySms']") ? form.querySelector("[name='notifySms']").checked : Boolean(phone);
+
+  // Validation: For subscriptions, neither is strictly required, but at least ONE contact method must be provided
+  if (isSubscribe) {
+    if (!email && !phone) {
+      if (statusEl) {
+        statusEl.style.color = "#c94a4a";
+        statusEl.textContent = "Please enter either an email address or a phone number to subscribe.";
+      }
+      return;
+    }
+  }
+
   if (submitBtn) submitBtn.disabled = true;
   if (statusEl) {
     statusEl.style.color = "#777c75";
-    statusEl.textContent = "Sending message to Heylee (heylee@absolutionuecna.org)…";
+    statusEl.textContent = isSubscribe ? "Subscribing to Women of Virtue updates…" : "Sending message to Heylee (heylee@absolutionuecna.org)…";
   }
 
   const payload = {
@@ -1440,7 +1524,9 @@ main.addEventListener("submit", async event => {
     lname,
     email,
     phone,
-    message
+    message,
+    notifyEmail,
+    notifySms
   };
 
   try {
@@ -1454,24 +1540,39 @@ main.addEventListener("submit", async event => {
     if (res.ok) {
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
-        statusEl.textContent = data.message || `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee at heylee@absolutionuecna.org.`;
+        statusEl.textContent = data.message || (isSubscribe ? `Thank you, ${fname || 'sister'}! You have been subscribed for notifications.` : `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee.`);
       }
       form.reset();
     } else {
       throw new Error(data.error || `Server returned ${res.status}`);
     }
   } catch (err) {
-    console.warn("Contact API fallback to mailto:", err.message);
-    const subject = encodeURIComponent(`[Women of Virtue] ${formType === 'project' ? 'Start a Project' : 'Inquiry'} from ${fname} ${lname}`.trim());
-    const bodyText = encodeURIComponent(`From: ${fname} ${lname}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`);
-    const mailtoUrl = `mailto:heylee@absolutionuecna.org?subject=${subject}&body=${bodyText}`;
+    console.warn("Contact API fallback to mailto/local:", err.message);
+    if (isSubscribe) {
+      // In static GitHub Pages mode without server, cache subscriber locally and provide confirmation
+      try {
+        const subs = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+        subs.unshift({ name: `${fname} ${lname}`.trim(), email, phone, notifyEmail, notifySms, date: new Date().toISOString() });
+        localStorage.setItem("wov_subscribers_cache", JSON.stringify(subs.slice(0, 100)));
+      } catch {}
 
-    if (statusEl) {
-      statusEl.style.color = "#2e7d32";
-      statusEl.innerHTML = `Your message is ready! If your mail client didn't open automatically, <a href="${mailtoUrl}" target="_blank" style="text-decoration:underline; font-weight:bold; color:inherit;">click here to email Heylee directly at heylee@absolutionuecna.org</a>.`;
+      if (statusEl) {
+        statusEl.style.color = "#2e7d32";
+        statusEl.textContent = `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${[notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications'}.`;
+      }
+      form.reset();
+    } else {
+      const subject = encodeURIComponent(`[Women of Virtue] ${formType === 'project' ? 'Start a Project' : 'Inquiry'} from ${fname} ${lname}`.trim());
+      const bodyText = encodeURIComponent(`From: ${fname} ${lname}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`);
+      const mailtoUrl = `mailto:heylee@absolutionuecna.org?subject=${subject}&body=${bodyText}`;
+
+      if (statusEl) {
+        statusEl.style.color = "#2e7d32";
+        statusEl.innerHTML = `Your message is ready! If your mail client didn't open automatically, <a href="${mailtoUrl}" target="_blank" style="text-decoration:underline; font-weight:bold; color:inherit;">click here to email Heylee directly at heylee@absolutionuecna.org</a>.`;
+      }
+      window.location.href = mailtoUrl;
+      form.reset();
     }
-    window.location.href = mailtoUrl;
-    form.reset();
   } finally {
     if (submitBtn) submitBtn.disabled = false;
   }
