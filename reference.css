@@ -480,7 +480,7 @@ body[data-route] .site-header {
   opacity: 0.85;
 }
 
-.field input,
+.field input:not(.wov-subscribe-grid input),
 .field textarea {
   width: 100%;
   min-height: 48px;

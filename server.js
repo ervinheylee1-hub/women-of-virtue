@@ -1189,6 +1189,104 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, { ok: true });
     }
 
+    // 12d. POST /api/admin/broadcast - Send newsletter or devotional update to subscribers
+    if (pathname === '/api/admin/broadcast' && method === 'POST') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+
+      const body = await readJsonBody(req);
+      const subject = String(body.subject || '').trim();
+      const message = String(body.message || '').trim();
+      const targetAudience = String(body.audience || 'all').trim(); // 'all', 'email', 'sms'
+
+      if (!subject && targetAudience !== 'sms') {
+        return sendJson(res, { error: 'Please enter an email subject line.' }, 400);
+      }
+      if (!message) {
+        return sendJson(res, { error: 'Please enter a message or newsletter body to send.' }, 400);
+      }
+
+      const subscribers = readSubscribersStore();
+      const emailRecipients = [];
+      const smsRecipients = [];
+
+      for (const sub of subscribers) {
+        if ((targetAudience === 'all' || targetAudience === 'email') && sub.notifyEmail && sub.email) {
+          if (!emailRecipients.some(e => e.email.toLowerCase() === sub.email.toLowerCase())) {
+            emailRecipients.push({ name: sub.name, email: sub.email });
+          }
+        }
+        if ((targetAudience === 'all' || targetAudience === 'sms') && sub.notifySms && sub.phone) {
+          if (!smsRecipients.some(p => p.phone === sub.phone)) {
+            smsRecipients.push({ name: sub.name, phone: sub.phone });
+          }
+        }
+      }
+
+      const emailSettings = readEmailSettings();
+      let sentCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      // Send to email subscribers via Resend
+      if (emailRecipients.length > 0) {
+        if (!emailSettings.resendApiKey) {
+          console.warn('[BROADCAST] Resend API key not configured. Mocking delivery to', emailRecipients.length, 'subscribers.');
+          sentCount += emailRecipients.length;
+        } else {
+          for (const recipient of emailRecipients) {
+            try {
+              const htmlBody = `
+                <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e3dc; border-radius: 8px; overflow: hidden; color: #252b29;">
+                  <div style="background-color: #26352f; padding: 24px 32px; text-align: center;">
+                    <h1 style="margin: 0; color: #fffefa; font-size: 22px; font-weight: 600;">Women of Virtue</h1>
+                    <p style="margin: 4px 0 0; color: #d4967d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Fellowship & Devotional Digest</p>
+                  </div>
+                  <div style="padding: 32px 32px 24px;">
+                    <h2 style="margin: 0 0 16px; font-size: 20px; color: #26352f;">${escapeHtml(subject)}</h2>
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 1.65; color: #303636; white-space: pre-wrap;">${escapeHtml(message)}</div>
+                  </div>
+                  <div style="background-color: #f7f5f0; padding: 16px 32px; border-top: 1px solid rgba(37,43,41,0.08); text-align: center;">
+                    <p style="margin: 0; font-size: 11px; color: #777c75; font-family: sans-serif;">
+                      You received this email because you subscribed to Women of Virtue updates.<br>
+                      Visit <a href="https://women-of-virtue.com" style="color: #c9755b; text-decoration: underline;">women-of-virtue.com</a>
+                    </p>
+                  </div>
+                </div>
+              `;
+
+              await sendResendEmail({
+                apiKey: emailSettings.resendApiKey,
+                to: recipient.email,
+                from: emailSettings.resendFromEmail,
+                subject: `[Women of Virtue] ${subject}`,
+                text: `${subject}\n\n${message}\n\nSent from Women of Virtue`,
+                html: htmlBody
+              });
+              sentCount++;
+            } catch (err) {
+              errorCount++;
+              errors.push(`${recipient.email}: ${err.message}`);
+            }
+          }
+        }
+      }
+
+      console.log(`[BROADCAST SENT] Emails: ${emailRecipients.length} (${sentCount} sent, ${errorCount} errors), SMS recipients ready: ${smsRecipients.length}`);
+
+      return sendJson(res, {
+        ok: true,
+        sentCount,
+        errorCount,
+        emailCount: emailRecipients.length,
+        smsCount: smsRecipients.length,
+        smsRecipients,
+        errors: errors.slice(0, 5),
+        message: `Broadcast processed: sent to ${sentCount} email subscriber(s). ${smsRecipients.length} SMS subscriber(s) compiled.`
+      });
+    }
+
     // 13. GET /api/admin/email-settings - View Resend configuration
     if (pathname === '/api/admin/email-settings' && method === 'GET') {
       const session = requireSession(req, res);

@@ -29,10 +29,12 @@
   const viewSettings = document.querySelector("#view-settings");
   const viewDevotionals = document.querySelector("#view-devotionals");
   const viewAnalytics = document.querySelector("#view-analytics");
+  const viewBroadcast = document.querySelector("#view-broadcast");
   const tabBtnWidgets = document.querySelector("#tab-btn-widgets");
   const tabBtnSettings = document.querySelector("#tab-btn-settings");
   const tabBtnDevotionals = document.querySelector("#tab-btn-devotionals");
   const tabBtnAnalytics = document.querySelector("#tab-btn-analytics");
+  const tabBtnBroadcast = document.querySelector("#tab-btn-broadcast");
   const backToWidgetsBtn = document.querySelector("#btn-back-to-widgets");
   const dynamicContentFields = document.querySelector("#dynamic-content-fields");
   const inspectorElementType = document.querySelector("#inspector-element-type");
@@ -1009,6 +1011,7 @@
     tabBtnSettings.classList.toggle("is-active", tabName === "site-settings");
     if (tabBtnDevotionals) tabBtnDevotionals.classList.toggle("is-active", tabName === "devotionals");
     if (tabBtnAnalytics) tabBtnAnalytics.classList.toggle("is-active", tabName === "analytics");
+    if (tabBtnBroadcast) tabBtnBroadcast.classList.toggle("is-active", tabName === "broadcast");
 
     if (tabName === "site-settings") {
       viewWidgets.hidden = true;
@@ -1016,11 +1019,13 @@
       viewSettings.hidden = false;
       if (viewDevotionals) viewDevotionals.hidden = true;
       if (viewAnalytics) viewAnalytics.hidden = true;
+      if (viewBroadcast) viewBroadcast.hidden = true;
     } else if (tabName === "devotionals") {
       viewWidgets.hidden = true;
       viewInspector.hidden = true;
       viewSettings.hidden = true;
       if (viewAnalytics) viewAnalytics.hidden = true;
+      if (viewBroadcast) viewBroadcast.hidden = true;
       if (viewDevotionals) {
         viewDevotionals.hidden = false;
         renderDevotionalsManager();
@@ -1030,14 +1035,26 @@
       viewInspector.hidden = true;
       viewSettings.hidden = true;
       if (viewDevotionals) viewDevotionals.hidden = true;
+      if (viewBroadcast) viewBroadcast.hidden = true;
       if (viewAnalytics) {
         viewAnalytics.hidden = false;
         loadAndRenderAnalyticsDashboard();
+      }
+    } else if (tabName === "broadcast") {
+      viewWidgets.hidden = true;
+      viewInspector.hidden = true;
+      viewSettings.hidden = true;
+      if (viewDevotionals) viewDevotionals.hidden = true;
+      if (viewAnalytics) viewAnalytics.hidden = true;
+      if (viewBroadcast) {
+        viewBroadcast.hidden = false;
+        loadBroadcastAudience();
       }
     } else {
       viewSettings.hidden = true;
       if (viewDevotionals) viewDevotionals.hidden = true;
       if (viewAnalytics) viewAnalytics.hidden = true;
+      if (viewBroadcast) viewBroadcast.hidden = true;
       if (selectedBlockId || selectedCmsKey || selectedElement) {
         viewWidgets.hidden = true;
         viewInspector.hidden = false;
@@ -4564,6 +4581,7 @@
   tabBtnSettings.addEventListener("click", () => showSidebarTab("site-settings"));
   if (tabBtnDevotionals) tabBtnDevotionals.addEventListener("click", () => showSidebarTab("devotionals"));
   if (tabBtnAnalytics) tabBtnAnalytics.addEventListener("click", () => showSidebarTab("analytics"));
+  if (tabBtnBroadcast) tabBtnBroadcast.addEventListener("click", () => showSidebarTab("broadcast"));
   backToWidgetsBtn.addEventListener("click", () => {
     selectedBlockId = null;
     selectedElement = null;
@@ -5131,6 +5149,7 @@
     setupMediaLibrary();
     setupStockPhotoSearch();
     setupInquiries();
+    setupBroadcast();
     setupEmailSettings();
     setupLiveGithubSettings();
     setupGaSettings();
@@ -5816,6 +5835,134 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  // Send Notifications & Newsletters Broadcast Engine
+  async function loadBroadcastAudience() {
+    const summaryEl = document.querySelector("#broadcast-subscribers-summary");
+    if (!summaryEl) return;
+    try {
+      let subscribers = [];
+      try {
+        const res = await api("./api/admin/subscribers");
+        subscribers = Array.isArray(res.subscribers) ? res.subscribers : [];
+      } catch {
+        try {
+          subscribers = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+        } catch {}
+      }
+      cachedSubscribers = subscribers;
+      const emailCount = subscribers.filter(s => s.notifyEmail && s.email).length;
+      const smsCount = subscribers.filter(s => s.notifySms && s.phone).length;
+      summaryEl.textContent = `${subscribers.length} total (${emailCount} email, ${smsCount} text)`;
+
+      // Populate SMS text area
+      const smsArea = document.querySelector("#broadcast-sms-text");
+      if (smsArea) {
+        const phoneNumbers = subscribers.filter(s => s.notifySms && s.phone).map(s => s.phone);
+        smsArea.value = phoneNumbers.join(", ");
+      }
+    } catch {
+      summaryEl.textContent = "0 subscribers";
+    }
+  }
+
+  function setupBroadcast() {
+    const form = document.querySelector("#broadcast-form");
+    const audienceSelect = document.querySelector("#broadcast-audience-select");
+    const subjectRow = document.querySelector("#broadcast-subject-row");
+    const subjectInput = document.querySelector("#broadcast-subject");
+    const bodyInput = document.querySelector("#broadcast-body");
+    const charCount = document.querySelector("#broadcast-char-count");
+    const statusMsg = document.querySelector("#broadcast-status-msg");
+    const copySmsBtn = document.querySelector("#btn-sms-copy-list");
+    const smsSection = document.querySelector("#broadcast-sms-section");
+    const closeSmsBtn = document.querySelector("#btn-close-sms-section");
+    const submitBtn = document.querySelector("#btn-send-broadcast");
+
+    bodyInput?.addEventListener("input", () => {
+      if (charCount) charCount.textContent = `${bodyInput.value.length} characters`;
+    });
+
+    audienceSelect?.addEventListener("change", () => {
+      const isSmsOnly = audienceSelect.value === "sms";
+      if (subjectRow) subjectRow.style.display = isSmsOnly ? "none" : "";
+      if (subjectInput) subjectInput.required = !isSmsOnly;
+    });
+
+    copySmsBtn?.addEventListener("click", () => {
+      if (smsSection) smsSection.style.display = "block";
+      const smsArea = document.querySelector("#broadcast-sms-text");
+      if (smsArea) {
+        smsArea.select();
+        navigator.clipboard?.writeText(smsArea.value);
+        showToast("Phone numbers copied to clipboard!", "success");
+      }
+    });
+
+    closeSmsBtn?.addEventListener("click", () => {
+      if (smsSection) smsSection.style.display = "none";
+    });
+
+    form?.addEventListener("submit", async e => {
+      e.preventDefault();
+      const audience = audienceSelect?.value || "all";
+      const subject = subjectInput?.value.trim() || "";
+      const message = bodyInput?.value.trim() || "";
+
+      if (!message) {
+        alert("Please enter a message or newsletter content.");
+        return;
+      }
+      if (audience !== "sms" && !subject) {
+        alert("Please enter an email subject line.");
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending Broadcast…";
+      }
+      if (statusMsg) {
+        statusMsg.style.display = "block";
+        statusMsg.style.background = "rgba(0, 180, 216, 0.1)";
+        statusMsg.style.color = "#007791";
+        statusMsg.textContent = "Dispatching notification to subscribers…";
+      }
+
+      try {
+        const res = await api("./api/admin/broadcast", {
+          method: "POST",
+          body: JSON.stringify({
+            audience,
+            subject,
+            message
+          })
+        });
+
+        if (statusMsg) {
+          statusMsg.style.display = "block";
+          statusMsg.style.background = "rgba(46, 125, 50, 0.12)";
+          statusMsg.style.color = "#2e7d32";
+          statusMsg.textContent = `✓ ${res.message || 'Broadcast successfully sent!'}`;
+        }
+        showToast("Newsletter broadcast sent successfully!", "success");
+        form.reset();
+        if (charCount) charCount.textContent = "0 characters";
+      } catch (err) {
+        if (statusMsg) {
+          statusMsg.style.display = "block";
+          statusMsg.style.background = "rgba(201, 74, 74, 0.12)";
+          statusMsg.style.color = "#c94a4a";
+          statusMsg.textContent = `⚠ Delivery notice: ${err.message}`;
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Send to Subscribers</span>`;
+        }
+      }
+    });
   }
 
   // Email Notifications (Resend) Settings

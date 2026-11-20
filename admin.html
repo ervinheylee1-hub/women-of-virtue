@@ -161,9 +161,13 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               Devotionals
             </button>
-            <button type="button" class="tab-btn" data-sidebar-tab="analytics" id="tab-btn-analytics" title="Visitor Demographics & Devotional Analytics">
+            <button type="button" class="tab-btn" data-sidebar-tab="analytics" id="tab-btn-analytics" title="Visitor Demographics &amp; Devotional Analytics">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               Analytics
+            </button>
+            <button type="button" class="tab-btn" data-sidebar-tab="broadcast" id="tab-btn-broadcast" title="Send Notifications &amp; Newsletters to Subscribers">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              Broadcast
             </button>
           </div>
 
@@ -836,6 +840,72 @@
               <div style="padding:10px 4px 16px; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:11px; color:var(--text-muted);" id="analytics-last-updated">Updated just now</span>
                 <button class="small-quiet-btn" id="btn-reset-analytics" type="button" style="color:#c94a4a; font-size:11px;">Reset Stats</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- F. Send Notifications & Newsletters Drawer -->
+          <div class="sidebar-view" id="view-broadcast" hidden>
+            <div class="broadcast-container" style="display:flex; flex-direction:column; gap:16px;">
+              <div class="analytics-header-card" style="padding:14px;">
+                <h3 style="margin:0 0 4px; font-size:15px; font-weight:600; color:var(--forest);">Send Notifications &amp; Newsletters</h3>
+                <p style="margin:0; font-size:11px; color:var(--text-muted); line-height:1.4;">Compose and deliver fellowship devotionals, scripture reflections, and event announcements directly to your subscribers.</p>
+              </div>
+
+              <!-- Audience Summary Card -->
+              <div class="analytics-section-card" style="padding:12px 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <strong style="font-size:12px; color:var(--text-primary);">Target Audience</strong>
+                  <span id="broadcast-subscribers-summary" style="font-size:11px; color:var(--accent-color); font-weight:600;">Loading subscribers…</span>
+                </div>
+                <div class="control-row" style="margin-bottom:0;">
+                  <label for="broadcast-audience-select" style="font-size:11px; margin-bottom:4px;">Who should receive this update?</label>
+                  <select id="broadcast-audience-select" style="width:100%; padding:7px 10px; font-size:12px; border-radius:6px; border:1px solid var(--panel-border); background:#fff;">
+                    <option value="all">All Subscribers (Email &amp; SMS)</option>
+                    <option value="email">Email Subscribers Only</option>
+                    <option value="sms">SMS / Text Subscribers Only</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Compose Form -->
+              <div class="analytics-section-card" style="padding:14px;">
+                <form id="broadcast-form" style="display:flex; flex-direction:column; gap:12px;">
+                  <div class="control-row" id="broadcast-subject-row">
+                    <label for="broadcast-subject" style="font-size:11px; font-weight:600; margin-bottom:4px;">Newsletter Subject Line</label>
+                    <input type="text" id="broadcast-subject" placeholder="e.g. Weekly Devotional: Walking in Quiet Dignity" required style="width:100%; padding:8px 10px; font-size:12px; border-radius:6px; border:1px solid var(--panel-border);" />
+                  </div>
+
+                  <div class="control-row">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                      <label for="broadcast-body" style="font-size:11px; font-weight:600;">Message Content</label>
+                      <span id="broadcast-char-count" style="font-size:10px; color:var(--text-muted);">0 characters</span>
+                    </div>
+                    <textarea id="broadcast-body" rows="8" placeholder="Write your devotional reflection, scripture encouragement, or community announcement here…" required style="width:100%; padding:10px; font-size:12.5px; line-height:1.5; border-radius:6px; border:1px solid var(--panel-border); resize:vertical;"></textarea>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                    <button type="submit" class="small-primary-btn" id="btn-send-broadcast" style="width:100%; padding:10px; font-size:12px; font-weight:600; background:var(--forest); color:#fff; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                      <span>Send to Subscribers</span>
+                    </button>
+                    <button type="button" class="small-quiet-btn" id="btn-sms-copy-list" style="width:100%; font-size:11px;">
+                      📱 Copy Phone Numbers for Bulk SMS
+                    </button>
+                  </div>
+
+                  <div id="broadcast-status-msg" style="font-size:11px; line-height:1.4; padding:8px 10px; border-radius:6px; display:none;"></div>
+                </form>
+              </div>
+
+              <!-- Quick SMS Number Viewer Modal / Section -->
+              <div class="analytics-section-card" id="broadcast-sms-section" style="display:none; padding:12px 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="font-size:11px; color:var(--text-primary);">SMS Subscribers List</strong>
+                  <button type="button" class="chip-action-btn" id="btn-close-sms-section" style="padding:2px 6px; font-size:10px;">✕ Close</button>
+                </div>
+                <textarea id="broadcast-sms-text" rows="4" readonly style="width:100%; font-size:11px; font-family:monospace; padding:6px; border-radius:4px; border:1px solid var(--panel-border); background:#fcfbf9;"></textarea>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:4px; display:block;">Formatted with commas for easy copy-pasting into your phone or SMS provider.</span>
               </div>
             </div>
           </div>

@@ -985,17 +985,27 @@ body.is-cms-preview .wov-gallery-item:hover .wov-gallery-item-hover {
   padding: 11px 14px;
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--ink);
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   transition: all 0.2s ease;
   width: 100%;
   box-sizing: border-box;
 }
+.wov-subscribe-grid .field input::placeholder {
+  color: #6c757d !important;
+  -webkit-text-fill-color: #6c757d !important;
+  opacity: 0.85;
+}
 .wov-subscribe-grid .field input:focus {
   border-color: var(--peach, #d4967d);
-  background: #ffffff;
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   box-shadow: 0 0 0 3px rgba(212, 150, 125, 0.35);
 }
 .wov-subscribe-prefs label {
@@ -1032,19 +1042,30 @@ body.is-cms-preview .wov-gallery-item:hover .wov-gallery-item-hover {
   max-width: 520px;
   margin: 0 auto;
 }
-.wov-newsletter-input-group input[type="email"] {
+.wov-newsletter-input-group input[type="email"],
+.wov-newsletter-input-group input {
   flex: 1;
   padding: 12px 18px;
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--ink);
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
 }
-.wov-newsletter-input-group input[type="email"]:focus {
+.wov-newsletter-input-group input::placeholder {
+  color: #6c757d !important;
+  -webkit-text-fill-color: #6c757d !important;
+  opacity: 0.85;
+}
+.wov-newsletter-input-group input:focus {
   border-color: var(--peach, #d4967d);
-  background: #fff;
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
 }
 @media (max-width: 520px) {
   .wov-newsletter-input-group {
