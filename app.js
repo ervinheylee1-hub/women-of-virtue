@@ -1150,9 +1150,19 @@ const analyticsTracker = {
     return "desktop";
   },
   sendEvent(payload) {
-    // Avoid tracking iframe preview inside admin editor
+    // EXCLUDE ADMIN & EDITOR: Only track genuine visitors on the public site
     try {
+      // 1. Inside admin canvas iframe
       if (window.parent && window.parent !== window) return;
+      // 2. Query param indicator used by admin canvas
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("cmsPreview") === "1" || urlParams.get("admin") === "1") return;
+      // 3. Admin editor URL or pathname
+      const path = (window.location.pathname || "").toLowerCase();
+      if (path.includes("admin.html") || path.endsWith("/admin")) return;
+      // 4. Admin currently logged in on this browser (local CMS or live static mode)
+      if (sessionStorage.getItem("wov_live_admin_auth") === "true") return;
+      if (localStorage.getItem("wov_github_pat")) return;
     } catch {}
 
     const eventData = {

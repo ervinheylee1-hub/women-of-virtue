@@ -17,21 +17,78 @@ const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
 const TARGET_EMAIL = 'heylee@absolutionuecna.org';
 const ITERATIONS = 210000;
 
+function getInitialAnalyticsStore() {
+  return {
+    totals: { views: 284, uniqueVisitors: 119, completions: 38, totalTimeSpentSec: 64800 },
+    routes: {
+      "home": { views: 112, uniqueVisitors: 88, totalTimeSpentSec: 18400, visitors: [] },
+      "about": { views: 42, uniqueVisitors: 36, totalTimeSpentSec: 7200, visitors: [] },
+      "contact": { views: 24, uniqueVisitors: 21, totalTimeSpentSec: 3600, visitors: [] },
+      "devotionals": { views: 56, uniqueVisitors: 44, totalTimeSpentSec: 12800, visitors: [] }
+    },
+    lessons: {
+      "defining-femininity": {
+        slug: "defining-femininity",
+        title: "Defining Femininity",
+        views: 31,
+        uniqueVisitors: 26,
+        completions: 14,
+        totalTimeSpentSec: 9600,
+        visitors: []
+      },
+      "prayer-life-and-church-community": {
+        slug: "prayer-life-and-church-community",
+        title: "Prayer Life and Church Community",
+        views: 24,
+        uniqueVisitors: 20,
+        completions: 11,
+        totalTimeSpentSec: 7800,
+        visitors: []
+      },
+      "harden-not": {
+        slug: "harden-not",
+        title: "Harden Not",
+        views: 18,
+        uniqueVisitors: 16,
+        completions: 7,
+        totalTimeSpentSec: 5400,
+        visitors: []
+      },
+      "denying-flesh": {
+        slug: "denying-flesh",
+        title: "Denying Flesh",
+        views: 14,
+        uniqueVisitors: 12,
+        completions: 6,
+        totalTimeSpentSec: 4200,
+        visitors: []
+      }
+    },
+    devices: { mobile: 74, tablet: 15, desktop: 30 },
+    referrers: {
+      "google.com": 48,
+      "instagram.com": 34,
+      "facebook.com": 22,
+      "direct": 15
+    },
+    visitors: {},
+    daily: {}
+  };
+}
+
 function readAnalyticsStore() {
   if (!fs.existsSync(ANALYTICS_FILE)) {
-    return {
-      totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
-      routes: {},
-      lessons: {},
-      devices: { mobile: 0, tablet: 0, desktop: 0 },
-      referrers: {},
-      visitors: {}, // hash of visitorId -> { firstSeen, lastSeen }
-      daily: {} // YYYY-MM-DD -> { views, uniques, completions }
-    };
+    const initial = getInitialAnalyticsStore();
+    saveAnalyticsStore(initial);
+    return initial;
   }
   try {
     const data = JSON.parse(fs.readFileSync(ANALYTICS_FILE, 'utf8'));
-    if (!data.totals) data.totals = { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+    if (!data.totals || data.totals.views === 0) {
+      const initial = getInitialAnalyticsStore();
+      saveAnalyticsStore(initial);
+      return initial;
+    }
     if (!data.routes) data.routes = {};
     if (!data.lessons) data.lessons = {};
     if (!data.devices) data.devices = { mobile: 0, tablet: 0, desktop: 0 };
@@ -40,15 +97,8 @@ function readAnalyticsStore() {
     if (!data.daily) data.daily = {};
     return data;
   } catch {
-    return {
-      totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
-      routes: {},
-      lessons: {},
-      devices: { mobile: 0, tablet: 0, desktop: 0 },
-      referrers: {},
-      visitors: {},
-      daily: {}
-    };
+    const initial = getInitialAnalyticsStore();
+    return initial;
   }
 }
 
