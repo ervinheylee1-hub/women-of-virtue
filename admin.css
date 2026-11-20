@@ -1935,3 +1935,231 @@ body.is-preview-mode .canvas-device-wrapper.is-desktop {
   transform: translateY(8px);
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
+
+/* ========================================================
+   Demographics & Analytics Drawer Styles
+   ======================================================== */
+.analytics-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--panel-border);
+  gap: 8px;
+}
+
+.analytics-scroll-content {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.analytics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.analytics-stat-card {
+  background: #ffffff;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(37, 43, 41, 0.04);
+}
+
+.analytics-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.analytics-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--forest);
+  line-height: 1.1;
+  font-feature-settings: "tnum";
+}
+
+.analytics-stat-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.analytics-section-card {
+  background: #ffffff;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(37, 43, 41, 0.04);
+}
+
+.analytics-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 10px;
+}
+
+.analytics-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(212, 150, 125, 0.16);
+  color: var(--accent-color);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Device Meter */
+.device-meter-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #eae8e1;
+  margin: 10px 0 12px;
+}
+
+.device-meter-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.seg-mobile { background: #d4967d; }
+.seg-desktop { background: #26352f; }
+.seg-tablet { background: #5a7d7c; }
+
+.device-legend-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.device-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-mobile { background: #d4967d; }
+.dot-desktop { background: #26352f; }
+.dot-tablet { background: #5a7d7c; }
+
+/* Devotional Lessons Breakdown Table / Cards */
+.analytics-lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analytics-lesson-row {
+  background: #faf9f6;
+  border: 1px solid rgba(229, 227, 220, 0.8);
+  border-radius: 6px;
+  padding: 10px 12px;
+  transition: all 0.15s ease;
+}
+
+.analytics-lesson-row:hover {
+  border-color: rgba(201, 117, 91, 0.4);
+  background: #ffffff;
+}
+
+.analytics-lesson-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.analytics-lesson-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--forest);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.analytics-lesson-views {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-color);
+  white-space: nowrap;
+}
+
+.analytics-progress-track {
+  height: 6px;
+  background: #eae8e1;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.analytics-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4967d, #3b7e56);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.analytics-lesson-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Referrers List */
+.analytics-referrers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analytics-referrer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #faf9f6;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.analytics-referrer-source {
+  font-weight: 600;
+  color: var(--forest);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-referrer-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-color);
+}

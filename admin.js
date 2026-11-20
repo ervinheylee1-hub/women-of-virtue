@@ -28,9 +28,11 @@
   const viewInspector = document.querySelector("#view-inspector");
   const viewSettings = document.querySelector("#view-settings");
   const viewDevotionals = document.querySelector("#view-devotionals");
+  const viewAnalytics = document.querySelector("#view-analytics");
   const tabBtnWidgets = document.querySelector("#tab-btn-widgets");
   const tabBtnSettings = document.querySelector("#tab-btn-settings");
   const tabBtnDevotionals = document.querySelector("#tab-btn-devotionals");
+  const tabBtnAnalytics = document.querySelector("#tab-btn-analytics");
   const backToWidgetsBtn = document.querySelector("#btn-back-to-widgets");
   const dynamicContentFields = document.querySelector("#dynamic-content-fields");
   const inspectorElementType = document.querySelector("#inspector-element-type");
@@ -1006,23 +1008,36 @@
     tabBtnWidgets.classList.toggle("is-active", tabName === "widgets");
     tabBtnSettings.classList.toggle("is-active", tabName === "site-settings");
     if (tabBtnDevotionals) tabBtnDevotionals.classList.toggle("is-active", tabName === "devotionals");
+    if (tabBtnAnalytics) tabBtnAnalytics.classList.toggle("is-active", tabName === "analytics");
 
     if (tabName === "site-settings") {
       viewWidgets.hidden = true;
       viewInspector.hidden = true;
       viewSettings.hidden = false;
       if (viewDevotionals) viewDevotionals.hidden = true;
+      if (viewAnalytics) viewAnalytics.hidden = true;
     } else if (tabName === "devotionals") {
       viewWidgets.hidden = true;
       viewInspector.hidden = true;
       viewSettings.hidden = true;
+      if (viewAnalytics) viewAnalytics.hidden = true;
       if (viewDevotionals) {
         viewDevotionals.hidden = false;
         renderDevotionalsManager();
       }
+    } else if (tabName === "analytics") {
+      viewWidgets.hidden = true;
+      viewInspector.hidden = true;
+      viewSettings.hidden = true;
+      if (viewDevotionals) viewDevotionals.hidden = true;
+      if (viewAnalytics) {
+        viewAnalytics.hidden = false;
+        loadAndRenderAnalyticsDashboard();
+      }
     } else {
       viewSettings.hidden = true;
       if (viewDevotionals) viewDevotionals.hidden = true;
+      if (viewAnalytics) viewAnalytics.hidden = true;
       if (selectedBlockId || selectedCmsKey || selectedElement) {
         viewWidgets.hidden = true;
         viewInspector.hidden = false;
@@ -4548,6 +4563,7 @@
   tabBtnWidgets.addEventListener("click", () => showSidebarTab("widgets"));
   tabBtnSettings.addEventListener("click", () => showSidebarTab("site-settings"));
   if (tabBtnDevotionals) tabBtnDevotionals.addEventListener("click", () => showSidebarTab("devotionals"));
+  if (tabBtnAnalytics) tabBtnAnalytics.addEventListener("click", () => showSidebarTab("analytics"));
   backToWidgetsBtn.addEventListener("click", () => {
     selectedBlockId = null;
     selectedElement = null;
@@ -5117,6 +5133,8 @@
     setupInquiries();
     setupEmailSettings();
     setupLiveGithubSettings();
+    setupGaSettings();
+    setupAnalyticsActions();
     await loadContent();
     updatePreviewLive();
     if (!isLiveStaticMode) {
@@ -5133,6 +5151,7 @@
     loadInquiries();
     loadEmailSettings();
     loadLiveGithubSettings();
+    loadGaSettings();
   }
 
   function setupLiveGithubSettings() {
@@ -5251,6 +5270,255 @@
     const saved = localStorage.getItem("wov_github_pat");
     if (tokenInput && saved) {
       tokenInput.value = saved;
+    }
+  }
+
+  // Google Analytics 4 (GA4) Settings
+  function setupGaSettings() {
+    const gaInput = document.querySelector("#setting-ga-id");
+    const gaSaveBtn = document.querySelector("#btn-save-ga-settings");
+    const gaStatus = document.querySelector("#ga-settings-status");
+
+    if (gaSaveBtn && gaInput) {
+      gaSaveBtn.addEventListener("click", async () => {
+        const val = gaInput.value.trim();
+        if (!content.theme) content.theme = {};
+        content.theme.gaMeasurementId = val;
+        setDirty(true);
+        await saveContent();
+        if (gaStatus) {
+          gaStatus.hidden = false;
+          gaStatus.style.color = "#2e7d32";
+          gaStatus.textContent = val ? `GA4 Measurement ID (${val}) saved!` : "GA4 Measurement ID removed.";
+          setTimeout(() => { gaStatus.hidden = true; }, 3500);
+        }
+        showToast("GA4 tracking settings updated!", "success");
+      });
+    }
+  }
+
+  function loadGaSettings() {
+    const gaInput = document.querySelector("#setting-ga-id");
+    if (gaInput && content.theme?.gaMeasurementId) {
+      gaInput.value = content.theme.gaMeasurementId;
+    }
+  }
+
+  // Demographics & Analytics Dashboard Engine
+  let cachedAnalyticsReport = null;
+
+  async function fetchAnalyticsData() {
+    // 1. Try local backend server first
+    if (!isLiveStaticMode) {
+      try {
+        const res = await api("./api/admin/analytics");
+        if (res && res.totals) {
+          cachedAnalyticsReport = res;
+          return res;
+        }
+      } catch (err) {
+        console.warn("Could not fetch server analytics, checking local cache:", err);
+      }
+    }
+
+    // 2. Fallback to browser local cache (for static GitHub Pages or offline)
+    try {
+      const local = JSON.parse(localStorage.getItem("wov_analytics_cache")) || {};
+      if (local.totals) {
+        cachedAnalyticsReport = local;
+        return local;
+      }
+    } catch {}
+
+    return {
+      totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
+      routes: {},
+      lessons: {},
+      devices: { mobile: 0, tablet: 0, desktop: 0 },
+      referrers: {}
+    };
+  }
+
+  async function loadAndRenderAnalyticsDashboard() {
+    const report = await fetchAnalyticsData();
+    renderAnalyticsDashboard(report);
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds || seconds <= 0) return "0s";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins === 0) return `${secs}s`;
+    return `${mins}m ${secs}s`;
+  }
+
+  function renderAnalyticsDashboard(report) {
+    if (!report) return;
+
+    // 1. Summary Stat Cards
+    const totals = report.totals || { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+    const elUnique = document.querySelector("#stat-unique-visitors");
+    const elViews = document.querySelector("#stat-total-views");
+    const elAvgTime = document.querySelector("#stat-avg-time");
+    const elRate = document.querySelector("#stat-completion-rate");
+    const elCompletionsCount = document.querySelector("#stat-completions-count");
+
+    if (elUnique) elUnique.textContent = totals.uniqueVisitors || 0;
+    if (elViews) elViews.textContent = totals.views || 0;
+
+    const totalViews = totals.views || 0;
+    const avgSec = totalViews > 0 ? Math.round((totals.totalTimeSpentSec || 0) / totalViews) : 0;
+    if (elAvgTime) elAvgTime.textContent = formatDuration(avgSec);
+
+    const completions = totals.completions || 0;
+    const completionRate = totalViews > 0 ? Math.round((completions / totalViews) * 100) : 0;
+    if (elRate) elRate.textContent = `${completionRate}%`;
+    if (elCompletionsCount) elCompletionsCount.textContent = `${completions} completed`;
+
+    // 2. Device Demographics
+    const devices = report.devices || { mobile: 0, tablet: 0, desktop: 0 };
+    const devTotal = (devices.mobile || 0) + (devices.desktop || 0) + (devices.tablet || 0);
+
+    const mobPct = devTotal > 0 ? Math.round(((devices.mobile || 0) / devTotal) * 100) : 0;
+    const dskPct = devTotal > 0 ? Math.round(((devices.desktop || 0) / devTotal) * 100) : 0;
+    const tabPct = devTotal > 0 ? Math.max(0, 100 - mobPct - dskPct) : 0;
+
+    const segMob = document.querySelector("#device-seg-mobile");
+    const segDsk = document.querySelector("#device-seg-desktop");
+    const segTab = document.querySelector("#device-seg-tablet");
+
+    if (segMob) segMob.style.width = `${devTotal > 0 ? mobPct : 33.3}%`;
+    if (segDsk) segDsk.style.width = `${devTotal > 0 ? dskPct : 33.3}%`;
+    if (segTab) segTab.style.width = `${devTotal > 0 ? tabPct : 33.4}%`;
+
+    const valMob = document.querySelector("#device-val-mobile");
+    const valDsk = document.querySelector("#device-val-desktop");
+    const valTab = document.querySelector("#device-val-tablet");
+
+    if (valMob) valMob.textContent = `${mobPct}% (${devices.mobile || 0})`;
+    if (valDsk) valDsk.textContent = `${dskPct}% (${devices.desktop || 0})`;
+    if (valTab) valTab.textContent = `${tabPct}% (${devices.tablet || 0})`;
+
+    // 3. Devotionals Lessons Breakdown
+    const lessonsListEl = document.querySelector("#analytics-lessons-list");
+    const badgeCount = document.querySelector("#badge-lessons-count");
+    if (lessonsListEl) {
+      lessonsListEl.innerHTML = "";
+
+      // Gather all existing lessons from content.devotionals
+      const allDevotionals = content.devotionals || [];
+      const catalogLessons = [];
+      allDevotionals.forEach(course => {
+        (course.lessons || []).forEach(l => {
+          catalogLessons.push({
+            slug: l.slug,
+            title: l.title || l.slug,
+            courseTitle: course.title
+          });
+        });
+      });
+
+      if (badgeCount) badgeCount.textContent = `${catalogLessons.length} lessons`;
+
+      if (catalogLessons.length === 0) {
+        lessonsListEl.innerHTML = `<p class="settings-note" style="margin:0;">No devotionals created yet.</p>`;
+      } else {
+        // Merge with stats from report.lessons
+        const statsLessons = report.lessons || {};
+
+        catalogLessons.forEach(item => {
+          const lStat = statsLessons[item.slug] || { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+          const lViews = lStat.views || 0;
+          const lUniques = lStat.uniqueVisitors || 0;
+          const lDone = lStat.completions || 0;
+          const lRate = lViews > 0 ? Math.min(100, Math.round((lDone / lViews) * 100)) : 0;
+          const lAvgSec = lViews > 0 ? Math.round((lStat.totalTimeSpentSec || 0) / lViews) : 0;
+
+          const row = document.createElement("div");
+          row.className = "analytics-lesson-row";
+          row.innerHTML = `
+            <div class="analytics-lesson-head">
+              <span class="analytics-lesson-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+              <span class="analytics-lesson-views">${lViews} views</span>
+            </div>
+            <div class="analytics-progress-track" title="Completion Rate: ${lRate}%">
+              <div class="analytics-progress-fill" style="width: ${lRate}%;"></div>
+            </div>
+            <div class="analytics-lesson-meta">
+              <span>👥 ${lUniques} unique readers</span>
+              <span>✓ ${lDone} completed (${lRate}%)</span>
+              <span>⏱ ${formatDuration(lAvgSec)} avg</span>
+            </div>
+          `;
+          lessonsListEl.appendChild(row);
+        });
+      }
+    }
+
+    // 4. Referrers & Traffic Sources
+    const referrersEl = document.querySelector("#analytics-referrers-list");
+    if (referrersEl) {
+      referrersEl.innerHTML = "";
+      const refs = report.referrers || {};
+      const refEntries = Object.entries(refs).sort((a, b) => b[1] - a[1]);
+
+      if (refEntries.length === 0) {
+        referrersEl.innerHTML = `
+          <div class="analytics-referrer-row">
+            <span class="analytics-referrer-source">Direct / Bookmark / Search</span>
+            <span class="analytics-referrer-count">100%</span>
+          </div>
+        `;
+      } else {
+        refEntries.slice(0, 8).forEach(([src, count]) => {
+          const row = document.createElement("div");
+          row.className = "analytics-referrer-row";
+          row.innerHTML = `
+            <span class="analytics-referrer-source" title="${escapeHtml(src)}">${escapeHtml(src)}</span>
+            <span class="analytics-referrer-count">${count} views</span>
+          `;
+          referrersEl.appendChild(row);
+        });
+      }
+    }
+
+    const updatedEl = document.querySelector("#analytics-last-updated");
+    if (updatedEl) {
+      updatedEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+  }
+
+  function setupAnalyticsActions() {
+    const refreshBtn = document.querySelector("#btn-refresh-analytics");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", async () => {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "Loading…";
+        try {
+          await loadAndRenderAnalyticsDashboard();
+          showToast("Analytics metrics refreshed!", "success");
+        } finally {
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = "↻ Refresh";
+        }
+      });
+    }
+
+    const resetBtn = document.querySelector("#btn-reset-analytics");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to reset all visitor and reading analytics data?")) return;
+        try {
+          if (!isLiveStaticMode) {
+            await api("./api/admin/analytics", { method: "DELETE" });
+          }
+          localStorage.removeItem("wov_analytics_cache");
+          await loadAndRenderAnalyticsDashboard();
+          showToast("Analytics stats reset successfully.", "info");
+        } catch (err) {
+          alert("Failed to reset analytics: " + err.message);
+        }
+      });
     }
   }
 

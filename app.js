@@ -1128,6 +1128,178 @@ function renderBlocksPage(blocks) {
   return `<div class="page-fade wov-blocks-page">${blocks.map(renderBlock).join("")}</div>`;
 }
 
+// Analytics & Demographics Engine
+const analyticsTracker = {
+  activeRoute: null,
+  activeLessonSlug: null,
+  activeLessonTitle: null,
+  routeStartTime: Date.now(),
+  getVisitorId() {
+    let vid = localStorage.getItem("wov_vid");
+    if (!vid) {
+      vid = "v_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now().toString(36);
+      localStorage.setItem("wov_vid", vid);
+    }
+    return vid;
+  },
+  getDeviceType() {
+    const w = window.innerWidth;
+    const ua = navigator.userAgent.toLowerCase();
+    if (/tablet|ipad|playbook|silk/i.test(ua) || (w >= 600 && w <= 1024)) return "tablet";
+    if (/mobile|iphone|ipod|android|blackberry|iemobile|opera mini/i.test(ua) || w < 600) return "mobile";
+    return "desktop";
+  },
+  sendEvent(payload) {
+    // Avoid tracking iframe preview inside admin editor
+    try {
+      if (window.parent && window.parent !== window) return;
+    } catch {}
+
+    const eventData = {
+      visitorId: this.getVisitorId(),
+      device: this.getDeviceType(),
+      referrer: document.referrer || "",
+      timestamp: new Date().toISOString(),
+      ...payload
+    };
+
+    // 1. Send to local/CMS server if available
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("./api/analytics/event", JSON.stringify(eventData));
+      } else {
+        fetch("./api/analytics/event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(eventData),
+          keepalive: true
+        }).catch(() => {});
+      }
+    } catch {}
+
+    // 2. Update local fallback analytics store (useful for static GitHub Pages without server)
+    try {
+      const localKey = "wov_analytics_cache";
+      let localStore = {};
+      try { localStore = JSON.parse(localStorage.getItem(localKey)) || {}; } catch {}
+      if (!localStore.totals) localStore.totals = { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+      if (!localStore.lessons) localStore.lessons = {};
+      if (!localStore.devices) localStore.devices = { mobile: 0, tablet: 0, desktop: 0 };
+      if (!localStore.routes) localStore.routes = {};
+      if (!localStore.referrers) localStore.referrers = {};
+
+      if (eventData.type === "pageview") {
+        localStore.totals.views++;
+        localStore.devices[eventData.device] = (localStore.devices[eventData.device] || 0) + 1;
+        const rKey = eventData.route || "home";
+        if (!localStore.routes[rKey]) localStore.routes[rKey] = { views: 0, uniqueVisitors: 0, totalTimeSpentSec: 0 };
+        localStore.routes[rKey].views++;
+
+        if (eventData.lessonSlug) {
+          const lSlug = eventData.lessonSlug;
+          if (!localStore.lessons[lSlug]) {
+            localStore.lessons[lSlug] = { slug: lSlug, title: eventData.lessonTitle || lSlug, views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+          }
+          localStore.lessons[lSlug].views++;
+          if (eventData.lessonTitle) localStore.lessons[lSlug].title = eventData.lessonTitle;
+        }
+      } else if (eventData.type === "time_spent") {
+        const sec = parseInt(eventData.timeSpentSec || 0, 10);
+        localStore.totals.totalTimeSpentSec += sec;
+        const rKey = eventData.route || "home";
+        if (localStore.routes[rKey]) localStore.routes[rKey].totalTimeSpentSec += sec;
+        if (eventData.lessonSlug && localStore.lessons[eventData.lessonSlug]) {
+          localStore.lessons[eventData.lessonSlug].totalTimeSpentSec += sec;
+        }
+      } else if (eventData.type === "lesson_complete") {
+        localStore.totals.completions++;
+        if (eventData.lessonSlug) {
+          const lSlug = eventData.lessonSlug;
+          if (!localStore.lessons[lSlug]) {
+            localStore.lessons[lSlug] = { slug: lSlug, title: eventData.lessonTitle || lSlug, views: 1, uniqueVisitors: 1, completions: 0, totalTimeSpentSec: 0 };
+          }
+          localStore.lessons[lSlug].completions++;
+        }
+      }
+      localStorage.setItem(localKey, JSON.stringify(localStore));
+    } catch {}
+
+    // 3. Dispatch to Google Analytics 4 if configured
+    if (typeof window.gtag === "function") {
+      try {
+        if (eventData.type === "pageview") {
+          window.gtag("event", "page_view", {
+            page_title: document.title,
+            page_location: window.location.href,
+            page_path: window.location.hash || "#/",
+            device_category: eventData.device,
+            lesson_slug: eventData.lessonSlug || ""
+          });
+        } else if (eventData.type === "lesson_complete") {
+          window.gtag("event", "lesson_complete", {
+            lesson_slug: eventData.lessonSlug,
+            lesson_title: eventData.lessonTitle
+          });
+        }
+      } catch {}
+    }
+  },
+  trackPageTransition(newRoute, lesson) {
+    if (this.activeRoute !== null) {
+      const elapsedSec = Math.round((Date.now() - this.routeStartTime) / 1000);
+      if (elapsedSec > 1) {
+        this.sendEvent({
+          type: "time_spent",
+          route: this.activeRoute,
+          lessonSlug: this.activeLessonSlug,
+          timeSpentSec: elapsedSec
+        });
+      }
+    }
+    this.activeRoute = newRoute;
+    this.activeLessonSlug = lesson ? lesson.slug : null;
+    this.activeLessonTitle = lesson ? lesson.title : null;
+    this.routeStartTime = Date.now();
+
+    this.sendEvent({
+      type: "pageview",
+      route: newRoute,
+      lessonSlug: this.activeLessonSlug,
+      lessonTitle: this.activeLessonTitle
+    });
+  },
+  initGa4() {
+    const gaId = cmsContent?.theme?.gaMeasurementId;
+    if (gaId && typeof gaId === "string" && gaId.startsWith("G-") && !window._ga4Initialized) {
+      window._ga4Initialized = true;
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+      document.head.appendChild(script);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { window.dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag("js", new Date());
+      gtag("config", gaId, { send_page_view: false });
+    }
+  }
+};
+
+window.addEventListener("beforeunload", () => {
+  if (analyticsTracker.activeRoute) {
+    const elapsedSec = Math.round((Date.now() - analyticsTracker.routeStartTime) / 1000);
+    if (elapsedSec > 1) {
+      analyticsTracker.sendEvent({
+        type: "time_spent",
+        route: analyticsTracker.activeRoute,
+        lessonSlug: analyticsTracker.activeLessonSlug,
+        timeSpentSec: elapsedSec
+      });
+    }
+  }
+});
+
 function render() {
   const rawPath = window.location.hash.replace(/^#\/?/, "").replace(/\/$/, "");
   const path = rawPath.split("?")[0].replace(/\/$/, "");
@@ -1148,6 +1320,9 @@ function render() {
   registerCmsText();
   applyCmsPositionOverrides();
   applyCmsTheme();
+  analyticsTracker.initGa4();
+  analyticsTracker.trackPageTransition(routeKey, lesson);
+
   document.querySelectorAll(".site-nav a").forEach(link => {
     const href = link.getAttribute("href") || "";
     const target = href.replace(/^#\/?/, "");
@@ -1171,6 +1346,16 @@ function saveLesson(slug, checked) {
   const progress = progressData();
   progress[slug] = checked;
   localStorage.setItem("virtue-progress", JSON.stringify(progress));
+  
+  if (checked) {
+    const lesson = allLessons().find(item => item.slug === slug);
+    analyticsTracker.sendEvent({
+      type: "lesson_complete",
+      lessonSlug: slug,
+      lessonTitle: lesson ? lesson.title : slug
+    });
+  }
+
   const path = window.location.hash.replace(/^#\/?/, "");
   if (path === "devotionals") render();
 }

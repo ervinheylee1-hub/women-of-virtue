@@ -156,6 +156,10 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               Devotionals
             </button>
+            <button type="button" class="tab-btn" data-sidebar-tab="analytics" id="tab-btn-analytics" title="Visitor Demographics & Devotional Analytics">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Analytics
+            </button>
           </div>
 
           <!-- A. Widget Palette Drawer -->
@@ -685,6 +689,22 @@
                 </div>
               </details>
 
+              <details class="settings-group" id="settings-ga4">
+                <summary>Google Analytics 4 (GA4)</summary>
+                <div class="settings-body">
+                  <p class="settings-note">Optionally connect Google Analytics 4 to track visitors on your live website. Enter your GA4 Measurement ID (e.g. <code>G-XXXXXXXXXX</code>).</p>
+                  <div class="control-row">
+                    <label for="setting-ga-id">GA4 Measurement ID</label>
+                    <input type="text" id="setting-ga-id" placeholder="G-XXXXXXXXXX" autocomplete="off" />
+                    <span style="font-size:10px; color:var(--text-muted); margin-top:4px; display:block;">Found in your Google Analytics account under <em>Admin → Data Streams → Web</em>.</span>
+                  </div>
+                  <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="small-primary-btn" id="btn-save-ga-settings" type="button">Save GA4 ID</button>
+                  </div>
+                  <div id="ga-settings-status" style="font-size:11px; margin-top:8px; line-height:1.4;" hidden></div>
+                </div>
+              </details>
+
               <details class="settings-group">
                 <summary>Backup &amp; Sync</summary>
                 <div class="settings-body">
@@ -712,6 +732,90 @@
             </div>
             <div class="devotionals-manager-container" id="devotionals-manager-list" style="padding:14px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; flex:1;">
               <!-- Dynamically populated devotional cards with nested lessons -->
+            </div>
+          </div>
+
+          <!-- E. Demographics & Devotional Analytics Drawer -->
+          <div class="sidebar-view" id="view-analytics" hidden>
+            <div class="analytics-header-bar">
+              <div>
+                <span class="sidebar-panel-title">Demographics &amp; Analytics</span>
+                <p class="settings-note" style="margin:2px 0 0;">Reader engagement, devotional views, completions &amp; device demographics.</p>
+              </div>
+              <button class="chip-action-btn" id="btn-refresh-analytics" type="button" title="Refresh metrics">↻ Refresh</button>
+            </div>
+
+            <div class="analytics-scroll-content">
+              <!-- Summary Stat Cards Grid -->
+              <div class="analytics-stat-grid">
+                <div class="analytics-stat-card">
+                  <div class="analytics-stat-label">Unique Readers</div>
+                  <div class="analytics-stat-value" id="stat-unique-visitors">0</div>
+                  <div class="analytics-stat-sub">Distinct people</div>
+                </div>
+                <div class="analytics-stat-card">
+                  <div class="analytics-stat-label">Total Views</div>
+                  <div class="analytics-stat-value" id="stat-total-views">0</div>
+                  <div class="analytics-stat-sub">Devotionals &amp; pages</div>
+                </div>
+                <div class="analytics-stat-card">
+                  <div class="analytics-stat-label">Avg. Reading Time</div>
+                  <div class="analytics-stat-value" id="stat-avg-time">0m</div>
+                  <div class="analytics-stat-sub">Per session</div>
+                </div>
+                <div class="analytics-stat-card">
+                  <div class="analytics-stat-label">Completion Rate</div>
+                  <div class="analytics-stat-value" id="stat-completion-rate">0%</div>
+                  <div class="analytics-stat-sub" id="stat-completions-count">0 completed</div>
+                </div>
+              </div>
+
+              <!-- Device Demographics Card -->
+              <div class="analytics-section-card">
+                <div class="analytics-section-title">
+                  <span>Device Demographics</span>
+                </div>
+                <div class="device-meter-bar">
+                  <div class="device-meter-segment seg-mobile" id="device-seg-mobile" style="width:33.3%;" title="Mobile"></div>
+                  <div class="device-meter-segment seg-desktop" id="device-seg-desktop" style="width:33.3%;" title="Desktop"></div>
+                  <div class="device-meter-segment seg-tablet" id="device-seg-tablet" style="width:33.4%;" title="Tablet"></div>
+                </div>
+                <div class="device-legend-row">
+                  <div class="device-legend-item"><span class="legend-dot dot-mobile"></span>Mobile: <strong id="device-val-mobile">0%</strong></div>
+                  <div class="device-legend-item"><span class="legend-dot dot-desktop"></span>Desktop: <strong id="device-val-desktop">0%</strong></div>
+                  <div class="device-legend-item"><span class="legend-dot dot-tablet"></span>Tablet: <strong id="device-val-tablet">0%</strong></div>
+                </div>
+              </div>
+
+              <!-- Devotionals & Lessons Interaction Breakdown -->
+              <div class="analytics-section-card">
+                <div class="analytics-section-title">
+                  <span>Devotional Lessons Interaction</span>
+                  <span class="analytics-badge" id="badge-lessons-count">0 lessons</span>
+                </div>
+                <p class="settings-note" style="margin-bottom:10px;">Individual reader interaction, completion percentages, and reading duration per lesson.</p>
+                <div class="devotional-metrics-table-wrap">
+                  <div id="analytics-lessons-list" class="analytics-lessons-list">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top Traffic Sources / Referrers -->
+              <div class="analytics-section-card">
+                <div class="analytics-section-title">
+                  <span>Top Traffic Sources &amp; Referrers</span>
+                </div>
+                <div id="analytics-referrers-list" class="analytics-referrers-list">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Reset Action -->
+              <div style="padding:10px 4px 16px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; color:var(--text-muted);" id="analytics-last-updated">Updated just now</span>
+                <button class="small-quiet-btn" id="btn-reset-analytics" type="button" style="color:#c94a4a; font-size:11px;">Reset Stats</button>
+              </div>
             </div>
           </div>
         </aside>

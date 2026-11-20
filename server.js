@@ -13,8 +13,162 @@ const ROOT_CONTENT_FILE = path.join(ROOT_DIR, 'content.json');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
 const EMAIL_SETTINGS_FILE = path.join(DATA_DIR, 'email-settings.json');
+const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
 const TARGET_EMAIL = 'heylee@absolutionuecna.org';
 const ITERATIONS = 210000;
+
+function readAnalyticsStore() {
+  if (!fs.existsSync(ANALYTICS_FILE)) {
+    return {
+      totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
+      routes: {},
+      lessons: {},
+      devices: { mobile: 0, tablet: 0, desktop: 0 },
+      referrers: {},
+      visitors: {}, // hash of visitorId -> { firstSeen, lastSeen }
+      daily: {} // YYYY-MM-DD -> { views, uniques, completions }
+    };
+  }
+  try {
+    const data = JSON.parse(fs.readFileSync(ANALYTICS_FILE, 'utf8'));
+    if (!data.totals) data.totals = { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 };
+    if (!data.routes) data.routes = {};
+    if (!data.lessons) data.lessons = {};
+    if (!data.devices) data.devices = { mobile: 0, tablet: 0, desktop: 0 };
+    if (!data.referrers) data.referrers = {};
+    if (!data.visitors) data.visitors = {};
+    if (!data.daily) data.daily = {};
+    return data;
+  } catch {
+    return {
+      totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
+      routes: {},
+      lessons: {},
+      devices: { mobile: 0, tablet: 0, desktop: 0 },
+      referrers: {},
+      visitors: {},
+      daily: {}
+    };
+  }
+}
+
+function saveAnalyticsStore(data) {
+  try {
+    fs.writeFileSync(ANALYTICS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save analytics store:', err);
+  }
+}
+
+function recordAnalyticsEvent(event) {
+  const store = readAnalyticsStore();
+  const dateKey = new Date().toISOString().slice(0, 10);
+  if (!store.daily[dateKey]) {
+    store.daily[dateKey] = { views: 0, uniques: 0, completions: 0 };
+  }
+
+  const visitorId = String(event.visitorId || '').trim();
+  let isNewVisitor = false;
+  if (visitorId) {
+    if (!store.visitors[visitorId]) {
+      isNewVisitor = true;
+      store.visitors[visitorId] = { firstSeen: new Date().toISOString(), visits: 1 };
+      store.totals.uniqueVisitors = (store.totals.uniqueVisitors || 0) + 1;
+      store.daily[dateKey].uniques = (store.daily[dateKey].uniques || 0) + 1;
+    } else {
+      store.visitors[visitorId].lastSeen = new Date().toISOString();
+      store.visitors[visitorId].visits = (store.visitors[visitorId].visits || 1) + 1;
+    }
+  }
+
+  // Device detection
+  const device = event.device === 'mobile' ? 'mobile' : (event.device === 'tablet' ? 'tablet' : 'desktop');
+  if (event.type === 'pageview') {
+    store.devices[device] = (store.devices[device] || 0) + 1;
+  }
+
+  // Referrer tracking
+  if (event.referrer && typeof event.referrer === 'string' && event.referrer.trim() && !event.referrer.includes('127.0.0.1') && !event.referrer.includes('localhost')) {
+    try {
+      const refUrl = new URL(event.referrer);
+      const host = refUrl.hostname.toLowerCase();
+      store.referrers[host] = (store.referrers[host] || 0) + 1;
+    } catch {
+      const cleaned = event.referrer.slice(0, 50).trim();
+      store.referrers[cleaned] = (store.referrers[cleaned] || 0) + 1;
+    }
+  }
+
+  // Event dispatch
+  if (event.type === 'pageview') {
+    store.totals.views = (store.totals.views || 0) + 1;
+    store.daily[dateKey].views = (store.daily[dateKey].views || 0) + 1;
+
+    const route = String(event.route || 'home').trim() || 'home';
+    if (!store.routes[route]) {
+      store.routes[route] = { views: 0, uniqueVisitors: 0, totalTimeSpentSec: 0, visitors: [] };
+    }
+    store.routes[route].views = (store.routes[route].views || 0) + 1;
+    if (visitorId && !store.routes[route].visitors.includes(visitorId)) {
+      store.routes[route].visitors.push(visitorId);
+      store.routes[route].uniqueVisitors = store.routes[route].visitors.length;
+    }
+
+    // Devotional lesson specific
+    if (event.lessonSlug) {
+      const slug = String(event.lessonSlug).trim();
+      if (!store.lessons[slug]) {
+        store.lessons[slug] = {
+          slug,
+          title: event.lessonTitle || slug,
+          views: 0,
+          uniqueVisitors: 0,
+          completions: 0,
+          totalTimeSpentSec: 0,
+          visitors: []
+        };
+      }
+      store.lessons[slug].views = (store.lessons[slug].views || 0) + 1;
+      if (event.lessonTitle) store.lessons[slug].title = event.lessonTitle;
+      if (visitorId && !store.lessons[slug].visitors.includes(visitorId)) {
+        store.lessons[slug].visitors.push(visitorId);
+        store.lessons[slug].uniqueVisitors = store.lessons[slug].visitors.length;
+      }
+    }
+  } else if (event.type === 'heartbeat' || event.type === 'time_spent') {
+    const sec = Math.min(Math.max(parseInt(event.timeSpentSec || 0, 10), 0), 3600);
+    store.totals.totalTimeSpentSec = (store.totals.totalTimeSpentSec || 0) + sec;
+    const route = String(event.route || 'home').trim() || 'home';
+    if (store.routes[route]) {
+      store.routes[route].totalTimeSpentSec = (store.routes[route].totalTimeSpentSec || 0) + sec;
+    }
+    if (event.lessonSlug && store.lessons[event.lessonSlug]) {
+      store.lessons[event.lessonSlug].totalTimeSpentSec = (store.lessons[event.lessonSlug].totalTimeSpentSec || 0) + sec;
+    }
+  } else if (event.type === 'lesson_complete') {
+    store.totals.completions = (store.totals.completions || 0) + 1;
+    store.daily[dateKey].completions = (store.daily[dateKey].completions || 0) + 1;
+    if (event.lessonSlug) {
+      const slug = String(event.lessonSlug).trim();
+      if (!store.lessons[slug]) {
+        store.lessons[slug] = {
+          slug,
+          title: event.lessonTitle || slug,
+          views: 1,
+          uniqueVisitors: 1,
+          completions: 0,
+          totalTimeSpentSec: 0,
+          visitors: []
+        };
+      }
+      store.lessons[slug].completions = (store.lessons[slug].completions || 0) + 1;
+      if (event.lessonTitle) store.lessons[slug].title = event.lessonTitle;
+    }
+  }
+
+  saveAnalyticsStore(store);
+  return store;
+}
 
 // Load optional .env file if present
 function loadEnvFile() {
@@ -970,7 +1124,43 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // 16. 404 for unknown /api/ routes
+    // 16. POST /api/analytics/event - Public endpoint to record page views, completions, & demographics
+    if (pathname === '/api/analytics/event' && method === 'POST') {
+      try {
+        const body = await readJsonBody(req, 64 * 1024);
+        recordAnalyticsEvent(body);
+        return sendJson(res, { ok: true });
+      } catch (err) {
+        return sendJson(res, { error: err.message }, 400);
+      }
+    }
+
+    // 17. GET /api/admin/analytics - Authenticated analytics retrieval
+    if (pathname === '/api/admin/analytics' && method === 'GET') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      const store = readAnalyticsStore();
+      return sendJson(res, store);
+    }
+
+    // 18. DELETE /api/admin/analytics - Authenticated analytics reset
+    if (pathname === '/api/admin/analytics' && method === 'DELETE') {
+      const session = requireSession(req, res);
+      if (!session) return;
+      if (!requireCsrf(req, res, session)) return;
+      saveAnalyticsStore({
+        totals: { views: 0, uniqueVisitors: 0, completions: 0, totalTimeSpentSec: 0 },
+        routes: {},
+        lessons: {},
+        devices: { mobile: 0, tablet: 0, desktop: 0 },
+        referrers: {},
+        visitors: {},
+        daily: {}
+      });
+      return sendJson(res, { ok: true, message: 'Analytics stats cleared successfully.' });
+    }
+
+    // 19. 404 for unknown /api/ routes
     if (pathname.startsWith('/api/')) {
       return sendJson(res, { error: 'Not found.' }, 404);
     }
