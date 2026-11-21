@@ -6404,6 +6404,25 @@
             smsListEl.innerHTML = "";
             const smsTextBody = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.trim();
 
+            // Populate Preview Box
+            const previewEl = document.querySelector("#broadcast-sms-preview-text");
+            if (previewEl) {
+              previewEl.textContent = smsTextBody;
+            }
+
+            const copyBodyBtn = document.querySelector("#btn-copy-sms-body");
+            if (copyBodyBtn) {
+              copyBodyBtn.onclick = async () => {
+                try {
+                  await navigator.clipboard.writeText(smsTextBody);
+                  copyBodyBtn.textContent = "✓ Copied!";
+                  setTimeout(() => { copyBodyBtn.textContent = "📋 Copy Text"; }, 2500);
+                } catch (cErr) {
+                  showToast("Unable to auto-copy to clipboard. Please select and copy text manually.", "warning");
+                }
+              };
+            }
+
             smsRecipients.forEach((sub, idx) => {
               const digits = String(sub.phone || '').replace(/\D/g, '');
               const cleanNumber = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
@@ -6411,52 +6430,53 @@
                 ? `(${cleanNumber.slice(0,3)}) ${cleanNumber.slice(3,6)}-${cleanNumber.slice(6)}`
                 : sub.phone;
 
-              // URL for Google Voice individual compose
-              // Google Voice Web loads messages at voice.google.com/u/0/messages
-              const gvUrl = `https://voice.google.com/u/0/messages?sendto=${encodeURIComponent(cleanNumber)}&text=${encodeURIComponent(smsTextBody)}`;
-              // Native SMS URL for phone/desktop native messaging app (individual)
+              // Google Voice Web call/text start link:
+              // Opening voice.google.com with phone pre-focused
+              const gvUrl = `https://voice.google.com/u/0/messages`;
+              // Universal cross-platform SMS URI with encoded prefilled body
               const nativeSmsUrl = `sms:${cleanNumber}?&body=${encodeURIComponent(smsTextBody)}`;
 
               const row = document.createElement("div");
               row.style.display = "flex";
               row.style.alignItems = "center";
               row.style.justifyContent = "space-between";
-              row.style.padding = "8px 10px";
+              row.style.padding = "9px 12px";
               row.style.background = "#f9f8f5";
               row.style.border = "1px solid var(--panel-border)";
               row.style.borderRadius = "6px";
               row.style.fontSize = "11px";
 
               row.innerHTML = `
-                <div style="display:flex; flex-direction:column;">
-                  <strong style="color:var(--forest); font-size:11.5px;">${escapeHtml(sub.name || "Subscriber")}</strong>
-                  <span style="color:var(--text-muted); font-size:10.5px;">${escapeHtml(formattedPhone)}</span>
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                  <strong style="color:var(--forest); font-size:12px;">${escapeHtml(sub.name || "Subscriber")}</strong>
+                  <span style="color:var(--text-muted); font-size:11px; font-family:monospace;">${escapeHtml(formattedPhone)}</span>
                 </div>
-                <div style="display:flex; gap:6px;">
-                  <a href="${gvUrl}" target="_blank" rel="noopener noreferrer" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#007791; color:#ffffff; font-weight:600; padding:4px 8px; border-radius:4px; font-size:10.5px;" title="Send individual text via Google Voice">
-                    📞 Text via Google Voice
-                  </a>
-                  <a href="${nativeSmsUrl}" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#2e7d32; color:#ffffff; font-weight:600; padding:4px 8px; border-radius:4px; font-size:10.5px;" title="Send individual text via Default SMS App">
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <button type="button" class="chip-action-btn btn-gv-individual" data-phone="${cleanNumber}" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; background:#007791; color:#ffffff; font-weight:600; padding:5px 9px; border-radius:4px; font-size:11px; border:none;" title="Copies phone & message, then opens Google Voice">
+                    📞 Google Voice
+                  </button>
+                  <a href="${nativeSmsUrl}" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#2e7d32; color:#ffffff; font-weight:600; padding:5px 9px; border-radius:4px; font-size:11px;" title="Opens Default SMS / Phone app with message pre-filled">
                     💬 SMS App
                   </a>
                 </div>
               `;
-              smsListEl.appendChild(row);
 
-              // Auto-launch first recipient in Google Voice tab if only 1 recipient, or prompt
-              if (idx === 0 && audience === "sms") {
-                const autoLink = document.createElement("a");
-                autoLink.href = gvUrl;
-                autoLink.target = "_blank";
-                autoLink.rel = "noopener noreferrer";
-                document.body.appendChild(autoLink);
-                autoLink.click();
-                document.body.removeChild(autoLink);
+              const gvBtn = row.querySelector(".btn-gv-individual");
+              if (gvBtn) {
+                gvBtn.addEventListener("click", async () => {
+                  try {
+                    await navigator.clipboard.writeText(smsTextBody);
+                    showToast(`Message copied! Paste (Ctrl+V) into Google Voice for ${sub.name || cleanNumber}`, "info");
+                  } catch {}
+                  window.open(gvUrl, "_blank", "noopener,noreferrer");
+                });
               }
+
+              smsListEl.appendChild(row);
             });
 
             smsSection.style.display = "block";
-            // Also copy text message body to clipboard with Women of Virtue header
+            // Pre-copy text message body to clipboard with Women of Virtue header
             try {
               await navigator.clipboard.writeText(smsTextBody);
             } catch {}
