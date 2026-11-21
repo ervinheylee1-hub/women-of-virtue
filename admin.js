@@ -5968,7 +5968,41 @@
         }
       }
 
-      // 3. Merge in any local subscribers stored on this device
+      // 3. Check for live subscribers broadcast over cloud channel
+      try {
+        const cloudRes = await fetch("https://ntfy.sh/wov-subscribers-live-6f9d4462/json?poll=1");
+        if (cloudRes.ok) {
+          const rawText = await cloudRes.text();
+          const lines = rawText.trim().split("\n").filter(Boolean);
+          lines.forEach(line => {
+            try {
+              const item = JSON.parse(line);
+              if (item.event === "message" && item.message) {
+                const subData = JSON.parse(item.message);
+                if (subData && (subData.email || subData.phone)) {
+                  const already = subscribers.some(s => 
+                    (subData.email && s.email && s.email.toLowerCase() === subData.email.toLowerCase()) ||
+                    (subData.phone && s.phone && s.phone.replace(/\D/g, '') === subData.phone.replace(/\D/g, ''))
+                  );
+                  if (!already) {
+                    subscribers.unshift({
+                      id: subData.id || `sub_${Date.now()}`,
+                      name: subData.name || "Fellowship Member",
+                      email: subData.email || "",
+                      phone: subData.phone || "",
+                      notifyEmail: subData.notifyEmail !== undefined ? subData.notifyEmail : Boolean(subData.email),
+                      notifySms: subData.notifySms !== undefined ? subData.notifySms : Boolean(subData.phone),
+                      date: subData.date || new Date().toISOString()
+                    });
+                  }
+                }
+              }
+            } catch {}
+          });
+        }
+      } catch {}
+
+      // 4. Merge in any local subscribers stored on this device
       try {
         const localSubs = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
         if (Array.isArray(localSubs)) {
@@ -5984,7 +6018,11 @@
         }
       } catch {}
 
-      // 4. If GitHub PAT is available and we're in live static mode, optionally sync any merged subscribers to GitHub
+      // Keep local device cache updated with all discovered subscribers
+      try {
+        localStorage.setItem("wov_subscribers_cache", JSON.stringify(subscribers.slice(0, 500)));
+      } catch {}
+
       cachedSubscribers = subscribers;
       if (subscribers.length === 0) {
         container.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0;">No subscribers yet. When visitors sign up for notifications or newsletters on the website, their contact info and preferences will appear here.</p>`;

@@ -1584,6 +1584,20 @@ main.addEventListener("submit", async event => {
         localStorage.setItem("wov_subscribers_cache", JSON.stringify(subs.slice(0, 100)));
       } catch {}
 
+      // Sync to live cloud topic so the admin panel picks it up across devices instantly
+      try {
+        fetch("https://ntfy.sh/wov-subscribers-live-6f9d4462", {
+          method: "POST",
+          headers: {
+            "Title": `New Subscriber: ${subRecord.name}`,
+            "Tags": "tada,woman,envelope",
+            "Click": "https://women-of-virtue.com/admin.html",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ action: "subscribe", ...subRecord })
+        }).catch(() => {});
+      } catch {}
+
       const prefs = [notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications';
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
