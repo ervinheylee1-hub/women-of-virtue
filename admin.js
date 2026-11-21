@@ -6389,15 +6389,88 @@
             });
           } catch {}
 
+          // 4. Individual SMS & Google Voice Integration (Sender: Women of Virtue, 100% individual, no group chats)
+          const smsSection = document.querySelector("#broadcast-sms-section");
+          const smsListEl = document.querySelector("#broadcast-individual-sms-list");
+          const closeSmsBtn = document.querySelector("#btn-close-sms-section");
+
+          if (closeSmsBtn) {
+            closeSmsBtn.onclick = () => {
+              if (smsSection) smsSection.style.display = "none";
+            };
+          }
+
+          if (smsRecipients.length > 0 && smsSection && smsListEl) {
+            smsListEl.innerHTML = "";
+            const smsTextBody = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.trim();
+
+            smsRecipients.forEach((sub, idx) => {
+              const digits = String(sub.phone || '').replace(/\D/g, '');
+              const cleanNumber = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+              const formattedPhone = cleanNumber.length === 10
+                ? `(${cleanNumber.slice(0,3)}) ${cleanNumber.slice(3,6)}-${cleanNumber.slice(6)}`
+                : sub.phone;
+
+              // URL for Google Voice individual compose
+              // Google Voice Web loads messages at voice.google.com/u/0/messages
+              const gvUrl = `https://voice.google.com/u/0/messages?sendto=${encodeURIComponent(cleanNumber)}&text=${encodeURIComponent(smsTextBody)}`;
+              // Native SMS URL for phone/desktop native messaging app (individual)
+              const nativeSmsUrl = `sms:${cleanNumber}?&body=${encodeURIComponent(smsTextBody)}`;
+
+              const row = document.createElement("div");
+              row.style.display = "flex";
+              row.style.alignItems = "center";
+              row.style.justifyContent = "space-between";
+              row.style.padding = "8px 10px";
+              row.style.background = "#f9f8f5";
+              row.style.border = "1px solid var(--panel-border)";
+              row.style.borderRadius = "6px";
+              row.style.fontSize = "11px";
+
+              row.innerHTML = `
+                <div style="display:flex; flex-direction:column;">
+                  <strong style="color:var(--forest); font-size:11.5px;">${escapeHtml(sub.name || "Subscriber")}</strong>
+                  <span style="color:var(--text-muted); font-size:10.5px;">${escapeHtml(formattedPhone)}</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <a href="${gvUrl}" target="_blank" rel="noopener noreferrer" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#007791; color:#ffffff; font-weight:600; padding:4px 8px; border-radius:4px; font-size:10.5px;" title="Send individual text via Google Voice">
+                    📞 Text via Google Voice
+                  </a>
+                  <a href="${nativeSmsUrl}" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:#2e7d32; color:#ffffff; font-weight:600; padding:4px 8px; border-radius:4px; font-size:10.5px;" title="Send individual text via Default SMS App">
+                    💬 SMS App
+                  </a>
+                </div>
+              `;
+              smsListEl.appendChild(row);
+
+              // Auto-launch first recipient in Google Voice tab if only 1 recipient, or prompt
+              if (idx === 0 && audience === "sms") {
+                const autoLink = document.createElement("a");
+                autoLink.href = gvUrl;
+                autoLink.target = "_blank";
+                autoLink.rel = "noopener noreferrer";
+                document.body.appendChild(autoLink);
+                autoLink.click();
+                document.body.removeChild(autoLink);
+              }
+            });
+
+            smsSection.style.display = "block";
+            // Also copy text message body to clipboard with Women of Virtue header
+            try {
+              await navigator.clipboard.writeText(smsTextBody);
+            } catch {}
+          }
+
           // Build summary outcome
           const parts = [];
           if (emailRecipients.length > 0) {
             parts.push(`${emailRecipients.length} subscriber email(s) queued for delivery`);
           }
           if (smsRecipients.length > 0) {
-            parts.push(`${smsRecipients.length} phone number(s) targeted via text gateways & copied`);
+            parts.push(`${smsRecipients.length} individual text(s) ready in Google Voice`);
           }
-          successMessage = `Broadcast dispatched: ${parts.join(" and ")}. Messages are now delivering to subscriber inboxes and phones!`;
+          successMessage = `Broadcast prepared: ${parts.join(" and ")}. Your text messages are set up individually with sender 'Women of Virtue'!`;
           broadcastSuccess = true;
         }
 
