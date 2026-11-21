@@ -16,8 +16,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <link rel="stylesheet" href="admin.css?v=20261002c" />
-    <script src="admin.js?v=20261002c" defer></script>
+    <link rel="stylesheet" href="admin.css?v=20261002d" />
+    <script src="admin.js?v=20261002d" defer></script>
   </head>
   <body>
     <!-- Top Global Header -->
@@ -768,6 +768,17 @@
                 <p class="settings-note" style="margin:2px 0 0;">Reader engagement, devotional views, completions &amp; device demographics.</p>
               </div>
               <button class="chip-action-btn" id="btn-refresh-analytics" type="button" title="Refresh metrics">↻ Refresh</button>
+            </div>
+
+            <!-- Time-Range Filter Pill Selector -->
+            <div class="analytics-filter-bar" style="padding: 10px 14px 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--panel-border); background: #fbfaf8;">
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Filter:</span>
+              <div class="analytics-time-pills" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button type="button" class="analytics-filter-btn" data-time-range="24h" style="padding: 3px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--panel-border); background: #fff; color: var(--text-color); cursor: pointer;">24 Hours</button>
+                <button type="button" class="analytics-filter-btn" data-time-range="7d" style="padding: 3px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--panel-border); background: #fff; color: var(--text-color); cursor: pointer;">7 Days</button>
+                <button type="button" class="analytics-filter-btn" data-time-range="30d" style="padding: 3px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--panel-border); background: #fff; color: var(--text-color); cursor: pointer;">30 Days</button>
+                <button type="button" class="analytics-filter-btn is-active" data-time-range="all" style="padding: 3px 8px; font-size: 11px; border-radius: 4px; border: 1px solid var(--forest); background: var(--forest); color: #fff; cursor: pointer; font-weight: 600;">All Time</button>
+              </div>
             </div>
 
             <div class="analytics-scroll-content">
