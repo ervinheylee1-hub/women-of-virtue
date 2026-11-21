@@ -1507,8 +1507,100 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+// Automatic Cloud Bridge: Polls for broadcasts submitted from the live website and dispatches them via Resend
+let lastProcessedBroadcastTime = Math.floor(Date.now() / 1000) - 30;
+
+async function pollCloudBroadcastOutbox() {
+  try {
+    const res = await fetch(`https://ntfy.sh/wov-broadcast-outbox-6f9d4462/json?poll=1&since=${lastProcessedBroadcastTime}`);
+    if (!res.ok) return;
+    const text = await res.text();
+    const lines = text.trim().split('\n').filter(Boolean);
+    for (const line of lines) {
+      try {
+        const item = JSON.parse(line);
+        if (item.time && item.time > lastProcessedBroadcastTime) {
+          lastProcessedBroadcastTime = item.time;
+        }
+        if (item.event === 'message' && item.message) {
+          let payload = null;
+          try {
+            payload = JSON.parse(item.message);
+          } catch {
+            payload = { subject: item.title || 'Fellowship Notification', message: item.message, audience: 'all' };
+          }
+          if (payload && payload.message) {
+            console.log(`[CLOUD BROADCAST RECEIVED] Subject: "${payload.subject || 'Notice'}"`);
+            const subject = payload.subject || 'Fellowship Announcement';
+            const message = payload.message || '';
+            const targetAudience = payload.audience || 'all';
+
+            const subscribers = readSubscribersStore();
+            const emailSettings = readEmailSettings();
+            const emailRecipients = [];
+
+            for (const sub of subscribers) {
+              if ((targetAudience === 'all' || targetAudience === 'email') && sub.notifyEmail && sub.email) {
+                if (!emailRecipients.some(e => e.email.toLowerCase() === sub.email.toLowerCase())) {
+                  emailRecipients.push({ name: sub.name, email: sub.email });
+                }
+              }
+            }
+
+            if (emailRecipients.length > 0 && emailSettings.resendApiKey) {
+              console.log(`[CLOUD BROADCAST] Delivering to ${emailRecipients.length} subscriber(s) via Resend...`);
+              for (const recipient of emailRecipients) {
+                try {
+                  const htmlBody = `
+                    <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e3dc; border-radius: 8px; overflow: hidden; color: #252b29;">
+                      <div style="background-color: #26352f; padding: 24px 32px; text-align: center;">
+                        <h1 style="margin: 0; color: #fffefa; font-size: 22px; font-weight: 600;">Women of Virtue</h1>
+                        <p style="margin: 4px 0 0; color: #d4967d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Fellowship & Devotional Digest</p>
+                      </div>
+                      <div style="padding: 32px 32px 24px;">
+                        <h2 style="margin: 0 0 16px; font-size: 20px; color: #26352f;">${escapeHtml(subject)}</h2>
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 1.65; color: #303636; white-space: pre-wrap;">${escapeHtml(message)}</div>
+                      </div>
+                      <div style="background-color: #f7f5f0; padding: 16px 32px; border-top: 1px solid rgba(37,43,41,0.08); text-align: center;">
+                        <p style="margin: 0; font-size: 11px; color: #777c75; font-family: sans-serif;">
+                          You received this email because you subscribed to Women of Virtue updates.<br>
+                          Visit <a href="https://women-of-virtue.com" style="color: #c9755b; text-decoration: underline;">women-of-virtue.com</a>
+                        </p>
+                      </div>
+                    </div>
+                  `;
+                  await sendResendEmail({
+                    apiKey: emailSettings.resendApiKey,
+                    to: recipient.email,
+                    from: emailSettings.resendFromEmail,
+                    subject: `[Women of Virtue] ${subject}`,
+                    text: `${subject}\n\n${message}\n\nSent from Women of Virtue`,
+                    html: htmlBody
+                  });
+                  console.log(`[CLOUD BROADCAST DELIVERED] Successfully sent email to ${recipient.email}`);
+                } catch (sendErr) {
+                  console.error(`[CLOUD BROADCAST ERROR] Failed sending to ${recipient.email}:`, sendErr.message);
+                }
+              }
+            }
+          }
+        }
+      } catch (innerErr) {
+        // Skip malformed line
+      }
+    }
+  } catch (pollErr) {
+    // Network or offline, retry next cycle
+  }
+}
+
+// Check every 10 seconds for cloud broadcast triggers
+setInterval(pollCloudBroadcastOutbox, 10000);
+
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Women of Virtue CMS: http://127.0.0.1:${PORT}/`);
   console.log(`Admin panel: http://127.0.0.1:${PORT}/admin`);
   console.log(`Bound to localhost (127.0.0.1) only.`);
+  // Initial check
+  pollCloudBroadcastOutbox();
 });

@@ -933,11 +933,19 @@
               <!-- Quick SMS Number Viewer Modal / Section -->
               <div class="analytics-section-card" id="broadcast-sms-section" style="display:none; padding:12px 14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="font-size:11px; color:var(--text-primary);">SMS Subscribers List</strong>
+                  <strong style="font-size:11px; color:var(--text-primary);">SMS / Text Subscribers List</strong>
                   <button type="button" class="chip-action-btn" id="btn-close-sms-section" style="padding:2px 6px; font-size:10px;">✕ Close</button>
                 </div>
-                <textarea id="broadcast-sms-text" rows="4" readonly style="width:100%; font-size:11px; font-family:monospace; padding:6px; border-radius:4px; border:1px solid var(--panel-border); background:#fcfbf9;"></textarea>
-                <span style="font-size:10px; color:var(--text-muted); margin-top:4px; display:block;">Formatted with commas for easy copy-pasting into your phone or SMS provider.</span>
+                <textarea id="broadcast-sms-text" rows="3" readonly style="width:100%; font-size:11px; font-family:monospace; padding:6px; border-radius:4px; border:1px solid var(--panel-border); background:#fcfbf9;"></textarea>
+                <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                  <a href="https://voice.google.com/messages" target="_blank" rel="noopener noreferrer" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(0,180,216,0.12); color:#007791; font-weight:600; padding:4px 8px;">
+                    📞 Open Google Voice Messages
+                  </a>
+                  <a href="https://messages.google.com/web" target="_blank" rel="noopener noreferrer" class="chip-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(46,125,50,0.12); color:#2e7d32; font-weight:600; padding:4px 8px;">
+                    💬 Open Android/Cell Web Messages
+                  </a>
+                </div>
+                <span style="font-size:10px; color:var(--text-muted); margin-top:6px; display:block;">Numbers are auto-copied to your clipboard. Paste them into Google Voice or your text app to send bulk updates instantly.</span>
               </div>
             </div>
           </div>

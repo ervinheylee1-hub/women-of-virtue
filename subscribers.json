@@ -8,5 +8,35 @@
     "notifyEmail": true,
     "notifySms": true,
     "subscribedVia": "subscribe"
+  },
+  {
+    "id": "sub_1795226337725",
+    "createdAt": "2026-11-21T01:33:27.879Z",
+    "name": "Sister Esther",
+    "email": "esther@example.com",
+    "phone": "555-777-8888",
+    "notifyEmail": true,
+    "notifySms": true,
+    "subscribedVia": "live-signup"
+  },
+  {
+    "id": "sub_1795225055967",
+    "createdAt": "2026-11-21T01:37:35.967Z",
+    "name": "Joe",
+    "email": "jojo.amaral11@gmail.com",
+    "phone": "13523465916",
+    "notifyEmail": true,
+    "notifySms": true,
+    "subscribedVia": "live-signup"
+  },
+  {
+    "id": "sub_1795226174684",
+    "createdAt": "2026-11-21T01:56:14.684Z",
+    "name": "Heylee",
+    "email": "ervinheylee1@gmail.com",
+    "phone": "3527052991",
+    "notifyEmail": true,
+    "notifySms": true,
+    "subscribedVia": "live-signup"
   }
 ]
