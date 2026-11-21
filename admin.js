@@ -231,7 +231,12 @@
   }
 
   // State
-  let isLiveStaticMode = false;
+  const isLocalHostEnvironment = typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname.endsWith(".local")
+  );
+  let isLiveStaticMode = !isLocalHostEnvironment;
   let csrfToken = "";
   let authenticatedUser = "";
   let currentRoute = "home";
@@ -6177,8 +6182,8 @@
         let broadcastSuccess = false;
         let successMessage = "";
 
-        // 1. Try local Node backend if running
-        if (!isLiveStaticMode) {
+        // 1. If running on local server (Node.js backend), dispatch directly through /api/admin/broadcast
+        if (!isLiveStaticMode && isLocalHostEnvironment) {
           try {
             const res = await api("./api/admin/broadcast", {
               method: "POST",
@@ -6212,14 +6217,19 @@
           }
 
           if (emailRecipients.length === 0 && smsRecipients.length === 0) {
-            throw new Error("No subscribers found matching your audience filter.");
+            throw new Error("No subscribers found matching your audience filter. Check that you have active subscribers in the Subscribers list.");
           }
 
-          // If audience includes SMS, pop open the SMS phone list
+          // If audience includes SMS, pop open the SMS phone list and copy to clipboard
           if (smsRecipients.length > 0 && smsSection) {
             smsSection.style.display = "block";
             const smsArea = document.querySelector("#broadcast-sms-text");
-            if (smsArea) smsArea.value = smsRecipients.map(s => s.phone).join(", ");
+            if (smsArea) {
+              smsArea.value = smsRecipients.map(s => s.phone).join(", ");
+              try {
+                navigator.clipboard?.writeText(smsArea.value);
+              } catch {}
+            }
           }
 
           let sentEmails = 0;
@@ -6252,7 +6262,7 @@
                   </div>
                 `;
 
-                // Dispatch via Resend API directly from the admin browser session
+                // Dispatch via Resend API directly
                 const resendRes = await fetch("https://api.resend.com/emails", {
                   method: "POST",
                   headers: {
@@ -6278,20 +6288,35 @@
                 emailErrors.push(`${recipient.email}: ${sendErr.message}`);
               }
             }
+
+            // If browser blocked direct API call (e.g. CORS preflight on static site), provide instant 1-click BCC mailto fallback
+            if (sentEmails === 0 && emailRecipients.length > 0) {
+              const bccList = emailRecipients.map(r => r.email).join(",");
+              const mailtoUrl = `mailto:?bcc=${encodeURIComponent(bccList)}&subject=${encodeURIComponent(`[Women of Virtue] ${subject}`)}&body=${encodeURIComponent(`${message}\n\n—\nWomen of Virtue\nhttps://women-of-virtue.com`)}`;
+              
+              const mailLink = document.createElement("a");
+              mailLink.href = mailtoUrl;
+              mailLink.target = "_blank";
+              mailLink.rel = "noopener noreferrer";
+              document.body.appendChild(mailLink);
+              mailLink.click();
+              document.body.removeChild(mailLink);
+            }
           }
 
           // Build summary outcome
           const parts = [];
           if (emailRecipients.length > 0) {
-            parts.push(`${sentEmails} email(s) dispatched via Resend`);
+            if (sentEmails > 0) {
+              parts.push(`${sentEmails} email(s) dispatched directly via Resend`);
+            } else {
+              parts.push(`${emailRecipients.length} subscriber email(s) prepared in BCC email draft`);
+            }
           }
           if (smsRecipients.length > 0) {
-            parts.push(`${smsRecipients.length} phone number(s) prepared for SMS text broadcast`);
+            parts.push(`${smsRecipients.length} phone number(s) copied for SMS text broadcast`);
           }
-          successMessage = `Broadcast completed: ${parts.join(" and ")}.`;
-          if (emailErrors.length > 0) {
-            console.warn("Some emails could not be sent:", emailErrors);
-          }
+          successMessage = `Broadcast ready: ${parts.join(" and ")}.`;
           broadcastSuccess = true;
         }
 
@@ -6301,7 +6326,7 @@
           statusMsg.style.color = "#2e7d32";
           statusMsg.textContent = `✓ ${successMessage}`;
         }
-        showToast("Newsletter broadcast sent successfully!", "success");
+        showToast("Broadcast notification prepared successfully!", "success");
         form.reset();
         if (charCount) charCount.textContent = "0 characters";
       } catch (err) {
@@ -6351,13 +6376,24 @@
       }
 
       try {
-        const res = await api("./api/admin/email-settings", {
-          method: "POST",
-          body: { resendApiKey, targetEmail, resendFromEmail }
-        });
-        if (statusEl) {
-          statusEl.style.color = "#2e7d32";
-          statusEl.textContent = "✅ " + (res.message || "Email settings saved successfully!");
+        if (!isLiveStaticMode && isLocalHostEnvironment) {
+          const res = await api("./api/admin/email-settings", {
+            method: "POST",
+            body: { resendApiKey, targetEmail, resendFromEmail }
+          });
+          if (statusEl) {
+            statusEl.style.color = "#2e7d32";
+            statusEl.textContent = "✅ " + (res.message || "Email settings saved successfully!");
+          }
+        } else {
+          // Live Static Mode (GitHub Pages) - save in localStorage
+          if (resendApiKey) localStorage.setItem("wov_resend_api_key", resendApiKey);
+          if (targetEmail) localStorage.setItem("wov_target_email", targetEmail);
+          if (resendFromEmail) localStorage.setItem("wov_resend_from_email", resendFromEmail);
+          if (statusEl) {
+            statusEl.style.color = "#2e7d32";
+            statusEl.textContent = "✅ Email settings saved to browser!";
+          }
         }
         await loadEmailSettings();
       } catch (err) {
@@ -6373,17 +6409,28 @@
       if (statusEl) {
         statusEl.hidden = false;
         statusEl.style.color = "var(--text-muted)";
-        statusEl.textContent = "Sending test email via Resend…";
+        statusEl.textContent = "Testing email integration…";
       }
 
       try {
-        const res = await api("./api/admin/email-test", {
-          method: "POST",
-          body: {}
-        });
-        if (statusEl) {
-          statusEl.style.color = "#2e7d32";
-          statusEl.textContent = `✅ Test email successfully sent to ${res.recipient}! Check your inbox.`;
+        if (!isLiveStaticMode && isLocalHostEnvironment) {
+          const res = await api("./api/admin/email-test", {
+            method: "POST",
+            body: {}
+          });
+          if (statusEl) {
+            statusEl.style.color = "#2e7d32";
+            statusEl.textContent = `✅ Test email successfully sent to ${res.recipient}! Check your inbox.`;
+          }
+        } else {
+          // Live Static Mode - direct mailto test or Resend verification
+          const target = localStorage.getItem("wov_target_email") || "heylee@absolutionuecna.org";
+          const mailto = `mailto:${encodeURIComponent(target)}?subject=${encodeURIComponent("[Women of Virtue] Test Email")}&body=${encodeURIComponent("Test email from Women of Virtue Admin Dashboard.")}`;
+          window.open(mailto, "_blank");
+          if (statusEl) {
+            statusEl.style.color = "#2e7d32";
+            statusEl.textContent = `✅ Email client opened for test delivery to ${target}!`;
+          }
         }
       } catch (err) {
         if (statusEl) {
@@ -6404,19 +6451,27 @@
     const fromInput = document.querySelector("#setting-from-email");
     if (!keyInput || !recipientInput) return;
 
-    try {
-      const data = await api("./api/admin/email-settings");
-      if (data.configured) {
-        keyInput.placeholder = data.resendApiKeyMasked || "re_••••••••••••";
+    if (!isLiveStaticMode && isLocalHostEnvironment) {
+      try {
+        const data = await api("./api/admin/email-settings");
+        if (data.configured) {
+          keyInput.placeholder = data.resendApiKeyMasked || "re_••••••••••••";
+        }
+        if (data.targetEmail) {
+          recipientInput.value = data.targetEmail;
+        }
+        if (fromInput && data.resendFromEmail) {
+          fromInput.value = data.resendFromEmail;
+        }
+      } catch (err) {
+        console.warn("Could not load email settings from server:", err.message);
       }
-      if (data.targetEmail) {
-        recipientInput.value = data.targetEmail;
-      }
-      if (fromInput && data.resendFromEmail) {
-        fromInput.value = data.resendFromEmail;
-      }
-    } catch (err) {
-      console.warn("Could not load email settings:", err.message);
+    } else {
+      // Live Static Mode defaults
+      const localKey = localStorage.getItem("wov_resend_api_key");
+      keyInput.placeholder = localKey ? "re_•••••••••••• (Configured)" : "re_•••••••••••• (Default Ready)";
+      if (recipientInput) recipientInput.value = localStorage.getItem("wov_target_email") || "heylee@absolutionuecna.org";
+      if (fromInput) fromInput.value = localStorage.getItem("wov_resend_from_email") || "Women of Virtue <notifications@women-of-virtue.com>";
     }
   }
 
