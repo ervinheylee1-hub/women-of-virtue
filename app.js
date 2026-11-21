@@ -652,8 +652,8 @@ function homePage() {
 
 function newsletterSignupSection(custom = {}) {
   const title = custom.title || "Stay Connected with Women of Virtue";
-  const subtitle = custom.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text message.";
-  const btnText = custom.buttonText || "Subscribe";
+  const subtitle = custom.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email.";
+  const btnText = custom.buttonText || "Subscribe via Email";
 
   return `<section class="wov-block page-section wov-block-newsletter" data-cms-layout-group="home-sections" data-cms-layout-key="newsletter-signup">
     <div class="wov-newsletter-inner">
@@ -663,31 +663,18 @@ function newsletterSignupSection(custom = {}) {
         <p>${escapeCmsText(subtitle)}</p>
       </div>
       <form class="form wov-subscribe-form" data-form="subscribe">
-        <div class="wov-subscribe-grid">
+        <div class="wov-subscribe-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; max-width:640px; margin:0 auto;">
           <div class="field">
             <label for="sub-first-name">First Name</label>
             <input id="sub-first-name" name="fname" autocomplete="given-name" placeholder="Your name (optional)" />
           </div>
           <div class="field">
-            <label for="sub-email">Email Address <span style="font-weight:normal; opacity:0.8;">(optional if phone entered)</span></label>
-            <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
-          </div>
-          <div class="field">
-            <label for="sub-phone">Cell Phone Number <span style="font-weight:normal; opacity:0.8;">(optional if email entered)</span></label>
-            <input id="sub-phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
+            <label for="sub-email">Email Address <span style="color:#c9755b;">*</span></label>
+            <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
           </div>
         </div>
-        <div class="wov-subscribe-prefs" style="margin: 16px auto 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 13.5px;">
-          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-            <input type="checkbox" name="notifyEmail" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
-            <span>Email Newsletters &amp; Reflections</span>
-          </label>
-          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-            <input type="checkbox" name="notifySms" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
-            <span>Text / SMS Devotional Alerts</span>
-          </label>
-        </div>
-        <div style="text-align: center;">
+        <input type="hidden" name="notifyEmail" value="true" />
+        <div style="text-align: center; margin-top: 18px;">
           <button class="button" type="submit" style="min-width: 180px;">${escapeCmsText(btnText)}</button>
         </div>
         <p class="form-status" aria-live="polite" style="margin-top: 14px; text-align: center; font-size: 14px; min-height: 20px; font-weight: 500;"></p>

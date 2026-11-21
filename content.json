@@ -95,8 +95,8 @@
         "type": "newsletter",
         "content": {
           "title": "Stay Connected with Women of Virtue",
-          "subtitle": "Sign up for weekly devotional notifications, biblical reflections, and fellowship announcements via email or text message.",
-          "buttonText": "Subscribe"
+          "subtitle": "Sign up for weekly devotional notifications, biblical reflections, and fellowship announcements via email.",
+          "buttonText": "Subscribe via Email"
         },
         "style": {
           "paddingTop": "60px",
