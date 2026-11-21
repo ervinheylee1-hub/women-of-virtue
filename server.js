@@ -1375,24 +1375,25 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
-      // Send to SMS subscribers via Carrier Email-to-SMS Gateways
+      // Send to SMS subscribers individually via Carrier Email-to-SMS Gateways (Caller ID: Women of Virtue)
       let smsSentCount = 0;
       if (smsRecipients.length > 0 && emailSettings.resendApiKey) {
         const smsDigest = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.slice(0, 160);
         for (const recipient of smsRecipients) {
           const gateways = getSmsGatewayEmails(recipient.phone);
-          if (gateways.length > 0) {
+          // Send individually to each gateway for this specific phone number (no group chat)
+          for (const gateway of gateways) {
             try {
               await sendResendEmail({
                 apiKey: emailSettings.resendApiKey,
-                to: gateways,
-                from: emailSettings.resendFromEmail,
-                subject: subject || 'Women of Virtue Alert',
+                to: gateway,
+                from: 'Women of Virtue <notifications@women-of-virtue.com>',
+                subject: 'Women of Virtue',
                 text: smsDigest
               });
               smsSentCount++;
             } catch (smsErr) {
-              console.warn(`[SMS GATEWAY] Error sending to ${recipient.phone}:`, smsErr.message);
+              // Silently continue to next gateway
             }
           }
         }
@@ -1628,9 +1629,9 @@ async function pollCloudBroadcastOutbox() {
               }
             }
 
-            // Dispatch SMS alerts to mobile carrier gateways via Resend
+            // Dispatch SMS alerts individually to mobile carrier gateways via Resend (Caller ID: Women of Virtue)
             if (smsRecipients.length > 0 && emailSettings.resendApiKey) {
-              console.log(`[CLOUD BROADCAST] Delivering text alerts to ${smsRecipients.length} phone number(s)...`);
+              console.log(`[CLOUD BROADCAST] Delivering text alerts individually to ${smsRecipients.length} phone number(s)...`);
               const smsDigest = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.slice(0, 160);
               for (const recipient of smsRecipients) {
                 const digits = String(recipient.phone || '').replace(/\D/g, '');
@@ -1642,18 +1643,20 @@ async function pollCloudBroadcastOutbox() {
                     `${cleanNumber}@tmomail.net`,
                     `${cleanNumber}@messaging.sprintpm.com`
                   ];
-                  try {
-                    await sendResendEmail({
-                      apiKey: emailSettings.resendApiKey,
-                      to: gateways,
-                      from: emailSettings.resendFromEmail,
-                      subject: subject || 'Women of Virtue Alert',
-                      text: smsDigest
-                    });
-                    console.log(`[CLOUD BROADCAST SMS] Dispatched text alerts to gateways for ${recipient.phone}`);
-                  } catch (smsErr) {
-                    console.warn(`[CLOUD BROADCAST SMS ERROR] Failed for ${recipient.phone}:`, smsErr.message);
+                  for (const gateway of gateways) {
+                    try {
+                      await sendResendEmail({
+                        apiKey: emailSettings.resendApiKey,
+                        to: gateway,
+                        from: 'Women of Virtue <notifications@women-of-virtue.com>',
+                        subject: 'Women of Virtue',
+                        text: smsDigest
+                      });
+                    } catch (smsErr) {
+                      // Silently continue
+                    }
                   }
+                  console.log(`[CLOUD BROADCAST SMS] Dispatched individual text message to ${recipient.phone}`);
                 }
               }
             }

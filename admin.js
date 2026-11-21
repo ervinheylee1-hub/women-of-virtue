@@ -6220,18 +6220,6 @@
             throw new Error("No subscribers found matching your audience filter. Check that you have active subscribers in the Subscribers list.");
           }
 
-          // If audience includes SMS, pop open the SMS phone list and copy to clipboard
-          if (smsRecipients.length > 0 && smsSection) {
-            smsSection.style.display = "block";
-            const smsArea = document.querySelector("#broadcast-sms-text");
-            if (smsArea) {
-              smsArea.value = smsRecipients.map(s => s.phone).join(", ");
-              try {
-                navigator.clipboard?.writeText(smsArea.value);
-              } catch {}
-            }
-          }
-
           let sentEmails = 0;
           let emailErrors = [];
 
@@ -6354,7 +6342,7 @@
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Send to Subscribers</span>`;
+          submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Send Notification</span>`;
         }
       }
     });
