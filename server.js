@@ -1317,8 +1317,19 @@ const server = http.createServer(async (req, res) => {
 
       const emailSettings = readEmailSettings();
       let sentCount = 0;
-      let errorCount = 0;
-      const errors = [];
+      // Helper to convert phone number into US cellular carrier email-to-SMS addresses
+      function getSmsGatewayEmails(phone) {
+        const digits = String(phone || '').replace(/\D/g, '');
+        const cleanNumber = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+        if (cleanNumber.length !== 10) return [];
+        // Primary US Carriers: Verizon, AT&T, T-Mobile, Sprint
+        return [
+          `${cleanNumber}@vtext.com`,
+          `${cleanNumber}@txt.att.net`,
+          `${cleanNumber}@tmomail.net`,
+          `${cleanNumber}@messaging.sprintpm.com`
+        ];
+      }
 
       // Send to email subscribers via Resend
       if (emailRecipients.length > 0) {
@@ -1364,17 +1375,41 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
-      console.log(`[BROADCAST SENT] Emails: ${emailRecipients.length} (${sentCount} sent, ${errorCount} errors), SMS recipients ready: ${smsRecipients.length}`);
+      // Send to SMS subscribers via Carrier Email-to-SMS Gateways
+      let smsSentCount = 0;
+      if (smsRecipients.length > 0 && emailSettings.resendApiKey) {
+        const smsDigest = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.slice(0, 160);
+        for (const recipient of smsRecipients) {
+          const gateways = getSmsGatewayEmails(recipient.phone);
+          if (gateways.length > 0) {
+            try {
+              await sendResendEmail({
+                apiKey: emailSettings.resendApiKey,
+                to: gateways,
+                from: emailSettings.resendFromEmail,
+                subject: subject || 'Women of Virtue Alert',
+                text: smsDigest
+              });
+              smsSentCount++;
+            } catch (smsErr) {
+              console.warn(`[SMS GATEWAY] Error sending to ${recipient.phone}:`, smsErr.message);
+            }
+          }
+        }
+      }
+
+      console.log(`[BROADCAST SENT] Emails: ${emailRecipients.length} (${sentCount} sent, ${errorCount} errors), SMS text gateway: ${smsSentCount}/${smsRecipients.length}`);
 
       return sendJson(res, {
         ok: true,
         sentCount,
+        smsSentCount,
         errorCount,
         emailCount: emailRecipients.length,
         smsCount: smsRecipients.length,
         smsRecipients,
         errors: errors.slice(0, 5),
-        message: `Broadcast processed: sent to ${sentCount} email subscriber(s). ${smsRecipients.length} SMS subscriber(s) compiled.`
+        message: `Broadcast processed: sent to ${sentCount} email subscriber(s) and dispatched to ${smsSentCount} SMS phone number(s).`
       });
     }
 
@@ -1547,6 +1582,15 @@ async function pollCloudBroadcastOutbox() {
               }
             }
 
+            const smsRecipients = [];
+            for (const sub of subscribers) {
+              if ((targetAudience === 'all' || targetAudience === 'sms') && sub.notifySms && sub.phone) {
+                if (!smsRecipients.some(p => p.phone === sub.phone)) {
+                  smsRecipients.push({ name: sub.name, phone: sub.phone });
+                }
+              }
+            }
+
             if (emailRecipients.length > 0 && emailSettings.resendApiKey) {
               console.log(`[CLOUD BROADCAST] Delivering to ${emailRecipients.length} subscriber(s) via Resend...`);
               for (const recipient of emailRecipients) {
@@ -1580,6 +1624,36 @@ async function pollCloudBroadcastOutbox() {
                   console.log(`[CLOUD BROADCAST DELIVERED] Successfully sent email to ${recipient.email}`);
                 } catch (sendErr) {
                   console.error(`[CLOUD BROADCAST ERROR] Failed sending to ${recipient.email}:`, sendErr.message);
+                }
+              }
+            }
+
+            // Dispatch SMS alerts to mobile carrier gateways via Resend
+            if (smsRecipients.length > 0 && emailSettings.resendApiKey) {
+              console.log(`[CLOUD BROADCAST] Delivering text alerts to ${smsRecipients.length} phone number(s)...`);
+              const smsDigest = `[Women of Virtue] ${subject ? subject + ' - ' : ''}${message}`.slice(0, 160);
+              for (const recipient of smsRecipients) {
+                const digits = String(recipient.phone || '').replace(/\D/g, '');
+                const cleanNumber = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+                if (cleanNumber.length === 10) {
+                  const gateways = [
+                    `${cleanNumber}@vtext.com`,
+                    `${cleanNumber}@txt.att.net`,
+                    `${cleanNumber}@tmomail.net`,
+                    `${cleanNumber}@messaging.sprintpm.com`
+                  ];
+                  try {
+                    await sendResendEmail({
+                      apiKey: emailSettings.resendApiKey,
+                      to: gateways,
+                      from: emailSettings.resendFromEmail,
+                      subject: subject || 'Women of Virtue Alert',
+                      text: smsDigest
+                    });
+                    console.log(`[CLOUD BROADCAST SMS] Dispatched text alerts to gateways for ${recipient.phone}`);
+                  } catch (smsErr) {
+                    console.warn(`[CLOUD BROADCAST SMS ERROR] Failed for ${recipient.phone}:`, smsErr.message);
+                  }
                 }
               }
             }

@@ -6326,12 +6326,12 @@
           // Build summary outcome
           const parts = [];
           if (emailRecipients.length > 0) {
-            parts.push(`${emailRecipients.length} subscriber email(s) queued for automatic delivery`);
+            parts.push(`${emailRecipients.length} subscriber email(s) queued for delivery`);
           }
           if (smsRecipients.length > 0) {
-            parts.push(`${smsRecipients.length} phone number(s) copied for SMS/Voice text broadcast`);
+            parts.push(`${smsRecipients.length} phone number(s) targeted via text gateways & copied`);
           }
-          successMessage = `Broadcast dispatched: ${parts.join(" and ")}.`;
+          successMessage = `Broadcast dispatched: ${parts.join(" and ")}. Messages are now delivering to subscriber inboxes and phones!`;
           broadcastSuccess = true;
         }
 
