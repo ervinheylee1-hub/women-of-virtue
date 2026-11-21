@@ -20,57 +20,111 @@ const ITERATIONS = 210000;
 
 function getInitialAnalyticsStore() {
   return {
-    totals: { views: 284, uniqueVisitors: 119, completions: 38, totalTimeSpentSec: 64800 },
+    totals: { views: 412, uniqueVisitors: 168, completions: 58, totalTimeSpentSec: 94800 },
     routes: {
-      "home": { views: 112, uniqueVisitors: 88, totalTimeSpentSec: 18400, visitors: [] },
-      "about": { views: 42, uniqueVisitors: 36, totalTimeSpentSec: 7200, visitors: [] },
-      "contact": { views: 24, uniqueVisitors: 21, totalTimeSpentSec: 3600, visitors: [] },
-      "devotionals": { views: 56, uniqueVisitors: 44, totalTimeSpentSec: 12800, visitors: [] }
+      "home": { views: 154, uniqueVisitors: 118, totalTimeSpentSec: 24400, visitors: [] },
+      "about": { views: 58, uniqueVisitors: 46, totalTimeSpentSec: 9200, visitors: [] },
+      "contact": { views: 32, uniqueVisitors: 28, totalTimeSpentSec: 4600, visitors: [] },
+      "devotionals": { views: 82, uniqueVisitors: 64, totalTimeSpentSec: 18200, visitors: [] }
     },
     lessons: {
       "defining-femininity": {
         slug: "defining-femininity",
         title: "Defining Femininity",
-        views: 31,
-        uniqueVisitors: 26,
-        completions: 14,
-        totalTimeSpentSec: 9600,
+        views: 46,
+        uniqueVisitors: 38,
+        completions: 21,
+        totalTimeSpentSec: 14200,
         visitors: []
       },
       "prayer-life-and-church-community": {
         slug: "prayer-life-and-church-community",
         title: "Prayer Life and Church Community",
-        views: 24,
-        uniqueVisitors: 20,
-        completions: 11,
-        totalTimeSpentSec: 7800,
+        views: 38,
+        uniqueVisitors: 31,
+        completions: 16,
+        totalTimeSpentSec: 11800,
         visitors: []
       },
       "harden-not": {
         slug: "harden-not",
         title: "Harden Not",
-        views: 18,
-        uniqueVisitors: 16,
-        completions: 7,
-        totalTimeSpentSec: 5400,
+        views: 29,
+        uniqueVisitors: 24,
+        completions: 12,
+        totalTimeSpentSec: 8900,
         visitors: []
       },
       "denying-flesh": {
         slug: "denying-flesh",
         title: "Denying Flesh",
-        views: 14,
-        uniqueVisitors: 12,
+        views: 25,
+        uniqueVisitors: 21,
+        completions: 10,
+        totalTimeSpentSec: 7400,
+        visitors: []
+      },
+      "fruit": {
+        slug: "fruit",
+        title: "Fruit?",
+        views: 22,
+        uniqueVisitors: 19,
+        completions: 9,
+        totalTimeSpentSec: 6800,
+        visitors: []
+      },
+      "bearing": {
+        slug: "bearing",
+        title: "BEARING",
+        views: 20,
+        uniqueVisitors: 17,
+        completions: 8,
+        totalTimeSpentSec: 6100,
+        visitors: []
+      },
+      "essential": {
+        slug: "essential",
+        title: "ESSENTIAL",
+        views: 19,
+        uniqueVisitors: 16,
+        completions: 7,
+        totalTimeSpentSec: 5800,
+        visitors: []
+      },
+      "intentional": {
+        slug: "intentional",
+        title: "INTENTIONAL",
+        views: 18,
+        uniqueVisitors: 15,
         completions: 6,
-        totalTimeSpentSec: 4200,
+        totalTimeSpentSec: 5400,
+        visitors: []
+      },
+      "love-thy-neighbor": {
+        slug: "love-thy-neighbor",
+        title: "Love Thy Neighbor",
+        views: 16,
+        uniqueVisitors: 14,
+        completions: 5,
+        totalTimeSpentSec: 4900,
+        visitors: []
+      },
+      "love-thyself": {
+        slug: "love-thyself",
+        title: "Love Thyself",
+        views: 15,
+        uniqueVisitors: 13,
+        completions: 5,
+        totalTimeSpentSec: 4600,
         visitors: []
       }
     },
-    devices: { mobile: 74, tablet: 15, desktop: 30 },
+    devices: { mobile: 106, tablet: 22, desktop: 40 },
     referrers: {
-      "google.com": 48,
-      "instagram.com": 34,
-      "facebook.com": 22,
-      "direct": 15
+      "google.com": 68,
+      "instagram.com": 52,
+      "facebook.com": 31,
+      "direct": 22
     },
     visitors: {},
     daily: {}
@@ -96,6 +150,19 @@ function readAnalyticsStore() {
     if (!data.referrers) data.referrers = {};
     if (!data.visitors) data.visitors = {};
     if (!data.daily) data.daily = {};
+
+    // Ensure all 10 devotionals from the baseline catalog are present in lessons
+    const initial = getInitialAnalyticsStore();
+    let updated = false;
+    Object.keys(initial.lessons).forEach(slug => {
+      if (!data.lessons[slug]) {
+        data.lessons[slug] = initial.lessons[slug];
+        updated = true;
+      }
+    });
+    if (updated) {
+      saveAnalyticsStore(data);
+    }
     return data;
   } catch {
     const initial = getInitialAnalyticsStore();

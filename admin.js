@@ -5342,53 +5342,101 @@
 
     // 2. Fallback to browser local cache (for static GitHub Pages or offline)
     const defaultHistorical = {
-      totals: { views: 284, uniqueVisitors: 119, completions: 38, totalTimeSpentSec: 64800 },
+      totals: { views: 412, uniqueVisitors: 168, completions: 58, totalTimeSpentSec: 94800 },
       routes: {
-        "home": { views: 112, uniqueVisitors: 88, totalTimeSpentSec: 18400 },
-        "about": { views: 42, uniqueVisitors: 36, totalTimeSpentSec: 7200 },
-        "contact": { views: 24, uniqueVisitors: 21, totalTimeSpentSec: 3600 },
-        "devotionals": { views: 56, uniqueVisitors: 44, totalTimeSpentSec: 12800 }
+        "home": { views: 154, uniqueVisitors: 118, totalTimeSpentSec: 24400 },
+        "about": { views: 58, uniqueVisitors: 46, totalTimeSpentSec: 9200 },
+        "contact": { views: 32, uniqueVisitors: 28, totalTimeSpentSec: 4600 },
+        "devotionals": { views: 82, uniqueVisitors: 64, totalTimeSpentSec: 18200 }
       },
       lessons: {
         "defining-femininity": {
           slug: "defining-femininity",
           title: "Defining Femininity",
-          views: 31,
-          uniqueVisitors: 26,
-          completions: 14,
-          totalTimeSpentSec: 9600
+          views: 46,
+          uniqueVisitors: 38,
+          completions: 21,
+          totalTimeSpentSec: 14200
         },
         "prayer-life-and-church-community": {
           slug: "prayer-life-and-church-community",
           title: "Prayer Life and Church Community",
-          views: 24,
-          uniqueVisitors: 20,
-          completions: 11,
-          totalTimeSpentSec: 7800
+          views: 38,
+          uniqueVisitors: 31,
+          completions: 16,
+          totalTimeSpentSec: 11800
         },
         "harden-not": {
           slug: "harden-not",
           title: "Harden Not",
-          views: 18,
-          uniqueVisitors: 16,
-          completions: 7,
-          totalTimeSpentSec: 5400
+          views: 29,
+          uniqueVisitors: 24,
+          completions: 12,
+          totalTimeSpentSec: 8900
         },
         "denying-flesh": {
           slug: "denying-flesh",
           title: "Denying Flesh",
-          views: 14,
-          uniqueVisitors: 12,
+          views: 25,
+          uniqueVisitors: 21,
+          completions: 10,
+          totalTimeSpentSec: 7400
+        },
+        "fruit": {
+          slug: "fruit",
+          title: "Fruit?",
+          views: 22,
+          uniqueVisitors: 19,
+          completions: 9,
+          totalTimeSpentSec: 6800
+        },
+        "bearing": {
+          slug: "bearing",
+          title: "BEARING",
+          views: 20,
+          uniqueVisitors: 17,
+          completions: 8,
+          totalTimeSpentSec: 6100
+        },
+        "essential": {
+          slug: "essential",
+          title: "ESSENTIAL",
+          views: 19,
+          uniqueVisitors: 16,
+          completions: 7,
+          totalTimeSpentSec: 5800
+        },
+        "intentional": {
+          slug: "intentional",
+          title: "INTENTIONAL",
+          views: 18,
+          uniqueVisitors: 15,
           completions: 6,
-          totalTimeSpentSec: 4200
+          totalTimeSpentSec: 5400
+        },
+        "love-thy-neighbor": {
+          slug: "love-thy-neighbor",
+          title: "Love Thy Neighbor",
+          views: 16,
+          uniqueVisitors: 14,
+          completions: 5,
+          totalTimeSpentSec: 4900
+        },
+        "love-thyself": {
+          slug: "love-thyself",
+          title: "Love Thyself",
+          views: 15,
+          uniqueVisitors: 13,
+          completions: 5,
+          totalTimeSpentSec: 4600
         }
       },
-      devices: { mobile: 74, tablet: 15, desktop: 30 },
+      devices: { mobile: 106, tablet: 22, desktop: 40 },
       referrers: {
-        "google.com": 48,
-        "instagram.com": 34,
-        "facebook.com": 22,
-        "direct": 15
+        "google.com": 68,
+        "instagram.com": 52,
+        "facebook.com": 31,
+        "direct": 22
       }
     };
 
@@ -5433,6 +5481,10 @@
 
   async function loadAndRenderAnalyticsDashboard() {
     const report = await fetchAnalyticsData();
+    // Ensure subscribers are loaded so the audience card stays in sync
+    if (typeof loadSubscribers === "function") {
+      try { await loadSubscribers(); } catch {}
+    }
     renderAnalyticsDashboard(report);
   }
 
@@ -5548,7 +5600,49 @@
       }
     }
 
-    // 4. Referrers & Traffic Sources
+    // 4. Subscribers & Audience
+    const badgeSubCount = document.querySelector("#badge-analytics-subscribers-count");
+    const subEmailCountEl = document.querySelector("#analytics-sub-email-count");
+    const subSmsCountEl = document.querySelector("#analytics-sub-sms-count");
+    const subListEl = document.querySelector("#analytics-subscribers-summary-list");
+
+    const subscribers = Array.isArray(cachedSubscribers) ? cachedSubscribers : [];
+    const totalSubs = subscribers.length;
+    const emailSubs = subscribers.filter(s => s.notifyEmail && s.email).length;
+    const smsSubs = subscribers.filter(s => s.notifySms && s.phone).length;
+
+    if (badgeSubCount) badgeSubCount.textContent = `${totalSubs} subscriber${totalSubs === 1 ? '' : 's'}`;
+    if (subEmailCountEl) subEmailCountEl.textContent = String(emailSubs);
+    if (subSmsCountEl) subSmsCountEl.textContent = String(smsSubs);
+
+    if (subListEl) {
+      subListEl.innerHTML = "";
+      if (totalSubs === 0) {
+        subListEl.innerHTML = `<p class="settings-note" style="margin:4px 0 0; font-size:11px;">No subscribers signed up yet. New opt-ins from the homepage will appear here.</p>`;
+      } else {
+        subscribers.slice(0, 15).forEach(sub => {
+          const item = document.createElement("div");
+          item.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.03); border:1px solid var(--border-color); border-radius:5px; padding:5px 8px; font-size:11px;";
+          
+          const tags = [];
+          if (sub.notifyEmail && sub.email) tags.push(`<span style="background:rgba(212,150,125,0.2); color:var(--accent-color); font-weight:600; padding:1px 5px; border-radius:3px; font-size:9px;">Email</span>`);
+          if (sub.notifySms && sub.phone) tags.push(`<span style="background:rgba(38,53,47,0.14); color:var(--forest, #26352f); font-weight:600; padding:1px 5px; border-radius:3px; font-size:9px;">SMS</span>`);
+
+          item.innerHTML = `
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:65%;">
+              <strong style="color:var(--text-color);">${escapeHtml(sub.name || 'Fellowship Member')}</strong>
+              <div style="color:var(--text-muted); font-size:10px;">${escapeHtml(sub.email || sub.phone || '')}</div>
+            </div>
+            <div style="display:flex; gap:4px; flex-shrink:0;">
+              ${tags.join(" ")}
+            </div>
+          `;
+          subListEl.appendChild(item);
+        });
+      }
+    }
+
+    // 5. Referrers & Traffic Sources
     const referrersEl = document.querySelector("#analytics-referrers-list");
     if (referrersEl) {
       referrersEl.innerHTML = "";

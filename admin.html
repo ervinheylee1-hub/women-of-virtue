@@ -826,6 +826,28 @@
                 </div>
               </div>
 
+              <!-- Subscribers & Notification Audience Overview Card -->
+              <div class="analytics-section-card">
+                <div class="analytics-section-title">
+                  <span>Subscribers &amp; Audience</span>
+                  <span class="analytics-badge" id="badge-analytics-subscribers-count">0 subscribers</span>
+                </div>
+                <p class="settings-note" style="margin-bottom:10px;">Subscribers opted in for email newsletters and text message notifications.</p>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+                  <div style="background:rgba(212,150,125,0.12); border-radius:6px; padding:8px 10px; border-left:3px solid var(--accent-color);">
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Email Newsletters</div>
+                    <div style="font-size:18px; font-weight:700; color:var(--accent-color); margin-top:2px;" id="analytics-sub-email-count">0</div>
+                  </div>
+                  <div style="background:rgba(38,53,47,0.08); border-radius:6px; padding:8px 10px; border-left:3px solid var(--forest, #26352f);">
+                    <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">SMS / Text Alerts</div>
+                    <div style="font-size:18px; font-weight:700; color:var(--forest, #26352f); margin-top:2px;" id="analytics-sub-sms-count">0</div>
+                  </div>
+                </div>
+                <div id="analytics-subscribers-summary-list" style="display:flex; flex-direction:column; gap:6px; max-height:170px; overflow-y:auto;">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
               <!-- Top Traffic Sources / Referrers -->
               <div class="analytics-section-card">
                 <div class="analytics-section-title">
