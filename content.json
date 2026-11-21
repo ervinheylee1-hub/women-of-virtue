@@ -89,19 +89,6 @@
           "paddingTop": "80px",
           "paddingBottom": "90px"
         }
-      },
-      {
-        "id": "block_newsletter_home",
-        "type": "newsletter",
-        "content": {
-          "title": "Stay Connected with Women of Virtue",
-          "subtitle": "Sign up for weekly devotional notifications, biblical reflections, and fellowship announcements via email or text message.",
-          "buttonText": "Subscribe"
-        },
-        "style": {
-          "paddingTop": "60px",
-          "paddingBottom": "70px"
-        }
       }
     ],
     "about": [
@@ -205,7 +192,9 @@
     "devotionals/essential": [],
     "devotionals/intentional": [],
     "devotionals/love-thy-neighbor": [],
-    "devotionals/love-thyself": []
+    "devotionals/love-thyself": [],
+    "devotionals/let-god": [],
+    "devotionals/his-plans-are-good": []
   },
   "copyOverrides": {
     "block:block_hero_1:button": "Learn More",
@@ -249,7 +238,8 @@
     "lesson:love-thy-neighbor:sec:3:p:0": "1 Corinthians 13:4-7 \n “Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres.”",
     "lesson:love-thy-neighbor:sec:3:p:1": "God defines love as patient, kind, not keeping score. This is agape love, chosen, sacrificial, steadfast. \nIt's not about whether we feel loving. It's about whether we are willing to act loving, even when it's costly.",
     "lesson:intentional:introTitle": "Are we being intentional?",
-    "lesson:essential:introTitle": "Sisterhood is Essential"
+    "lesson:essential:introTitle": "Sisterhood is Essential",
+    "devotionals-his-plans-are-good:p:in-this-lesson:0": "I"
   },
   "richTextOverrides": {},
   "linkOverrides": {},
@@ -296,7 +286,9 @@
       "fontSize": "26px"
     }
   },
-  "theme": {},
+  "theme": {
+    "gaMeasurementId": "G-36TWLJLNRB"
+  },
   "graphics": {
     "lesson:fruit": "./uploads/img_7380_1791933460108.jpg",
     "lesson:fruit:photo": "./uploads/img_7380_1791933460108.jpg",
@@ -309,7 +301,11 @@
     "lesson:love-thy-neighbor": "./uploads/img_7606_1793404110329.jpg",
     "lesson:love-thy-neighbor:photo": "./uploads/img_7606_1793404110329.jpg",
     "lesson:love-thyself": "./uploads/img_7604_1793404123094.jpg",
-    "lesson:love-thyself:photo": "./uploads/img_7604_1793404123094.jpg"
+    "lesson:love-thyself:photo": "./uploads/img_7604_1793404123094.jpg",
+    "lesson:let-god": "./uploads/img_7606_1795221952689.jpg",
+    "lesson:let-god:photo": "./uploads/img_7606_1795221952689.jpg",
+    "lesson:his-plans-are-good": "./uploads/img_7605_1795221985011.jpg",
+    "lesson:his-plans-are-good:photo": "./uploads/img_7605_1795221985011.jpg"
   },
   "layout": {},
   "positionOverrides": {
@@ -936,6 +932,107 @@
             "‘AND since it is of thy mercy, O gracious Father, that another day is added to our lives; We here dedicate both our souls and our bodies to thee and thy service, in a sober, righteous, and godly life: in which resolution, do thou, O merciful God, confirm and strengthen us; that, as we grow in age, we may grow in grace, and in the knowledge of our Lord and Saviour Jesus Christ. Amen. ‘"
           ],
           "image": "./uploads/img_7604_1793404123094.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        }
+      ]
+    },
+    {
+      "id": "yet-not-i",
+      "title": "Yet Not I",
+      "description": "“I have been crucified with Christ, and I no longer live, but Christ lives in me.”  Galatians 2:20\n“For I know the plans I have for you,” declares the Lord, “plans to prosper you and not to harm you, plans to give you hope and a future.” Jeremiah 29:11\nThis week: It’s not about you trying harder. It’s about God working through you, and trusting that His plans for you are good, even when you can’t see them yet.",
+      "lessons": [
+        {
+          "id": "lesson-let-god",
+          "slug": "let-god",
+          "title": "Let God",
+          "publishedAt": "2026-11-21",
+          "introTitle": "Less of us, More of Him",
+          "intro": "",
+          "sections": [
+            {
+              "title": "Empty Hands Open Heart",
+              "paragraphs": [
+                "2 Corinthians 4:7",
+                "“But we have this treasure in jars of clay to show that this all-surpassing power is from God and not from us.”",
+                "God doesn’t need you to be perfect to use you. He needs you to be available.\nWe are jars of clay; cracked, ordinary, imperfect. And that’s exactly the point. When God works through you, people don’t see your perfection. They see His power.\nLetting God work through you starts with empty hands. Hands that aren’t gripping control. Hands that aren’t holding onto the plan. Hands that are open to say, “God, use me however You want.”",
+                "You don’t have to be the most talented, the most put-together, or the most qualified. You just have to be willing."
+              ]
+            },
+            {
+              "title": "His Strength In Our Weakness",
+              "paragraphs": [
+                "2 Corinthians 12:9 \n “My grace is sufficient for you, for my power is made perfect in weakness.”",
+                "God doesn’t work through us in spite of our weakness. He works through us in it.\nWhen you feel too tired to love well, too broken to help anyone, too insecure to speak up. That’s not disqualification. That’s where His strength shows up the most.\nYou were never meant to be the source. You’re meant to be the vessel. His love flows through you. His patience flows through you. His wisdom flows through you.",
+                "When you say “I can’t,” God says, “I know. Let Me."
+              ]
+            },
+            {
+              "title": "Not Able, Available",
+              "paragraphs": [
+                "Isaiah 6:8  \n“Then I heard the voice of the Lord saying, ‘Whom shall I send? And who will go for us?’ And I said, ‘Here am I. Send me!’”",
+                "God isn’t looking for the most able. He’s looking for the most available.\nMoses said he couldn’t speak. Gideon said he was the least. Mary said she was just a servant. David was just a shepherd boy. God used them all, not because they were ready, but because they said yes.",
+                "Letting God work through you isn’t about having a platform, a perfect testimony, or a five-year plan. It’s about saying, “Here am I. Send me,” in your everyday life, in your home, your friendships, your work, your church.",
+                "Small obedience is still obedience. A kind word, a prayer, showing up, forgiving, serving. That’s God working through you."
+              ]
+            }
+          ],
+          "resourceTitle": "Reflection:",
+          "resource": [
+            "Where is God asking me to simply say “yes” and be available?",
+            "What small act of obedience have I been putting off because I felt unqualified?",
+            "What am I holding onto that’s keeping my hands too full for God to use?",
+            "What would “empty hands, open heart” look like for me today?"
+          ],
+          "image": "./uploads/img_7606_1795221952689.jpg",
+          "imageAlt": "",
+          "pdfUrl": "",
+          "imageHeight": 600,
+          "imageOffset": 0
+        },
+        {
+          "id": "lesson-his-plans-are-good",
+          "slug": "his-plans-are-good",
+          "title": "His Plans Are Good",
+          "publishedAt": "2026-11-21",
+          "introTitle": "Even if we cant see them",
+          "intro": "I",
+          "sections": [
+            {
+              "title": "Good not Easy",
+              "paragraphs": [
+                "Romans 8:28 \n“And we know that in all things God works for the good of those who love him, who have been called according to his purpose.”",
+                "God’s plans are good, but good doesn’t always mean easy, comfortable, or what we expected.\nSometimes His good plan includes a closed door. Sometimes it includes waiting. Sometimes it includes a season that stretches you and refines you.",
+                "Trusting His good plans means believing that God is working in all things, not just the good things. He’s working in the delay. He’s working in the disappointment. He’s working in the detour.",
+                "You may not see the good yet, but that doesn’t mean it isn’t coming."
+              ]
+            },
+            {
+              "title": "His Plan His Goodness",
+              "paragraphs": [
+                "Ecclesiastes 3:11 \n “He has made everything beautiful in its time.”",
+                "We want God’s plans now. God wants His plans right.\nHis delay is not His denial. His timing is not punishment, it’s protection and preparation. He is making things beautiful, but beauty takes time.",
+                "Think of Joseph, 13 years from the pit to the palace. Think of Abraham and Sarah, decades of waiting for a promise. Think of Jesus, 30 years of hidden preparation for 3 years of ministry.\nIf God gave you everything you wanted right now, you might not be ready to carry it. He’s not withholding from you. He’s preparing you for it.",
+                "Trusting His timing is trusting His character. He is never late, and He is never early. He is always on time."
+              ]
+            },
+            {
+              "title": "Bigger Than Now",
+              "paragraphs": [
+                "Jeremiah 29:11\n “For I know the plans I have for you,” declares the Lord, “plans to prosper you and not to harm you, plans to give you hope and a future.”",
+                "Jeremiah 29:11 was written to people in exile. People who were displaced, discouraged, and wondering if God had forgotten them. And God said: I still have plans. Good plans. Plans for hope and a future.",
+                "Your current moment is not your whole story. Your worst day is not your final chapter. Your waiting season is not your destination.\nGod’s plan is bigger than this heartbreak, this setback, this confusing season. He sees the whole picture when you can only see one piece.\nTrusting His good plans means looking beyond what you feel today, and anchoring to what He promised for tomorrow. Hope is not wishful thinking. Hope is confident expectation that God will do what He said He would do."
+              ]
+            }
+          ],
+          "resourceTitle": "This Week's 1928 BCP Prayer:",
+          "resource": [
+            "For Guidance:",
+            "“O\nGOD, by whom the meek are guided in judgment, and light riseth up in darkness for the godly; Grant us, in all our doubts and uncertainties, the grace to ask what thou wouldest have us to do, that the Spirit of Wisdom may save us from all false choices, and that in thy light we may see light, and in thy straight path may not stumble; through Jesus Christ our Lord. Amen. “"
+          ],
+          "image": "./uploads/img_7605_1795221985011.jpg",
           "imageAlt": "",
           "pdfUrl": "",
           "imageHeight": 600,
