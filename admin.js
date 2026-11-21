@@ -5998,6 +5998,21 @@
       if (smsSection) smsSection.style.display = "none";
     });
 
+    const copySubLinkBtn = document.querySelector("#btn-copy-subscribe-link");
+    const subLinkInput = document.querySelector("#input-shareable-subscribe-link");
+    if (subLinkInput) {
+      const fullOrigin = window.location.origin;
+      const subUrl = (fullOrigin && !fullOrigin.includes("null")) ? `${fullOrigin}/subscribe.html` : "https://women-of-virtue.com/subscribe.html";
+      subLinkInput.value = subUrl;
+    }
+    copySubLinkBtn?.addEventListener("click", () => {
+      if (subLinkInput) {
+        subLinkInput.select();
+        navigator.clipboard?.writeText(subLinkInput.value);
+        showToast("Subscribe page link copied to clipboard!", "success");
+      }
+    });
+
     form?.addEventListener("submit", async e => {
       e.preventDefault();
       const audience = audienceSelect?.value || "all";

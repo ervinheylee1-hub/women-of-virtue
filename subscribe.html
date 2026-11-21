@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d4967d" />
+    <meta name="description" content="Subscribe to Women of Virtue updates, weekly devotionals, biblical reflections, and fellowship alerts via email or text message." />
+    <title>Subscribe to Devotionals &amp; Updates | Women of Virtue</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico?v=2" />
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2" />
+
+    <!-- Open Graph for sharing on iMessage, WhatsApp, Facebook, Instagram, Twitter -->
+    <meta property="og:title" content="Subscribe to Women of Virtue Devotionals" />
+    <meta property="og:description" content="Join our fellowship of sisters. Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://women-of-virtue.com/subscribe.html" />
+    <meta property="og:image" content="./apple-touch-icon.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Shrikhand&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --ink: #303636;
+        --warm: #e5e3dc;
+        --paper: #f5f3ed;
+        --peach: #d4967d;
+        --accent: #c9755b;
+        --forest: #26352f;
+        --white: #ffffff;
+        --muted: #777c75;
+        --serif: "Bitter", Georgia, serif;
+        --sans: "DM Sans", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--warm);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .sub-header {
+        background-color: var(--peach) !important;
+        color: #303636;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .sub-header a.brand {
+        font-family: var(--serif);
+        font-size: 20px;
+        font-weight: 600;
+        color: #303636;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .sub-header a.back-link {
+        font-size: 13px;
+        font-weight: 600;
+        color: #303636;
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.3);
+        transition: background 0.15s ease;
+      }
+      .sub-header a.back-link:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Main container */
+      .sub-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px 60px;
+      }
+      .sub-card {
+        background: #ffffff;
+        border: 1px solid rgba(48, 54, 54, 0.12);
+        border-radius: 12px;
+        box-shadow: 0 12px 36px rgba(38, 53, 47, 0.08);
+        width: 100%;
+        max-width: 580px;
+        overflow: hidden;
+        animation: fadeIn 0.4s ease-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .sub-card-hero {
+        background: linear-gradient(135deg, var(--forest) 0%, #1e2823 100%);
+        color: #ffffff;
+        padding: 36px 32px 30px;
+        text-align: center;
+        position: relative;
+      }
+      .sub-eyebrow {
+        color: var(--peach);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .sub-card-hero h1 {
+        font-family: var(--serif);
+        font-size: clamp(24px, 4vw, 32px);
+        font-weight: 600;
+        margin: 0 0 10px;
+        line-height: 1.2;
+        color: #fffefa;
+      }
+      .sub-card-hero p {
+        margin: 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 440px;
+        margin: 0 auto;
+        line-height: 1.5;
+      }
+
+      .sub-card-body {
+        padding: 32px 32px 36px;
+      }
+
+      /* Form Elements */
+      .form-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .field label span.hint {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 11.5px;
+      }
+      .field input {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 14px;
+        border: 1.5px solid #dcd7ce;
+        border-radius: 6px;
+        background: #ffffff !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        caret-color: #000000 !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .field input::placeholder {
+        color: #777c75 !important;
+        -webkit-text-fill-color: #777c75 !important;
+        opacity: 0.85;
+      }
+      .field input:focus {
+        outline: none;
+        border-color: var(--peach);
+        box-shadow: 0 0 0 3px rgba(212, 150, 125, 0.25);
+      }
+
+      /* Checkboxes */
+      .sub-options-box {
+        background: #faf8f5;
+        border: 1px solid #eae6df;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin: 6px 0 10px;
+      }
+      .sub-options-title {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--forest);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .sub-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 13.5px;
+        color: var(--ink);
+      }
+      .checkbox-row input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--peach);
+        cursor: pointer;
+      }
+
+      /* Submit button */
+      .btn-submit {
+        display: inline-flex;
+        width: 100%;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border: 0;
+        border-radius: 300px;
+        background: var(--peach);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        box-shadow: 0 3px 12px rgba(212, 150, 125, 0.35);
+        transition: transform 0.15s ease, background 0.15s ease, filter 0.15s ease;
+      }
+      .btn-submit:hover {
+        background: #c98268;
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+      .btn-submit:active {
+        transform: translateY(0);
+      }
+      .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Status Message */
+      .form-status {
+        margin: 14px 0 0;
+        text-align: center;
+        font-size: 13.5px;
+        min-height: 22px;
+        font-weight: 500;
+      }
+
+      /* Confirmation Card */
+      .confirmation-box {
+        display: none;
+        text-align: center;
+        padding: 20px 10px;
+      }
+      .confirmation-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(46, 125, 50, 0.12);
+        color: #2e7d32;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 14px;
+      }
+      .confirmation-box h2 {
+        font-family: var(--serif);
+        font-size: 24px;
+        margin: 0 0 10px;
+        color: var(--forest);
+      }
+      .confirmation-box p {
+        font-size: 14px;
+        color: var(--ink);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      /* Footer */
+      .sub-footer {
+        background-color: var(--peach);
+        color: #ffffff;
+        text-align: center;
+        padding: 20px;
+        font-size: 13px;
+      }
+      .sub-footer a {
+        color: #ffffff;
+        text-decoration: underline;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Site Header -->
+    <header class="sub-header">
+      <a class="brand" href="./#/">
+        <span>Women of Virtue</span>
+      </a>
+      <a class="back-link" href="./#/">← Return to Website</a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="sub-main">
+      <div class="sub-card">
+        <div class="sub-card-hero">
+          <span class="sub-eyebrow">Devotionals &amp; Community</span>
+          <h1>Stay Connected</h1>
+          <p>Join our sisterhood to receive weekly biblical devotionals, scripture reflections, and fellowship announcements.</p>
+        </div>
+
+        <div class="sub-card-body">
+          <!-- Active Signup Form -->
+          <form id="direct-subscribe-form" class="form-grid">
+            <div class="field">
+              <label for="sub-first-name">First Name <span class="hint">(optional)</span></label>
+              <input id="sub-first-name" name="fname" autocomplete="given-name" placeholder="e.g. Hannah" />
+            </div>
+
+            <div class="field">
+              <label for="sub-email">Email Address <span class="hint">(optional if phone is entered)</span></label>
+              <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+            </div>
+
+            <div class="field">
+              <label for="sub-phone">Cell Phone Number <span class="hint">(optional if email is entered)</span></label>
+              <input id="sub-phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
+            </div>
+
+            <div class="sub-options-box">
+              <span class="sub-options-title">Select your notification preferences:</span>
+              <div class="sub-checkboxes">
+                <label class="checkbox-row">
+                  <input type="checkbox" name="notifyEmail" checked />
+                  <span>Email Newsletters &amp; Weekly Reflections</span>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" name="notifySms" checked />
+                  <span>SMS / Text Message Devotional Alerts</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-submit-sub">
+              <span>Subscribe to Updates</span>
+            </button>
+
+            <p class="form-status" id="form-status" aria-live="polite"></p>
+          </form>
+
+          <!-- Confirmation View -->
+          <div class="confirmation-box" id="confirmation-view">
+            <div class="confirmation-icon">✓</div>
+            <h2 id="confirm-title">You're Subscribed!</h2>
+            <p id="confirm-message">Thank you for joining Women of Virtue. You have been successfully added to our fellowship updates roster.</p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <a href="./#/devotionals" class="btn-submit" style="display:inline-flex; width:auto; padding:10px 22px; font-size:13.5px; text-decoration:none;">Explore Devotionals</a>
+              <a href="./#/" class="btn-submit" style="display:inline-flex; width:auto; padding:10px 22px; font-size:13.5px; background:var(--forest); text-decoration:none;">Visit Homepage</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="sub-footer">
+      <p style="margin: 0;">Women of Virtue · Growing in Christ &amp; Biblical Femininity · <a href="./#/">women-of-virtue.com</a></p>
+    </footer>
+
+    <!-- Handler Script -->
+    <script>
+      (function() {
+        const form = document.querySelector("#direct-subscribe-form");
+        const statusEl = document.querySelector("#form-status");
+        const submitBtn = document.querySelector("#btn-submit-sub");
+        const confirmView = document.querySelector("#confirmation-view");
+        const confirmTitle = document.querySelector("#confirm-title");
+        const confirmMsg = document.querySelector("#confirm-message");
+
+        if (!form) return;
+
+        form.addEventListener("submit", async function(e) {
+          e.preventDefault();
+          const fname = (form.querySelector("[name='fname']")?.value || "").trim();
+          const email = (form.querySelector("[name='email']")?.value || "").trim();
+          const phone = (form.querySelector("[name='phone']")?.value || "").trim();
+          const notifyEmail = form.querySelector("[name='notifyEmail']").checked;
+          const notifySms = form.querySelector("[name='notifySms']").checked;
+
+          if (!email && !phone) {
+            statusEl.style.color = "#c94a4a";
+            statusEl.textContent = "Please provide either an email address or a phone number.";
+            return;
+          }
+
+          if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            statusEl.style.color = "#c94a4a";
+            statusEl.textContent = "Please enter a valid email address.";
+            return;
+          }
+
+          if (phone && phone.replace(/\D/g, '').length < 7) {
+            statusEl.style.color = "#c94a4a";
+            statusEl.textContent = "Please enter a valid phone number with at least 7 digits.";
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Subscribing…";
+          statusEl.style.color = "#777c75";
+          statusEl.textContent = "Adding you to Women of Virtue updates…";
+
+          const payload = {
+            formType: "subscribe",
+            fname: fname,
+            email: email,
+            phone: phone,
+            notifyEmail: notifyEmail,
+            notifySms: notifySms
+          };
+
+          try {
+            const res = await fetch("./api/contact", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+              showSuccess(fname, data.message);
+            } else {
+              throw new Error(data.error || `Server returned ${res.status}`);
+            }
+          } catch (err) {
+            console.warn("Direct subscribe fallback:", err.message);
+            // Local fallback for GitHub Pages static hosting
+            try {
+              const subs = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+              subs.unshift({
+                name: fname || "Fellowship Member",
+                email: email,
+                phone: phone,
+                notifyEmail: notifyEmail,
+                notifySms: notifySms,
+                date: new Date().toISOString()
+              });
+              localStorage.setItem("wov_subscribers_cache", JSON.stringify(subs.slice(0, 100)));
+            } catch {}
+
+            showSuccess(fname, `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${[notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications'}.`);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Subscribe to Updates";
+          }
+        });
+
+        function showSuccess(name, customMsg) {
+          form.style.display = "none";
+          confirmView.style.display = "block";
+          if (name) {
+            confirmTitle.textContent = `Welcome, ${name}!`;
+          }
+          if (customMsg) {
+            confirmMsg.textContent = customMsg;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

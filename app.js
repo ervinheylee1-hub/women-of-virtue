@@ -731,6 +731,24 @@ function contactPage() {
   </section></div>`;
 }
 
+function subscribePage() {
+  return `<div class="page-fade"><section class="page-section" style="padding: 60px 20px 80px; max-width: 820px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <span class="eyebrow" style="color:var(--peach, #d4967d); font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">Devotionals &amp; Community</span>
+      <h1 style="font-family:var(--serif); margin: 6px 0 12px; font-size: clamp(32px, 5vw, 48px); color:var(--forest, #26352f);">Stay Connected</h1>
+      <p style="max-width: 540px; margin: 0 auto; color:var(--ink, #303636); font-size: 16px; line-height: 1.6;">Join our fellowship to receive weekly biblical devotionals, scripture reflections, and fellowship announcements directly to your inbox or phone.</p>
+    </div>
+    ${newsletterSignupSection({
+      title: "Join Women of Virtue Updates",
+      subtitle: "Sign up below for devotional notifications and sisterhood encouragement. You can opt into emails, text alerts, or both.",
+      buttonText: "Subscribe Now"
+    })}
+    <div style="text-align: center; margin-top: 32px;">
+      <a href="#/devotionals" style="color:var(--accent, #c9755b); font-weight:600; text-decoration:underline; font-size:14px;">Browse Devotional Catalog →</a>
+    </div>
+  </section></div>`;
+}
+
 function progressData() {
   try { return JSON.parse(localStorage.getItem("virtue-progress") || "{}"); } catch { return {}; }
 }
@@ -1391,6 +1409,7 @@ function render() {
   } else if (!path) main.innerHTML = homePage();
   else if (path === "about") main.innerHTML = aboutPage();
   else if (path === "contact") main.innerHTML = contactPage();
+  else if (path === "subscribe") main.innerHTML = subscribePage();
   else if (path === "devotionals") main.innerHTML = coursePage();
   else if (lesson) main.innerHTML = lessonPage(lesson);
   else main.innerHTML = `<section class="page-intro"><div class="page-intro-inner"><p class="eyebrow">Women of Virtue</p><h1>Page not found.</h1><a class="button" href="#/">Return home</a></div></section>`;
