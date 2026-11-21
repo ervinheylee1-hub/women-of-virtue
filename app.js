@@ -1569,15 +1569,25 @@ main.addEventListener("submit", async event => {
     console.warn("Contact API fallback to mailto/local:", err.message);
     if (isSubscribe) {
       // In static GitHub Pages mode without server, cache subscriber locally and provide confirmation
+      const subRecord = {
+        id: `sub_${Date.now()}`,
+        name: `${fname} ${lname}`.trim() || 'Fellowship Member',
+        email,
+        phone,
+        notifyEmail,
+        notifySms,
+        date: new Date().toISOString()
+      };
       try {
         const subs = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
-        subs.unshift({ name: `${fname} ${lname}`.trim(), email, phone, notifyEmail, notifySms, date: new Date().toISOString() });
+        subs.unshift(subRecord);
         localStorage.setItem("wov_subscribers_cache", JSON.stringify(subs.slice(0, 100)));
       } catch {}
 
+      const prefs = [notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications';
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
-        statusEl.textContent = `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${[notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications'}.`;
+        statusEl.textContent = `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${prefs}.`;
       }
       form.reset();
     } else {

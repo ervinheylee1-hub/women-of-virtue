@@ -4783,6 +4783,41 @@
           throw new Error(errJson.message || `GitHub commit error (${putRes.status})`);
         }
 
+        // Also commit subscribers.json if cachedSubscribers is available
+        try {
+          if (Array.isArray(cachedSubscribers) && cachedSubscribers.length > 0) {
+            let subSha = null;
+            try {
+              const subGet = await fetch(`https://api.github.com/repos/${githubRepo}/contents/subscribers.json?ref=${githubBranch}`, {
+                headers: { "Authorization": authHeader, "Accept": "application/vnd.github.v3+json" }
+              });
+              if (subGet.ok) {
+                const subJson = await subGet.json();
+                subSha = subJson.sha;
+              }
+            } catch {}
+
+            const subStr = JSON.stringify(cachedSubscribers, null, 2);
+            const subEncoded = btoa(unescape(encodeURIComponent(subStr)));
+            await fetch(`https://api.github.com/repos/${githubRepo}/contents/subscribers.json`, {
+              method: "PUT",
+              headers: {
+                "Authorization": authHeader,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                message: "Sync subscriber roster via Admin Dashboard",
+                content: subEncoded,
+                sha: subSha || undefined,
+                branch: githubBranch
+              })
+            });
+          }
+        } catch (subSyncErr) {
+          console.warn("Could not sync subscribers.json to GitHub:", subSyncErr);
+        }
+
         const putData = await putRes.json();
         const commitShort = putData.commit?.sha?.slice(0, 7) || "live";
 
@@ -5343,7 +5378,7 @@
 
     // 2. Fallback to browser local cache (for static GitHub Pages or offline)
     const defaultHistorical = {
-      totals: { views: 412, uniqueVisitors: 168, completions: 58, totalTimeSpentSec: 94800 },
+      totals: { views: 439, uniqueVisitors: 191, completions: 67, totalTimeSpentSec: 102900 },
       routes: {
         "home": { views: 154, uniqueVisitors: 118, totalTimeSpentSec: 24400 },
         "about": { views: 58, uniqueVisitors: 46, totalTimeSpentSec: 9200 },
@@ -5430,9 +5465,25 @@
           uniqueVisitors: 13,
           completions: 5,
           totalTimeSpentSec: 4600
+        },
+        "let-god": {
+          slug: "let-god",
+          title: "Let God",
+          views: 14,
+          uniqueVisitors: 12,
+          completions: 5,
+          totalTimeSpentSec: 4200
+        },
+        "his-plans-are-good": {
+          slug: "his-plans-are-good",
+          title: "His Plans Are Good",
+          views: 13,
+          uniqueVisitors: 11,
+          completions: 4,
+          totalTimeSpentSec: 3900
         }
       },
-      devices: { mobile: 106, tablet: 22, desktop: 40 },
+      devices: { mobile: 118, tablet: 26, desktop: 46 },
       referrers: {
         "google.com": 68,
         "instagram.com": 52,
@@ -5880,15 +5931,60 @@
     if (!container) return;
     try {
       let subscribers = [];
+      let loadedFromServer = false;
+
+      // 1. Try local server first if available
       try {
         const res = await api("./api/admin/subscribers");
-        subscribers = Array.isArray(res.subscribers) ? res.subscribers : [];
-      } catch {
-        // Fallback to local storage if running in static/offline mode
+        if (Array.isArray(res.subscribers)) {
+          subscribers = res.subscribers;
+          loadedFromServer = true;
+        }
+      } catch {}
+
+      // 2. If not loaded from local server (e.g. running on GitHub Pages), fetch from static subscribers.json or GitHub API
+      if (!loadedFromServer) {
         try {
-          subscribers = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+          const staticRes = await fetch(`./subscribers.json?t=${Date.now()}`);
+          if (staticRes.ok) {
+            const list = await staticRes.json();
+            if (Array.isArray(list) && list.length > 0) {
+              subscribers = list;
+            }
+          }
         } catch {}
+
+        // Also check GitHub raw repository if static file fetch was empty
+        if (subscribers.length === 0) {
+          try {
+            const rawRes = await fetch(`https://raw.githubusercontent.com/ervinheylee1-hub/women-of-virtue/main/subscribers.json?t=${Date.now()}`);
+            if (rawRes.ok) {
+              const list = await rawRes.json();
+              if (Array.isArray(list) && list.length > 0) {
+                subscribers = list;
+              }
+            }
+          } catch {}
+        }
       }
+
+      // 3. Merge in any local subscribers stored on this device
+      try {
+        const localSubs = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
+        if (Array.isArray(localSubs)) {
+          localSubs.forEach(loc => {
+            const exists = subscribers.some(s => 
+              (loc.email && s.email && s.email.toLowerCase() === loc.email.toLowerCase()) ||
+              (loc.phone && s.phone && s.phone.replace(/\D/g, '') === loc.phone.replace(/\D/g, ''))
+            );
+            if (!exists) {
+              subscribers.unshift(loc);
+            }
+          });
+        }
+      } catch {}
+
+      // 4. If GitHub PAT is available and we're in live static mode, optionally sync any merged subscribers to GitHub
       cachedSubscribers = subscribers;
       if (subscribers.length === 0) {
         container.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0;">No subscribers yet. When visitors sign up for notifications or newsletters on the website, their contact info and preferences will appear here.</p>`;
@@ -5944,16 +6040,8 @@
     const summaryEl = document.querySelector("#broadcast-subscribers-summary");
     if (!summaryEl) return;
     try {
-      let subscribers = [];
-      try {
-        const res = await api("./api/admin/subscribers");
-        subscribers = Array.isArray(res.subscribers) ? res.subscribers : [];
-      } catch {
-        try {
-          subscribers = JSON.parse(localStorage.getItem("wov_subscribers_cache") || "[]");
-        } catch {}
-      }
-      cachedSubscribers = subscribers;
+      await loadSubscribers();
+      const subscribers = Array.isArray(cachedSubscribers) ? cachedSubscribers : [];
       const emailCount = subscribers.filter(s => s.notifyEmail && s.email).length;
       const smsCount = subscribers.filter(s => s.notifySms && s.phone).length;
       summaryEl.textContent = `${subscribers.length} total (${emailCount} email, ${smsCount} text)`;

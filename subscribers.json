@@ -1,0 +1,12 @@
+[
+  {
+    "id": "sub_1795224141745_440ps",
+    "createdAt": "2026-11-21T01:22:21.747Z",
+    "name": "Hannah",
+    "email": "hannah.virtue@example.com",
+    "phone": "555-987-6543",
+    "notifyEmail": true,
+    "notifySms": true,
+    "subscribedVia": "subscribe"
+  }
+]

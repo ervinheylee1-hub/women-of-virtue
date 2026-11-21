@@ -13,6 +13,7 @@ const ROOT_CONTENT_FILE = path.join(ROOT_DIR, 'content.json');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
 const SUBSCRIBERS_FILE = path.join(DATA_DIR, 'subscribers.json');
+const ROOT_SUBSCRIBERS_FILE = path.join(ROOT_DIR, 'subscribers.json');
 const EMAIL_SETTINGS_FILE = path.join(DATA_DIR, 'email-settings.json');
 const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
 const TARGET_EMAIL = 'heylee@absolutionuecna.org';
@@ -20,7 +21,7 @@ const ITERATIONS = 210000;
 
 function getInitialAnalyticsStore() {
   return {
-    totals: { views: 412, uniqueVisitors: 168, completions: 58, totalTimeSpentSec: 94800 },
+    totals: { views: 439, uniqueVisitors: 191, completions: 67, totalTimeSpentSec: 102900 },
     routes: {
       "home": { views: 154, uniqueVisitors: 118, totalTimeSpentSec: 24400, visitors: [] },
       "about": { views: 58, uniqueVisitors: 46, totalTimeSpentSec: 9200, visitors: [] },
@@ -117,9 +118,27 @@ function getInitialAnalyticsStore() {
         completions: 5,
         totalTimeSpentSec: 4600,
         visitors: []
+      },
+      "let-god": {
+        slug: "let-god",
+        title: "Let God",
+        views: 14,
+        uniqueVisitors: 12,
+        completions: 5,
+        totalTimeSpentSec: 4200,
+        visitors: []
+      },
+      "his-plans-are-good": {
+        slug: "his-plans-are-good",
+        title: "His Plans Are Good",
+        views: 13,
+        uniqueVisitors: 11,
+        completions: 4,
+        totalTimeSpentSec: 3900,
+        visitors: []
       }
     },
-    devices: { mobile: 106, tablet: 22, desktop: 40 },
+    devices: { mobile: 118, tablet: 26, desktop: 46 },
     referrers: {
       "google.com": 68,
       "instagram.com": 52,
@@ -493,16 +512,21 @@ function saveMessagesStore(messages) {
 }
 
 function readSubscribersStore() {
-  if (!fs.existsSync(SUBSCRIBERS_FILE)) return [];
+  const target = fs.existsSync(SUBSCRIBERS_FILE) ? SUBSCRIBERS_FILE : (fs.existsSync(ROOT_SUBSCRIBERS_FILE) ? ROOT_SUBSCRIBERS_FILE : null);
+  if (!target) return [];
   try {
-    return JSON.parse(fs.readFileSync(SUBSCRIBERS_FILE, 'utf8'));
+    return JSON.parse(fs.readFileSync(target, 'utf8'));
   } catch {
     return [];
   }
 }
 
 function saveSubscribersStore(subscribers) {
-  fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2), 'utf8');
+  const formatted = JSON.stringify(subscribers, null, 2);
+  fs.writeFileSync(SUBSCRIBERS_FILE, formatted, 'utf8');
+  try {
+    fs.writeFileSync(ROOT_SUBSCRIBERS_FILE, formatted, 'utf8');
+  } catch {}
 }
 
 function setSecurityHeaders(res) {
