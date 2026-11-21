@@ -736,12 +736,12 @@ function subscribePage() {
     <div style="text-align: center; margin-bottom: 30px;">
       <span class="eyebrow" style="color:var(--peach, #d4967d); font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">Devotionals &amp; Community</span>
       <h1 style="font-family:var(--serif); margin: 6px 0 12px; font-size: clamp(32px, 5vw, 48px); color:var(--forest, #26352f);">Stay Connected</h1>
-      <p style="max-width: 540px; margin: 0 auto; color:var(--ink, #303636); font-size: 16px; line-height: 1.6;">Join our fellowship to receive weekly biblical devotionals, scripture reflections, and fellowship announcements directly to your inbox or phone.</p>
+      <p style="max-width: 540px; margin: 0 auto; color:var(--ink, #303636); font-size: 16px; line-height: 1.6;">Join our fellowship to receive weekly biblical devotionals, scripture reflections, and ministry announcements directly to your email inbox.</p>
     </div>
     ${newsletterSignupSection({
       title: "Join Women of Virtue Updates",
-      subtitle: "Sign up below for devotional notifications and sisterhood encouragement. You can opt into emails, text alerts, or both.",
-      buttonText: "Subscribe Now"
+      subtitle: "Sign up with your email below for weekly devotional notifications and sisterhood encouragement.",
+      buttonText: "Subscribe via Email"
     })}
     <div style="text-align: center; margin-top: 32px;">
       <a href="#/devotionals" style="color:var(--accent, #c9755b); font-weight:600; text-decoration:underline; font-size:14px;">Browse Devotional Catalog →</a>
@@ -1107,7 +1107,7 @@ function renderBlock(block) {
     }
     case "newsletter": {
       const title = content.title || "Stay Connected with Women of Virtue";
-      const subtitle = content.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text message.";
+      const subtitle = content.subtitle || "Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email.";
       const btnText = content.buttonText || "Subscribe";
       return `<section class="wov-block page-section wov-block-newsletter" data-wov-block-id="${id}" data-wov-block-type="newsletter" ${styleAttr}>
         <div class="wov-newsletter-inner">
@@ -1117,31 +1117,18 @@ function renderBlock(block) {
             <p data-cms-key="block:${id}:subtitle">${escapeCmsText(subtitle)}</p>
           </div>
           <form class="form wov-subscribe-form" data-form="subscribe">
-            <div class="wov-subscribe-grid">
+            <div class="wov-subscribe-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; max-width:640px; margin:0 auto;">
               <div class="field">
                 <label for="sub-first-name-${id}">First Name</label>
                 <input id="sub-first-name-${id}" name="fname" autocomplete="given-name" placeholder="Your name (optional)" />
               </div>
               <div class="field">
-                <label for="sub-email-${id}">Email Address <span style="font-weight:normal; opacity:0.8;">(optional if phone entered)</span></label>
-                <input id="sub-email-${id}" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
-              </div>
-              <div class="field">
-                <label for="sub-phone-${id}">Cell Phone Number <span style="font-weight:normal; opacity:0.8;">(optional if email entered)</span></label>
-                <input id="sub-phone-${id}" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
+                <label for="sub-email-${id}">Email Address <span style="color:#c9755b;">*</span></label>
+                <input id="sub-email-${id}" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
               </div>
             </div>
-            <div class="wov-subscribe-prefs" style="margin: 16px auto 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 13.5px;">
-              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                <input type="checkbox" name="notifyEmail" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
-                <span>Email Newsletters &amp; Reflections</span>
-              </label>
-              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                <input type="checkbox" name="notifySms" checked style="accent-color: var(--peach, #d4967d); width: 16px; height: 16px;" />
-                <span>Text / SMS Devotional Alerts</span>
-              </label>
-            </div>
-            <div style="text-align: center;">
+            <input type="hidden" name="notifyEmail" value="true" />
+            <div style="text-align: center; margin-top: 18px;">
               <button class="button" type="submit" data-cms-key="block:${id}:button" style="min-width: 180px;">${escapeCmsText(btnText)}</button>
             </div>
             <p class="form-status" aria-live="polite" style="margin-top: 14px; text-align: center; font-size: 14px; min-height: 20px; font-weight: 500;"></p>
@@ -1516,15 +1503,15 @@ main.addEventListener("submit", async event => {
   const message = (form.querySelector("[name='message']")?.value || form.querySelector("textarea")?.value || "").trim();
 
   const isSubscribe = formType === "subscribe" || formType === "newsletter";
-  const notifyEmail = form.querySelector("[name='notifyEmail']") ? form.querySelector("[name='notifyEmail']").checked : Boolean(email);
-  const notifySms = form.querySelector("[name='notifySms']") ? form.querySelector("[name='notifySms']").checked : Boolean(phone);
+  const notifyEmail = true; // Email notifications only
+  const notifySms = false;
 
-  // Validation: For subscriptions, neither is strictly required, but at least ONE contact method must be provided
+  // Validation: Email address is required for subscriptions
   if (isSubscribe) {
-    if (!email && !phone) {
+    if (!email) {
       if (statusEl) {
         statusEl.style.color = "#c94a4a";
-        statusEl.textContent = "Please enter either an email address or a phone number to subscribe.";
+        statusEl.textContent = "Please enter your email address to subscribe.";
       }
       return;
     }
@@ -1559,7 +1546,7 @@ main.addEventListener("submit", async event => {
     if (res.ok) {
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
-        statusEl.textContent = data.message || (isSubscribe ? `Thank you, ${fname || 'sister'}! You have been subscribed for notifications.` : `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee.`);
+        statusEl.textContent = data.message || (isSubscribe ? `Thank you, ${fname || 'sister'}! You have been subscribed for email notifications.` : `Thank you, ${fname || 'friend'}! Your message has been sent to Heylee.`);
       }
       form.reset();
     } else {
@@ -1573,9 +1560,9 @@ main.addEventListener("submit", async event => {
         id: `sub_${Date.now()}`,
         name: `${fname} ${lname}`.trim() || 'Fellowship Member',
         email,
-        phone,
-        notifyEmail,
-        notifySms,
+        phone: "",
+        notifyEmail: true,
+        notifySms: false,
         date: new Date().toISOString()
       };
       try {
@@ -1589,7 +1576,7 @@ main.addEventListener("submit", async event => {
         fetch("https://ntfy.sh/wov-subscribers-live-6f9d4462", {
           method: "POST",
           headers: {
-            "Title": `New Subscriber: ${subRecord.name}`,
+            "Title": `New Email Subscriber: ${subRecord.name}`,
             "Tags": "tada,woman,envelope",
             "Click": "https://women-of-virtue.com/admin.html",
             "Content-Type": "application/json"
@@ -1598,10 +1585,9 @@ main.addEventListener("submit", async event => {
         }).catch(() => {});
       } catch {}
 
-      const prefs = [notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications';
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
-        statusEl.textContent = `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${prefs}.`;
+        statusEl.textContent = `Thank you, ${fname || 'sister'}! You have been successfully subscribed for email notifications.`;
       }
       form.reset();
     } else {

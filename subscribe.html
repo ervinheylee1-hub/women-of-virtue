@@ -16,7 +16,7 @@
 
     <!-- Open Graph for sharing on iMessage, WhatsApp, Facebook, Instagram, Twitter -->
     <meta property="og:title" content="Subscribe to Women of Virtue Devotionals" />
-    <meta property="og:description" content="Join our fellowship of sisters. Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email or text." />
+    <meta property="og:description" content="Join our fellowship of sisters. Sign up for weekly devotional notifications, biblical encouragement, and fellowship updates via email." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://women-of-virtue.com/subscribe.html" />
     <meta property="og:image" content="./apple-touch-icon.png" />
@@ -345,31 +345,14 @@
             </div>
 
             <div class="field">
-              <label for="sub-email">Email Address <span class="hint">(optional if phone is entered)</span></label>
-              <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+              <label for="sub-email">Email Address <span class="hint" style="color:var(--terracotta);">* required</span></label>
+              <input id="sub-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
             </div>
 
-            <div class="field">
-              <label for="sub-phone">Cell Phone Number <span class="hint">(optional if email is entered)</span></label>
-              <input id="sub-phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
-            </div>
-
-            <div class="sub-options-box">
-              <span class="sub-options-title">Select your notification preferences:</span>
-              <div class="sub-checkboxes">
-                <label class="checkbox-row">
-                  <input type="checkbox" name="notifyEmail" checked />
-                  <span>Email Newsletters &amp; Weekly Reflections</span>
-                </label>
-                <label class="checkbox-row">
-                  <input type="checkbox" name="notifySms" checked />
-                  <span>SMS / Text Message Devotional Alerts</span>
-                </label>
-              </div>
-            </div>
+            <input type="hidden" name="notifyEmail" value="true" />
 
             <button type="submit" class="btn-submit" id="btn-submit-sub">
-              <span>Subscribe to Updates</span>
+              <span>Subscribe via Email</span>
             </button>
 
             <p class="form-status" id="form-status" aria-live="polite"></p>
@@ -410,25 +393,18 @@
           e.preventDefault();
           const fname = (form.querySelector("[name='fname']")?.value || "").trim();
           const email = (form.querySelector("[name='email']")?.value || "").trim();
-          const phone = (form.querySelector("[name='phone']")?.value || "").trim();
-          const notifyEmail = form.querySelector("[name='notifyEmail']").checked;
-          const notifySms = form.querySelector("[name='notifySms']").checked;
+          const notifyEmail = true;
+          const notifySms = false;
 
-          if (!email && !phone) {
+          if (!email) {
             statusEl.style.color = "#c94a4a";
-            statusEl.textContent = "Please provide either an email address or a phone number.";
+            statusEl.textContent = "Please enter your email address.";
             return;
           }
 
-          if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             statusEl.style.color = "#c94a4a";
             statusEl.textContent = "Please enter a valid email address.";
-            return;
-          }
-
-          if (phone && phone.replace(/\D/g, '').length < 7) {
-            statusEl.style.color = "#c94a4a";
-            statusEl.textContent = "Please enter a valid phone number with at least 7 digits.";
             return;
           }
 
@@ -441,9 +417,9 @@
             formType: "subscribe",
             fname: fname,
             email: email,
-            phone: phone,
-            notifyEmail: notifyEmail,
-            notifySms: notifySms
+            phone: "",
+            notifyEmail: true,
+            notifySms: false
           };
 
           try {
@@ -455,7 +431,7 @@
 
             const data = await res.json().catch(() => ({}));
             if (res.ok) {
-              showSuccess(fname, data.message);
+              showSuccess(fname, `Thank you, ${fname || 'sister'}! You have been successfully subscribed for email notifications.`);
             } else {
               throw new Error(data.error || `Server returned ${res.status}`);
             }
@@ -466,9 +442,9 @@
               id: `sub_${Date.now()}`,
               name: fname || "Fellowship Member",
               email: email,
-              phone: phone,
-              notifyEmail: notifyEmail,
-              notifySms: notifySms,
+              phone: "",
+              notifyEmail: true,
+              notifySms: false,
               date: new Date().toISOString()
             };
             try {
@@ -482,7 +458,7 @@
               fetch("https://ntfy.sh/wov-subscribers-live-6f9d4462", {
                 method: "POST",
                 headers: {
-                  "Title": `New Subscriber: ${subRecord.name}`,
+                  "Title": `New Email Subscriber: ${subRecord.name}`,
                   "Tags": "tada,woman,envelope",
                   "Click": "https://women-of-virtue.com/admin.html",
                   "Content-Type": "application/json"
@@ -491,10 +467,10 @@
               }).catch(() => {});
             } catch {}
 
-            showSuccess(fname, `Thank you, ${fname || 'sister'}! You have been successfully subscribed for ${[notifyEmail && email ? 'email updates' : '', notifySms && phone ? 'text alerts' : ''].filter(Boolean).join(' and ') || 'notifications'}.`);
+            showSuccess(fname, `Thank you, ${fname || 'sister'}! You have been successfully subscribed for email notifications.`);
           } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = "Subscribe to Updates";
+            submitBtn.textContent = "Subscribe via Email";
           }
         });
 

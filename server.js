@@ -1030,11 +1030,11 @@ const server = http.createServer(async (req, res) => {
       const notifySms = body.notifySms !== undefined ? Boolean(body.notifySms) : Boolean(phone);
 
       if (isSubscribe) {
-        // Validation: Neither email nor text is strictly required, but at least ONE contact method must be provided
-        if (!email && !phone) {
-          return sendJson(res, { error: 'Please enter either an email address or a phone number to subscribe.' }, 400);
+        // Validation: Email address is required for subscriptions
+        if (!email) {
+          return sendJson(res, { error: 'Please enter your email address to subscribe.' }, 400);
         }
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return sendJson(res, { error: 'Please enter a valid email address.' }, 400);
         }
         if (phone && phone.replace(/\D/g, '').length < 7) {
