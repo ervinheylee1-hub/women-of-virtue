@@ -324,7 +324,7 @@ function readEmailSettings() {
   return {
     resendApiKey: process.env.RESEND_API_KEY || fileSettings.resendApiKey || '',
     targetEmail: process.env.TARGET_EMAIL || process.env.RESEND_TO_EMAIL || fileSettings.targetEmail || TARGET_EMAIL,
-    resendFromEmail: process.env.RESEND_FROM_EMAIL || fileSettings.resendFromEmail || 'Women of Virtue <onboarding@resend.dev>'
+    resendFromEmail: process.env.RESEND_FROM_EMAIL || fileSettings.resendFromEmail || 'Women of Virtue <notifications@women-of-virtue.com>'
   };
 }
 
@@ -362,7 +362,7 @@ async function sendResendEmail({ apiKey, to, from, replyTo, subject, text, html 
   }
 
   const payload = {
-    from: from || 'Women of Virtue <onboarding@resend.dev>',
+    from: from || 'Women of Virtue <notifications@women-of-virtue.com>',
     to: Array.isArray(to) ? to : [to],
     subject: subject || 'New Form Submission',
     text: text || '',

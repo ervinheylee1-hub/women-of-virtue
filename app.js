@@ -1585,6 +1585,20 @@ main.addEventListener("submit", async event => {
       const bodyText = encodeURIComponent(`From: ${fname} ${lname}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`);
       const mailtoUrl = `mailto:heylee@absolutionuecna.org?subject=${subject}&body=${bodyText}`;
 
+      try {
+        const inqs = JSON.parse(localStorage.getItem("wov_inquiries_cache") || "[]");
+        inqs.unshift({
+          id: `inq_${Date.now()}`,
+          senderName: `${fname} ${lname}`.trim() || 'Website Visitor',
+          senderEmail: email,
+          phone,
+          formType,
+          message,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem("wov_inquiries_cache", JSON.stringify(inqs.slice(0, 100)));
+      } catch {}
+
       if (statusEl) {
         statusEl.style.color = "#2e7d32";
         statusEl.innerHTML = `Your message is ready! If your mail client didn't open automatically, <a href="${mailtoUrl}" target="_blank" style="text-decoration:underline; font-weight:bold; color:inherit;">click here to email Heylee directly at heylee@absolutionuecna.org</a>.`;

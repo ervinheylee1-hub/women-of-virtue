@@ -5168,6 +5168,7 @@
     }
     loadMediaLibrary();
     loadInquiries();
+    loadSubscribers();
     loadEmailSettings();
     loadLiveGithubSettings();
     loadGaSettings();
@@ -5840,8 +5841,15 @@
     const container = document.querySelector("#inquiries-list");
     if (!container) return;
     try {
-      const res = await api("./api/admin/messages");
-      const messages = Array.isArray(res.messages) ? res.messages : [];
+      let messages = [];
+      try {
+        const res = await api("./api/admin/messages");
+        messages = Array.isArray(res.messages) ? res.messages : [];
+      } catch {
+        try {
+          messages = JSON.parse(localStorage.getItem("wov_inquiries_cache") || "[]");
+        } catch {}
+      }
       if (messages.length === 0) {
         container.innerHTML = `<p style="font-size:11px; color:var(--text-muted); margin:0;">No inquiries received yet. All new inquiries submitted on the website will be sent to <strong>heylee@absolutionuecna.org</strong> and logged here.</p>`;
         return;
